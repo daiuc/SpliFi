@@ -4,7 +4,7 @@ execute:
   freeze: auto # re-render only when source changes
 ---
 
-### Publish to github page
+### Analysis
 
 - source `qmd` files in `analysis`
 - `render` will transfer html files automatically to `docs`

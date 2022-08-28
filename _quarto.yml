@@ -1,10 +1,14 @@
 project:
   type: "website"
-  title: "myproj"
+  title: "Splicing Fidelity - SpliFi"
   output-dir: docs
-
+  render:
+    - "*.qmd"
+    - "!code/"
+    - "!data/"
+    - "!output"
 website:
-  title: "myproj"
+  title: "Splicing Fidelity - SpliFi"
   navbar:
     left: 
       - href: index.qmd
