@@ -15,6 +15,10 @@ website:
         text: Home
       - href: analysis/index.qmd
         text: Analysis
+      - href: slides/index.qmd
+        text: Slides
+      - href: https://cdai.notion.site/Notes-0e18d7ec33cb44fc975cb9e139aa784b
+        text: Notion
       - about.qmd
     logo: assets/logo.png
     background: "dark"
