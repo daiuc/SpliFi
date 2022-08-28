@@ -1,10 +1,10 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "SpliFi: Splicing Fedility",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
     "section": "",
-    "text": "Snakemake\n\nall snakemake related pipeline scripts and data/results are under code"
+    "text": "About this site."
   },
   {
     "objectID": "analysis/analysis1.html",
@@ -21,17 +21,17 @@
     "text": "Running Code\nWhen you click the Render button a document will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n\nCode\n1 + 5\n\n\n[1] 6\n\n\nYou can add options to executable code like this\n\n\n[1] 4\n\n\nThe echo: false option disables the printing of code (only output is displayed)."
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site"
-  },
-  {
     "objectID": "analysis/index.html",
     "href": "analysis/index.html",
     "title": "Splicing Fidelity - SpliFi",
     "section": "",
     "text": "First analysis: link"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "SpliFi: Splicing Fedility",
+    "section": "",
+    "text": "Snakemake\n\nall snakemake related pipeline scripts and data/results are under code"
   }
 ]
