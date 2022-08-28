@@ -1,0 +1,15 @@
+---
+title: "Home"
+execute:
+  freeze: auto # re-render only when source changes
+---
+
+### Publish to github page
+
+- source `qmd` files in `analysis`
+- `render` will transfer html files automatically to `docs`
+- use `*.qmd`, not html files when linking pages to ensure automatic conversion to both html and pdf
+
+### Snakemake
+
+- all snakemake related pipeline scripts and data/results are under `code`

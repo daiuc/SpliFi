@@ -1,0 +1,32 @@
+project:
+  type: "website"
+  title: "myproj"
+  output-dir: docs
+
+website:
+  title: "myproj"
+  navbar:
+    left: 
+      - href: index.qmd
+        text: Home
+      - href: analysis/index.qmd
+        text: Analysis
+      - about.qmd
+    logo: assets/logo.png
+    background: "dark"
+    search: true
+      # - menu:
+      #   - href: analysis/analysis1.qmd
+      #     text: analysis
+  # open-graph: true
+  # twitter-card: 
+  #   title: twitter
+  #   site: "@chaodai"
+  # comments: 
+  #   hypothesis:
+  #     theme: classic
+  #     openSidebar: false
+format:
+  html:
+    theme: sandstone
+    css: styles.css
