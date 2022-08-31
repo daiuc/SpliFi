@@ -24,14 +24,14 @@ rule test1:
     the way I did this. there are several steps and I could have made an error
 
     '''
-    input: 'resources/noisy_splicing_code/test.junclist.txt'
+    input: 'resources/test.junclist.txt'
     output: touch('results/noisy/test.done') 
     params:
         out_prefix = 'results/noisy',
-        intron_class = 'resources/noisy_splicing_code/intron_class.txt.gz'
+        intron_class = 'resources/intron_class.txt.gz'
     shell:
         '''
-        python workflow/scripts/leafcutter_cluster_regtools_noisy_YIL.py \
+        python2 workflow/scripts/leafcutter_cluster_regtools_noisy_YIL.py \
             --juncfiles {input} \
             --outprefix {params.out_prefix} \
             --minclureads 10 \
@@ -40,6 +40,6 @@ rule test1:
             --includeconst `# include constitutive introns` \
             --noise {params.intron_class} \
             --rundir {params.out_prefix} \
-            --cluster full_clusters_refined.reformat \
             --offset 1
+            #--cluster full_clusters_refined.reformat \
         '''

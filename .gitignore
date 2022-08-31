@@ -9,6 +9,7 @@
 _site
 _site/**
 /.quarto/
+.vscode/
 analysis/figure
 analysis/*png
 analysis/*html
