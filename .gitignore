@@ -17,3 +17,4 @@ analysis/*_cache
 analysis/site_libs
 **test*
 **tmp*
+**/.ipynb_checkpoints
