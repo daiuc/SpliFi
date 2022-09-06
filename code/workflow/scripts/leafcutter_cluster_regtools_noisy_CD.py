@@ -389,14 +389,14 @@ def addlowusage(options):
     
 
     '''
-    
+
     global chromLst
 
-    
+    sys.stderr.write("Add low usage introns...\n")
+
     outPrefix = options.outprefix
     rundir = options.rundir
     pooled = f"{rundir}/{outPrefix}_pooled"
-
     minclureads = int(options.minclureads)
     minreads = int(options.minreads)
 
@@ -405,51 +405,57 @@ def addlowusage(options):
     else:
         refined_cluster = options.cluster
 
-    outFile = f"{rundir}/{outPrefix}_refined_noisy"
-    outFile_lowusageintrons = f"{rundir}/{outPrefix}_lowusage_introns"
+    outFile = f"{rundir}/{outPrefix}_refined_noisy" # out file that includes noisy introns
+    outFile_lowusageintrons = f"{rundir}/{outPrefix}_lowusage_introns" # out file for lowusage introns
 
     fout = open(outFile,'w')
     fout_lowusage = open(outFile_lowusageintrons,'w')
     
-    exons5,exons3, cluExons = {}, {}, {}
-    cluN = 0
 
+    # get 5' sites, 5' sites, and clusters of introns from refined file
+    exons5,exons3, cluExons = {}, {}, {}
+    cluN = 0 # number of clusters
     for ln in open(refined_cluster):
         chrom = ln.split()[0]
         cluN += 1
-        cluExons[(chrom,cluN)] = []
+        cluExons[(chrom,cluN)] = [] # keys are (chrom, cluster_number)
         for exon in ln.split()[1:]:
-            A, B, count = exon.split(":")
+            A, B, count = exon.split(":") # start, end, reads
             if chrom not in exons5:
                 exons5[chrom] = {}
                 exons3[chrom] = {}
-            exons5[chrom][int(A)] = (chrom,cluN)
-            exons3[chrom][int(B)] = (chrom,cluN)
-            cluExons[(chrom,cluN)].append(exon)
+            exons5[chrom][int(A)] = (chrom,cluN) # 5' sites, key: (chrom, start), value: (chrom, cluster_ID)
+            exons3[chrom][int(B)] = (chrom,cluN) # 3' sites, key: (chrom, end), value: (chrom, cluster_ID)
+            cluExons[(chrom,cluN)].append(exon) # introns, key: (chrom, clusterID), value: ['start:end:reads']
+
     
+    # this for loop essentially add back clusters stored in the pooled junc file into
+    # introns from the refined junc file list. While adding these back to all cluExons, 
+    # they are also added back to lowusage_intron
     lowusage_intron = {}
-    test = ""
-    
-    for ln in open(pooled):
-        #print "!", ln
+    for ln in open(pooled): # read lines in pooled junc file
+
         clu = []
         totN = 0
         chrom = ln.split()[0]
-	#print chrom
-        if chrom in exons5:
-        
-	    for exon in ln.split()[1:]:
-                A, B, N = exon.split(":")
-                
-                if int(A) in exons5[chrom]:
-                    clu = exons5[chrom][int(A)]
+
+        if chrom in exons5: # ensure chrom is in exons5 level-1 keys
+
+            for exon in ln.split()[1:]:
+                A, B, N = exon.split(":") # start, end, reads
+
+                # add in exons that are in pooled file but not in refined file
+                # add them to lowusage_intron. 
+                if int(A) in exons5[chrom]: # ensure 5' site is in exons5
+                    clu = exons5[chrom][int(A)] # get the cluster: [(chrom, clusterID)]
                     if exon not in cluExons[clu]:
-                        cluExons[clu].append(exon)
+                        cluExons[clu].append(exon) # add in the exon (from pooled) if it's not in refined
                         if clu not in lowusage_intron:
                             lowusage_intron[clu] = []
-                        lowusage_intron[clu].append(exon)
-
-                elif int(B) in exons3[chrom]:
+                        lowusage_intron[clu].append(exon) # add this exon (from pooled) to lowusage_intron
+                        
+                # do the same as above, but using exons3 dict
+                elif int(B) in exons3[chrom]: # ensure 3' site is in exons3
                     clu = exons3[chrom][int(B)]
                     if exon not in cluExons[clu]:
                         cluExons[clu].append(exon)
@@ -460,38 +466,36 @@ def addlowusage(options):
                 else:# int(A) not in exons5[chrom] and int(B) not in exons3[chrom]:
                     if int(N) > minreads:
                         cluN += 1
-                        cluExons[(chrom, cluN)] = [exon]
-
-    ks = lowusage_intron.keys()
-    ks.sort()
+                        cluExons[(chrom, cluN)] = [exon] # why are they not added to lowusage_intron?
     
-    for clu in ks:
+    # write low usage introns
+    ks = sorted(lowusage_intron.keys())
+    for clu in ks: 
         fout_lowusage.write(clu[0] + " " + " ".join(lowusage_intron[clu])+'\n')
     fout_lowusage.close()
 
-
-    cluLst = cluExons.keys()
-    cluLst.sort()
-    
+    # write all introns
+    cluLst = sorted(cluExons.keys())
     for clu in cluLst:
-        if not options.const:
-            if len(cluExons[clu]) == 1: continue
+        if not options.const: # if -C flag not set, do not write constitutive introns
+            if len(cluExons[clu]) == 1: continue # skip write out if only 1 intron in cluster, aka, constitutive
 
+        # only write introns if minimum cluster reads criteria is met
         if sum([int(ex.split(":")[-1]) for ex in cluExons[clu]]) < minclureads:
             continue
         chrom = clu[0]
-        buf = '%s' % chrom
+        buf = f'{chrom}'
         for ex in cluExons[clu]:
             buf += " " + ex
         fout.write(buf+'\n')
     fout.close()
 
 
-
 def main(options, libl):
     if options.cluster == None:
         pool_junc_reads(libl, options)
         refine_clusters(options)
+        addlowusage(options)
 
 
 if __name__ == "__main__":
