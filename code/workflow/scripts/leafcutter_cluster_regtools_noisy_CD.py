@@ -318,15 +318,13 @@ def refine_cluster(clu, cutoff, readcutoff):
                 return refine_cluster([(x, dic[x]) for x in A[0]], cutoff, readcutoff)
             else:
                 return [[(x, dic[x]) for x in A[0]]]
-        #else:
-        #    return []
     
     NCs = [] # As in N Clusters, here A has more than 1 clusters of introns
     for c in A: 
         if len(c) > 1: # c has more than 1 introns
             NC = refine_cluster([(x, dic[x]) for x in c], cutoff, readcutoff)
             NCs += NC
-    #print "return", NCs
+    
     return NCs 
 
 
@@ -378,15 +376,26 @@ def refine_clusters(options):
     fout.close()
 
 
-# NOTE @ 22/9/5: still working on the addlowusage function
+
 def addlowusage(options):
-    '''
+    '''Add low usage introns to refined clusters
     
     Parameters:
     -----------
     options : argparse object
         pass in command options
     
+
+    Returns:
+    --------
+    return : null
+        no returns. Using written files instead.
+
+    Side-effects:
+    ------------
+        written files:
+            - [out_prefix]_lowusage_introns : file stores low usage introns
+            - [out_prefix]_refined_noisy: file stores all usage introns
 
     '''
 
@@ -490,6 +499,169 @@ def addlowusage(options):
         fout.write(buf+'\n')
     fout.close()
 
+# NOTE @ 22/9/6: still working on this function
+def sort_junctions(libl, options):
+    '''Sort junctions
+
+    Parameters:
+    -----------
+        libl : str
+            A list of junction files
+        options: argparse object
+            Attributes store command line options
+    
+    Returns:
+    --------
+
+
+    
+    '''
+    
+    global chromLst
+
+
+    noisy_annotation = options.noiseclass
+    outPrefix = options.outprefix
+    rundir = options.rundir
+    checkchrom = options.checkchrom
+
+    if options.cluster == None:
+        refined_cluster = "%s/%s_refined_noisy"%(rundir,outPrefix)
+        sys.stderr.write("Using %s as refined cluster...\n"%refined_cluster)
+    else:
+        refined_cluster = options.cluster
+
+    runName = "%s/%s"%(rundir, outPrefix)
+
+    exons, cluExons = {}, {}
+    cluN = 0
+
+    for ln in open(refined_cluster):
+        chrom = ln.split()[0]
+        cluN += 1
+        for exon in ln.split()[1:]:
+            A, B, count = exon.split(":")
+            
+            if chrom not in exons:
+                exons[chrom] = {}
+            if (int(A),int(B)) not in exons[chrom]:
+                exons[chrom][(int(A),int(B))] = [cluN]
+            else:
+                exons[chrom][(int(A),int(B))].append(cluN)
+            if cluN not in cluExons:
+                cluExons[cluN] = []
+            cluExons[cluN].append((chrom, A, B))
+
+    merges = {}
+    for ll in libl:
+        lib=ll.rstrip()
+        if not os.path.isfile(lib):
+            continue
+        libN = lib
+        if libN not in merges:
+            merges[libN] = []
+        merges[libN].append(lib)
+
+    fout_runlibs = file(runName+"_sortedlibs",'w')
+
+    for libN in merges:
+        libName = "%s/%s"%(rundir,libN.split('/')[-1])
+        by_chrom = {}
+        foutName = libName+'.%s.sorted.gz'%(runName.split("/")[-1])
+
+        fout_runlibs.write(foutName+'\n')
+
+        if options.verbose:   
+            sys.stderr.write("Sorting %s..\n"%libN)
+        if len(merges[libN]) > 1:
+            if options.verbose:   
+                sys.stderr.write("merging %s...\n"%(" ".join(merges[libN])))
+        else:
+            pass
+        fout = gzip.open(foutName,'w')
+
+        fout.write("chrom %s\n"%libN.split("/")[-1].split(".junc")[0])
+
+        
+        for lib in merges[libN]:
+            if ".gz" in lib: F = gzip.open(lib)
+            else: F = open(lib)
+
+            for ln in F:
+
+                lnsplit=ln.split()
+
+                if len(lnsplit)<6:
+                    sys.stderr.write("Error in %s \n" % lib)
+                    continue
+
+                if len(lnsplit) == 12:
+                    chrom, A, B, dot, counts, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
+                    if int(blockCount) > 2:
+                        print(ln, "ignored...")
+                        continue
+                    Aoff, Boff = blockSize.split(",")[:2]
+                    A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
+
+                elif len(lnsplit) == 6:
+                    # old leafcutter junctions                                                                                                                       
+                    chrom, A, B, dot, counts, strand = lnsplit
+                    A, B = int(A), int(B)
+                    
+                A, B = int(A), int(B) + int(options.offset)
+            
+                chrom = (chrom,strand)
+                if chrom not in by_chrom:
+                    by_chrom[chrom] = {}
+                intron = (A, B)
+                
+                if intron in by_chrom[chrom]:
+                    by_chrom[chrom][intron] += int(counts)
+                else:
+                    by_chrom[chrom][intron] = int(counts)
+                
+        for clu in cluExons:
+            buf = []
+            ks = cluExons[clu]
+            ks.sort()
+            #print clu, ks
+            tot = 0
+            usages = []
+            for exon in ks:
+                chrom, start, end = exon
+                chrom = tuple(chrom.split(":"))
+                start, end = int(start), int(end)
+
+                if chrom not in by_chrom:
+                    pass
+
+                elif (start,end) in by_chrom[chrom]:
+                    tot += by_chrom[chrom][(start,end)]
+
+            for exon in ks:
+                chrom, start, end = exon
+                start, end = int(start), int(end)
+                chrom = tuple(chrom.split(":"))
+                chromID, strand = chrom
+
+                intron = chromID, start, end+1, strand
+
+                if chrom not in by_chrom:
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu, strand, tot))
+                elif (start,end) in by_chrom[chrom]:
+                    buf.append("%s:%d:%d:clu_%d_%s %d/%d\n"%(chromID,start, end, clu,strand, by_chrom[chrom][(start,end)], tot))
+                else:
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
+        
+            fout.write("".join(buf))
+        fout.close()
+    fout_runlibs.close()
+
+
+
+
+
+#-------------------------------------------
 
 def main(options, libl):
     if options.cluster == None:
