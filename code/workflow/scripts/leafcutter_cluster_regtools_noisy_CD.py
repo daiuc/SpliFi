@@ -42,20 +42,26 @@ __status__    = "Development"
 __version__   =  "0.1"
 
 
-def natural_sort(l):
-    '''Natural sort, like bash `sort -V`
+def natural_sort(l): 
+    '''Natural sort a list of string/tuple, similar to bash `sort -V`
     
+    Parameters:
+    -----------
     l : list
-        a list of strings
+        l can be a list of string or numerics; or a list of varing length of tuples
     
-    return:
-        alphanumerically sorted list
-    
+    Returns:
+    --------
+    return : a sorted list
     '''
     import re
+    
+    untuple = lambda tup: ''.join([str(e) for e in tup])
     convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', untuple(key))]
     return sorted(l, key=alphanum_key)
+
+
 
 def cluster_intervals(E):
     '''Clusters intervals together
@@ -72,7 +78,7 @@ def cluster_intervals(E):
     cluster: list
         A list of tuples of introns
     '''
-    E.sort()
+    E = natural_sort(E)
     current = E[0]
     Eclusters, cluster = [], []
 
@@ -450,15 +456,15 @@ def addlowusage(options):
             if chrom not in exons5:
                 exons5[chrom] = {}
                 exons3[chrom] = {}
-            exons5[chrom][int(A)] = (chrom,cluN) # 5' sites, key: (chrom, start), value: (chrom, cluster_ID)
-            exons3[chrom][int(B)] = (chrom,cluN) # 3' sites, key: (chrom, end), value: (chrom, cluster_ID)
-            cluExons[(chrom,cluN)].append(exon) # introns, key: (chrom, clusterID), value: ['start:end:reads']
+            exons5[chrom][int(A)] = (chrom,cluN) # 5' sites, { k=(chrom, start), v=(chrom, cluster_ID) }
+            exons3[chrom][int(B)] = (chrom,cluN) # 3' sites, { k=(chrom, start), v=(chrom, cluster_ID) }
+            cluExons[(chrom,cluN)].append(exon) # introns, { k=(chrom, clusterID), v=['start:end:reads'] }
 
     
     # this for loop essentially add back clusters stored in the pooled junc file into
     # introns from the refined junc file list. While adding these back to all cluExons, 
     # they are also added back to lowusage_intron
-    lowusage_intron = {}
+    lowusage_intron = {} # { k=(chrom, clusterID), v=['start:end:reads'...]}
     for ln in open(pooled): # read lines in pooled junc file
 
         clu = []
@@ -473,8 +479,8 @@ def addlowusage(options):
                 # add in exons that are in pooled file but not in refined file
                 # add them to lowusage_intron. 
                 if int(A) in exons5[chrom]: # ensure 5' site is in exons5
-                    clu = exons5[chrom][int(A)] # get the cluster: [(chrom, clusterID)]
-                    if exon not in cluExons[clu]:
+                    clu = exons5[chrom][int(A)] # get the cluster: (chrom, clusterID), key for cluExons
+                    if exon not in cluExons[clu]: # e.g. exon='start:end:reads'
                         cluExons[clu].append(exon) # add in the exon (from pooled) if it's not in refined
                         if clu not in lowusage_intron:
                             lowusage_intron[clu] = []
@@ -495,13 +501,13 @@ def addlowusage(options):
                         cluExons[(chrom, cluN)] = [exon] # why are they not added to lowusage_intron?
     
     # write low usage introns
-    ks = sorted(lowusage_intron.keys())
+    ks = natural_sort(lowusage_intron.keys())
     for clu in ks: 
         fout_lowusage.write(clu[0] + " " + " ".join(lowusage_intron[clu])+'\n')
     fout_lowusage.close()
 
     # write all introns
-    cluLst = sorted(cluExons.keys())
+    cluLst = natural_sort(cluExons.keys())
     for clu in cluLst:
         if not options.const: # if -C flag not set, do not write constitutive introns
             if len(cluExons[clu]) == 1: continue # skip write out if only 1 intron in cluster, aka, constitutive
@@ -516,7 +522,6 @@ def addlowusage(options):
         fout.write(buf+'\n')
     fout.close()
 
-# NOTE @ 22/9/6: still working on this function
 def sort_junctions(libl, options):
     '''Sort junctions by cluster
 
@@ -539,9 +544,7 @@ def sort_junctions(libl, options):
         text file : '{rundir}/{outPrefix}_sortedLibs'
             store junfile names that are processed/sorted
         text file:  '{rundir}/{outPrefix}...sorted.gz'
-            a series of sorted input junction files, sorted. Note at the moment
-        chromosomes are not natural-sorted! Need to revise `refined_clusters` 
-        function.        
+            a series of sorted input junction files, sorted. 
     '''
     
     global chromLst
@@ -597,7 +600,8 @@ def sort_junctions(libl, options):
     for libN in merges: 
         libName = f"{rundir}/{libN.split('/')[-1]}" # e.g. test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz
         by_chrom = {}
-        foutName = libName + f'.{runName.split("/")[-1]}.sorted.gz' # e.g. 'test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz.out.sorted.gz'
+        foutName = libName.split('.junc')[0] + \
+            f'.{runName.split("/")[-1]}.junc.sorted.gz' # e.g. 'test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz.out.sorted.gz'
 
         # write to description file storing the names of sorted junc files
         fout_runlibs.write(foutName + '\n') # e.g. 'test/run/out_sortedlibs'
@@ -609,7 +613,7 @@ def sort_junctions(libl, options):
                 sys.stderr.write(f"merging {' '.join(merges[libN])}...\n")
         else:
             pass
-        fout = gzip.open(foutName,'w') # e.g. 'test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz.out.sorted.gz'
+        fout = gzip.open(foutName,'wt') # e.g. 'test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz.out.sorted.gz'
 
         ### Process and write junction files
         
@@ -701,6 +705,63 @@ def sort_junctions(libl, options):
     fout_runlibs.close()
 
 
+# NOTE @ 22/9/11: still working on this function
+def merge_junctions(options):    
+    '''Merge junctions
+    
+    Parameters:
+    -----------
+
+
+    returns:
+    ---------
+
+
+
+    '''
+
+    outPrefix = options.outprefix
+    rundir = options.rundir
+    
+    fnameout = "%s/%s"%(rundir,outPrefix)
+
+    flist = "%s/%s_sortedlibs"%(rundir, outPrefix)
+
+    lsts = []
+    for ln in open(flist):
+        lsts.append(ln.strip())
+    if options.verbose:
+        sys.stderr.write("merging %d junction files...\n"%(len(lsts)))
+    
+    # Change 300 if max open file is < 300
+    N = min([300, max([100, int(len(lsts)**(0.5))])]) # why?
+
+    tmpfiles = []
+    while len(lsts) > 1:    
+        clst = []
+        
+        for i in range(0,(len(lsts)/N)+1): 
+            lst = lsts[N*i:N*(i+1)]
+            if len(lst) > 0:
+                clst.append(lst)
+        lsts = []
+    
+        for lst in clst:
+            if len(lst) == 0: continue
+            tmpfile = tempfile.mktemp()
+            os.mkdir(tmpfile)
+            foutname = tmpfile+"/tmpmerge.gz"
+            fout = gzip.open(foutname,'w')
+            
+            merge_files(lst, fout, options)
+            lsts.append(foutname)
+            tmpfiles.append(foutname)
+            fout.close()
+            
+    if not options.const:
+        shutil.move(lsts[0], fnameout+"_perind.counts.gz")
+    else:
+        shutil.move(lsts[0], fnameout+"_perind.constcounts.gz")
 
 
 
@@ -711,6 +772,8 @@ def main(options, libl):
         pool_junc_reads(libl, options)
         refine_clusters(options)
         addlowusage(options)
+    
+    sort_junctions(libl, options)
 
 
 if __name__ == "__main__":
