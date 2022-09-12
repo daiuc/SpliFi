@@ -27,6 +27,9 @@ Procedure sequence:
     6. get_numers
     7. annotate_noisy
 
+NOTE: currently there is a bug, likely at step 4  - sort_junctions. Problem
+is all numerators are 0 in refined output.
+
 '''
 
 import sys
@@ -705,7 +708,6 @@ def sort_junctions(libl, options):
     fout_runlibs.close()
 
 
-# NOTE @ 22/9/11: still working on this function
 def merge_files(fnames, fout, options):
     '''Merge a list of files into a gzip file
 
@@ -835,6 +837,49 @@ def merge_junctions(options):
         shutil.move(lsts[0], fnameout+"_perind.constcounts.gz") # why only 1 file?
 
 
+def get_numers(options):
+    '''Get numerators from count table
+
+    Parameters:
+    -----------
+    options : argparse object
+
+    Returns:
+    --------
+    return : null
+        No returns. Use side-effect to write out file.
+
+    Side-effects:
+    -------------
+        Take in count tables, extract numerators for each sample, write out to file.
+
+    '''
+
+    outPrefix = options.outprefix
+    rundir = options.rundir
+
+    if not options.const:                                                                                                                                                                                                                                                                                                                           
+        fname = f"{rundir}/{outPrefix}_perind.counts.gz"
+        fnameout = f"{rundir}/{outPrefix}_perind_numers.counts.gz"
+    else:
+        fname = f"{rundir}/{outPrefix}_perind.constcounts.gz"
+        fnameout = f"{rundir}/{outPrefix}_perind_numers.constcounts.gz"
+    
+    input_file=gzip.open(fname, 'r')
+    fout = gzip.open(fnameout,'wt')
+    first_line=True
+    
+    for l in input_file:
+        if first_line:
+            fout.write(" ".join(l.decode().strip().split(" ")[1:])+'\n') # print the sample names
+            first_line=False
+        else:
+            l=l.decode().strip()
+            words=l.split(" ") # fractions
+            fout.write(words[0]+ " "+ " ".join( [ g.split("/")[0] for g in words[1:] ] ) +'\n') # write intron and numerators
+
+    input_file.close()
+    fout.close()
 
 
 #-------------------------------------------
@@ -847,6 +892,7 @@ def main(options, libl):
     
     sort_junctions(libl, options)
     merge_junctions(options)
+    get_numers(options)
 
 if __name__ == "__main__":
 
