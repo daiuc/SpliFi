@@ -39,7 +39,7 @@ import shutil
 __author__    = "Yang Li, Chao Dai"
 __email__     = "chaodai@uchicago.edu"
 __status__    = "Development"
-__version__   =  "0.1"
+__version__   =  "v0.0.1"
 
 
 def natural_sort(l): 
@@ -706,16 +706,84 @@ def sort_junctions(libl, options):
 
 
 # NOTE @ 22/9/11: still working on this function
+def merge_files(fnames, fout, options):
+    '''Merge a list of files into a gzip file
+
+    Parameters:
+    -----------
+    fnames : list
+        list of file path. This is a list of files within a single batch
+    fout : a single opened file io
+        specifically, a gzip.open('w') io object
+    options : 
+        argparse object
+
+    Returns:
+    --------
+        return : no returns. Use side-effects.
+
+    Side-effects:
+    -------------
+        After merging all files from `fnames` list, write out into a gzipped
+    file io, as opened by `fout`.
+    '''
+
+    fopen = []
+    for fname in fnames: # each file to be merged
+        if fname[-3:] == ".gz":
+            fopen.append(gzip.open(fname))
+        else:
+            fopen.append(open(fname))
+
+    finished = False
+    N = 0
+    while not finished: # cycle through files in batch
+        N += 1
+        if N % 50000 == 0: 
+            sys.stderr.write(".")
+        buf = []
+        for f in fopen: # each opened file
+            ln = f.readline().decode().split() # read 1 line
+            if len(ln) == 0: # end of line = finish
+                finished = True
+                break
+            chrom = ln[0] # e.g. "chrom" or "chr1:825552:829002:clu_1_+"
+            data = ln[1:] # e.g. "GTEX-1117F-0626-SM-5N9CS.leafcutter" or "0/0"
+            if len(buf) == 0:
+                buf.append(chrom)
+            buf += data # e.g. ['chrom', 'GTEX-111VG-0526-SM-5N9BW.leafcutter', 'GTEX-1117F-0626-SM-5N9CS.leafcutter'] for first lines, or ['chr1:825552:829002:clu_1_+', '0/0', '0/0'] for 2+ lines
+            # each file the exact same chromosome coordinates, effectively we are collecting counts into columns 2 and after
+        
+        if len(buf) > 0:
+            if buf[0] == "chrom":
+                if options.verbose:
+                    sys.stderr.write(f"merging {len(buf)-1} files")
+            fout.write(" ".join(buf)+'\n') # combining sample counts into columns
+        else:
+            break
+
+    sys.stderr.write(" done.\n")
+    for fin in fopen:
+        fin.close()
+
+
+
 def merge_junctions(options):    
     '''Merge junctions
     
     Parameters:
     -----------
+    options : argparse object
 
-
-    returns:
+    Returns:
     ---------
+    return : null
+        No returns. Use side effect.
 
+    Side-effects:
+    -------------
+        Collect previously sorted junction files. Merge individual files into
+    batches of N (N<=100) files. Merged files are stored as temp files.
 
 
     '''
@@ -723,45 +791,49 @@ def merge_junctions(options):
     outPrefix = options.outprefix
     rundir = options.rundir
     
-    fnameout = "%s/%s"%(rundir,outPrefix)
+    fnameout = f"{rundir}/{outPrefix}"
 
-    flist = "%s/%s_sortedlibs"%(rundir, outPrefix)
+    flist = f"{rundir}/{outPrefix}_sortedlibs" # sorted junc file list
 
-    lsts = []
+    lsts = [] # list of junc file path
     for ln in open(flist):
         lsts.append(ln.strip())
     if options.verbose:
-        sys.stderr.write("merging %d junction files...\n"%(len(lsts)))
+        sys.stderr.write(f"merging {len(lsts)} junction files...\n")
     
     # Change 300 if max open file is < 300
-    N = min([300, max([100, int(len(lsts)**(0.5))])]) # why?
+    N = min([300, max([100, int(len(lsts)**(0.5))])]) # why? 
 
     tmpfiles = []
     while len(lsts) > 1:    
-        clst = []
         
-        for i in range(0,(len(lsts)/N)+1): 
+        # convert lsts (list of file paths) to clst (list of lists)
+        # each sublist is a batch of upto 100 files.
+        clst = []
+        for i in range(0, int(len(lsts)/N)+1): # merge in batches of max(100, len(lsts))
             lst = lsts[N*i:N*(i+1)]
             if len(lst) > 0:
                 clst.append(lst)
-        lsts = []
+        lsts = [] # clear initial file list, now repurposed to store merged file names (temp)
     
-        for lst in clst:
-            if len(lst) == 0: continue
+        for lst in clst: # now run in batches
+            if len(lst) == 0: 
+                continue
             tmpfile = tempfile.mktemp()
             os.mkdir(tmpfile)
             foutname = tmpfile+"/tmpmerge.gz"
-            fout = gzip.open(foutname,'w')
+            fout = gzip.open(foutname,'wt') # merged file as temp
             
-            merge_files(lst, fout, options)
-            lsts.append(foutname)
-            tmpfiles.append(foutname)
+            merge_files(lst, fout, options) # merge 1 batch of N (N<=100) files to 1 temp file
+            lsts.append(foutname) # record merged file name (temp)
+            tmpfiles.append(foutname) # why do we need both lsts and tempfiles here?
             fout.close()
             
     if not options.const:
-        shutil.move(lsts[0], fnameout+"_perind.counts.gz")
+        shutil.move(lsts[0], fnameout+"_perind.counts.gz") # why only 1 file?
     else:
-        shutil.move(lsts[0], fnameout+"_perind.constcounts.gz")
+        shutil.move(lsts[0], fnameout+"_perind.constcounts.gz") # why only 1 file?
+
 
 
 
@@ -774,7 +846,7 @@ def main(options, libl):
         addlowusage(options)
     
     sort_junctions(libl, options)
-
+    merge_junctions(options)
 
 if __name__ == "__main__":
 
