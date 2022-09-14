@@ -17,4 +17,6 @@
 !.travis.yml
 !**snakemake.sbatch
 !**cluster-config.json
+!my-temp-data/**/*
+!my-temp-data
 *.swp
