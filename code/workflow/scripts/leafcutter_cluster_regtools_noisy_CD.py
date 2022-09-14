@@ -28,7 +28,10 @@ Procedure sequence:
     7. annotate_noisy
 
 NOTE: currently there is a bug, likely at step 4  - sort_junctions. Problem
-is all numerators are 0 in refined output.
+is all numerators are 0 in refined output. 
+
+NOTE: 
+    * Minimum version requirement - python v3.6
 
 '''
 
@@ -65,7 +68,6 @@ def natural_sort(l):
     return sorted(l, key=alphanum_key)
 
 
-
 def cluster_intervals(E):
     '''Clusters intervals together
     
@@ -100,17 +102,23 @@ def cluster_intervals(E):
         
         Eclusters.append(cluster)
 
-    
     return Eclusters, E
 
 
 def overlaps(A,B):
     '''Checks if A and B overlaps
     
+    Parameters:
+    -----------
     A : tuple
         start and end coordinates of 1 intron
     B : tuple
         start and end coordinates of another intron
+    
+    Returns:
+    --------
+    return : boolean
+        Indicates whether genomic ranges of A and B overlap or not.
     '''
 
     if A[1] < B[0] or B[1] < A[0]:
@@ -128,15 +136,17 @@ def pool_junc_reads(flist, options):
     options : argparse object
         Passed arguments
 
-    -------
+    Returns:
+    --------
     return
         No returns. Use side effects.
 
-    ------
-    Side Effects:
-        write introns and counts by clusters. 
-        format: [chrom]:[strand] [start]:[end]:[reads]
-                e.g. chr17:+ 410646:413144:3 410646:413147:62
+
+    Side-effects:
+    -------------
+    write introns and counts by clusters. 
+    format: [chrom]:[strand] [start]:[end]:[reads]
+            e.g. chr17:+ 410646:413144:3 410646:413147:62
     '''
 
     global chromLst
@@ -229,7 +239,7 @@ def pool_junc_reads(flist, options):
 
 
 def refine_linked(clusters):
-    '''re-cluster introns into clusters of linked introns
+    '''Re-cluster introns into clusters of linked introns
 
     Linked introns are introns that share either 5' or 3' splice site
     
@@ -415,7 +425,7 @@ def addlowusage(options):
     Returns:
     --------
     return : null
-        no returns. Using written files instead.
+        no returns. Write files in side-effects.
 
     Side-effects:
     ------------
@@ -727,7 +737,7 @@ def merge_files(fnames, fout, options):
     Side-effects:
     -------------
         After merging all files from `fnames` list, write out into a gzipped
-    file io, as opened by `fout`.
+    file io, as opened in `fout`.
     '''
 
     fopen = []
@@ -767,7 +777,6 @@ def merge_files(fnames, fout, options):
     sys.stderr.write(" done.\n")
     for fin in fopen:
         fin.close()
-
 
 
 def merge_junctions(options):    
@@ -885,6 +894,7 @@ def get_numers(options):
 #-------------------------------------------
 
 def main(options, libl):
+    
     if options.cluster == None:
         pool_junc_reads(libl, options)
         refine_clusters(options)
@@ -893,6 +903,7 @@ def main(options, libl):
     sort_junctions(libl, options)
     merge_junctions(options)
     get_numers(options)
+
 
 if __name__ == "__main__":
 
@@ -964,6 +975,7 @@ if __name__ == "__main__":
             exit(0)
         libl.append(junc)
 
-    chromLst = [f"chr{x}" for x in range(1,23)]+['chrX','chrY']+[f"{x}" for x in range(1,23)]+['X','Y']
+    chromLst = [f"chr{x}" for x in range(1,23)]+['chrX','chrY'] + \
+        [f"{x}" for x in range(1,23)]+['X','Y']
 
     main(options, libl)
