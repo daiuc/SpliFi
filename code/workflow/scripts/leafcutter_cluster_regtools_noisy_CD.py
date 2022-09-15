@@ -571,6 +571,7 @@ def addlowusage(options):
         fout.write(buf+'\n')
     fout.close()
 
+
 def sort_junctions(libl, options):
     '''Sort junctions by cluster
 
@@ -605,22 +606,23 @@ def sort_junctions(libl, options):
     checkchrom = options.checkchrom
 
     if options.cluster == None: # if not providing refined clusters externally
-        refined_cluster = f"{rundir}/{outPrefix}_refined_noisy" # use previous run result
+        refined_cluster = f"{rundir}/{outPrefix}_refined_noisy" # note refined noisy intron clusters
         sys.stderr.write(f"Using {refined_cluster} as refined cluster...\n")
     else:
         refined_cluster = options.cluster
 
     runName = f"{rundir}/{outPrefix}"
 
-    exons, cluExons = {}, {}
-    cluN = 0
-
-    # fill exons with 2-level nested dict:  { k=chrom : v={ k=(start, end) : v=clusterID } }
-    # fill cluExons with dict:  { k=clusterID : v=[(chrom, start, end)] }
+    # exons:  { k=chrom : v={ k=(start, end) : v=clusterID } }
+    # cluExons:  { k=clusterID : v=[(chrom, start, end)] }
+    exons, cluExons = {}, {} 
+    cluN = 0 # clusterID
+    
+    # fill in exons, cluExons dict from `*refined_noisy` intron cluster file
     for ln in open(refined_cluster): # e.g. ln = "chr10:+ 135203:179993:5 135302:179993:29"
-        chrom = ln.split()[0] # "chr10:+"
-        cluN += 1 # make clusterID
-        for exon in ln.split()[1:]: # "135203:179993:5 135302:179993:29"
+        chrom = ln.split()[0] # e.g. "chr10:+"
+        cluN += 1
+        for exon in ln.split()[1:]: # e.g. "135203:179993:5 135302:179993:29"
             A, B, count = exon.split(":")
             
             if chrom not in exons:
@@ -640,12 +642,12 @@ def sort_junctions(libl, options):
             continue
         libN = lib # junc file name
         if libN not in merges:
-            merges[libN] = [] # why use list, should be only one element
+            merges[libN] = [] # why use list, `libN` should always be one element
         merges[libN].append(lib)
 
-    fout_runlibs = open(runName+"_sortedlibs",'w')
+    fout_runlibs = open(runName+"_sortedlibs",'w') # file to store sorted junc file names
 
-    # loop each junc file
+    # loop each junc key, might have >1 junc files
     for libN in merges: 
         libName = f"{rundir}/{libN.split('/')[-1]}" # e.g. test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz
         by_chrom = {}
@@ -657,7 +659,8 @@ def sort_junctions(libl, options):
 
         if options.verbose:   
             sys.stderr.write(f"Sorting {libN}..\n")
-        if len(merges[libN]) > 1: # isn't it always a single file name in the list?
+        
+        if len(merges[libN]) > 1: # maybe unnecessary, since libN value is always a single file?
             if options.verbose:   
                 sys.stderr.write(f"merging {' '.join(merges[libN])}...\n")
         else:
@@ -670,8 +673,9 @@ def sort_junctions(libl, options):
         fout.write(f'chrom {libN.split("/")[-1].split(".junc")[0]}\n') # 'chrom GTEX-111VG-0526-SM-5N9BW.leafcutter\n'
         # works best when junc file has `.junc` in file name.
 
-        # construct dict by_chrom: { k=chrom : v={ k=(start,end) : v=reads } } from junc file
-        for lib in merges[libN]: # lib = 1 junc file
+        # for each junc file, construct cluster dict: 
+        # by_chrom { k=chrom : v={ k=(start, end) : v=reads } }
+        for lib in merges[libN]:
             if ".gz" in lib: 
                 F = gzip.open(lib)
             else: 
@@ -679,7 +683,7 @@ def sort_junctions(libl, options):
 
             for ln in F: # 1 line: e.g. "chr17\t81701131\t81701534\t.\t1\t+"
 
-                lnsplit=ln.split()
+                lnsplit = ln.decode().split()
 
                 if len(lnsplit) < 6:
                     sys.stderr.write(f"Error in {lib} \n")
@@ -710,32 +714,33 @@ def sort_junctions(libl, options):
                 else:
                     by_chrom[chrom][intron] = int(counts)
                 
-        # compute total cluster read counts, clusters are refined, reads are from junc file
-        for clu in cluExons: # e.g. cluExons: { k=cluID : v=[(chrom, start, end)...]} from refined clusters
+        # For each intron cluster, write fraction for each intron (one intron per line).
+        # Note clusters are from refined_noisy, while reads are from junc file
+        for clu in cluExons: # cluExons: { k=cluID : v=[(chrom, start, end)...]}
             buf = []
-            ks = cluExons[clu] # ks are NOT keys
-            ks.sort() # sort introns within cluster
+            ks = cluExons[clu] # ks: [(chrom, start, end), ..]
+            ks.sort() # no need to version sort within cluster
 
-            #print clu, ks
+            # Step 1: sum cluster level reads from each intron
             tot = 0 # total read counts per cluster
             usages = []
             for exon in ks:
                 chrom, start, end = exon
-                chrom = tuple(chrom.split(":")) # e.g. ('chr10', '+')
+                chrom = tuple(chrom.split(":")) # note tuple: ('chr3', '+')
                 start, end = int(start), int(end)
 
-                if chrom not in by_chrom:
+                if chrom not in by_chrom: # not in junc files
                     pass
 
-                elif (start,end) in by_chrom[chrom]:
-                    tot += by_chrom[chrom][(start,end)] # sum junc file reads for the cluster
+                elif (start, end) in by_chrom[chrom]:
+                    tot += by_chrom[chrom][(start,end)] # sum total cluster reads from junc introns
 
-            # for each intron, write intron usage fraction
+            # Step 2: append intron usage fraction to stream buffer
             for exon in ks:
                 chrom, start, end = exon
                 start, end = int(start), int(end)
                 chrom = tuple(chrom.split(":"))
-                chromID, strand = chrom
+                chromID, strand = chrom # chromID eg: 'chr3'
 
                 intron = chromID, start, end+1, strand # note converting to 1-based coordinates
 
@@ -746,7 +751,7 @@ def sort_junctions(libl, options):
                     # if refind exon is in junc file, write exon reads / cluster_total
                     buf.append(f"{chromID}:{start}:{end}:clu_{clu}_{strand} {by_chrom[chrom][(start,end)]}/{tot}\n")
                 else:
-                    # if the exon is not found in junc file, write 0/cluster_total
+                    # if refined exon is not found in junc file, write 0/cluster_total
                     buf.append(f"{chromID}:{start}:{end}:clu_{clu}_{strand} 0/{tot}\n")
         
             fout.write("".join(buf))
@@ -936,7 +941,7 @@ def main(options, libl):
         refine_clusters(options)
         addlowusage(options)
     
-    # sort_junctions(libl, options)
+    sort_junctions(libl, options)
     # merge_junctions(options)
     # get_numers(options)
 
