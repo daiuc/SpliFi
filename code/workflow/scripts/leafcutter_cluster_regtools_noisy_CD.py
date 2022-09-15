@@ -144,7 +144,7 @@ def pool_junc_reads(flist, options):
 
     Side-effects:
     -------------
-    write introns and counts by clusters. 
+    write introns and counts by clusters. Output file is NOT versions sorted.
     format: [chrom]:[strand] [start]:[end]:[reads]
             e.g. chr17:+ 410646:413144:3 410646:413147:62
     '''
@@ -158,11 +158,11 @@ def pool_junc_reads(flist, options):
     print(f"Max Intron Length: {maxIntronLen}")
     outFile = f"{rundir}/{outPrefix}_pooled"
     
-    # intron coordinates stored by chrom:strand
-    # 2 level keys:
-    #   level1 key: (chrom, strand)
-    #   level2 key: (intron_start, intron_end)
-    by_chrom = {}
+    if not os.path.exists(rundir):
+        os.mkdir(rundir)
+
+    # store introns in `by_chrom`, a nested dictionary 
+    by_chrom = {} # { k=(chrom, strand) : v={ k=(start, end) : v=reads } }
 
     for libl in flist:
         lib = libl.strip()
@@ -208,7 +208,8 @@ def pool_junc_reads(flist, options):
             if B-A > int(maxIntronLen): continue
             
             # sum up all the reads at the same junctions if junctions already exist
-            try: by_chrom[(chrom,strand)][(A,B)] = int(counts) + by_chrom[(chrom,strand)][(A,B)]                                                                  
+            try: by_chrom[(chrom,strand)][(A,B)] = int(counts) + \
+                    by_chrom[(chrom,strand)][(A,B)]                                                                  
             except:
                 try: by_chrom[(chrom,strand)][(A,B)] = int(counts) # when only 1 junction
                 except: by_chrom[(chrom,strand)] = {(A,B):int(counts)} # when only 1 junction
@@ -219,19 +220,19 @@ def pool_junc_reads(flist, options):
         sys.stderr.write("Parsing...\n")
     
         for chrom in by_chrom:
-            read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3] # a junction must have at least 3 reads
-            read_ks.sort()
+            read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3] # read-keys, require junction reads > 3
+            read_ks.sort() # sort read-keys: (start, end)
         
-            sys.stderr.write(f"{chrom[0]}:{chrom[1]}..")
+            sys.stderr.write(f"{chrom[0]}:{chrom[1]}..\n")
             
             if read_ks:
-                clu = cluster_intervals(read_ks)[0] # clusters of intervals
+                clu = cluster_intervals(read_ks)[0] # clusters of introns, [[(start, end),..],..]
                 
                 for cl in clu:
                     if len(cl) > 0: # 1 if cluster has more than one intron  
-                        buf = f'{chrom[0]}:{chrom[1]} '
+                        buf = f'{chrom[0]}:{chrom[1]} ' # chr:strand
                         for interval, count in [(x, by_chrom[chrom][x]) for x in cl]:
-                            buf += f"{interval[0]}:{interval[1]}" + f":{count}" + " "
+                            buf += f"{interval[0]}:{interval[1]}" + f":{count}" + " " # start:end:reads
                         fout.write(buf+'\n')
                         Ncluster += 1
                         
@@ -286,7 +287,7 @@ def refine_linked(clusters):
 
 
 def refine_cluster(clu, cutoff, readcutoff):
-    '''filter introns based on cutoffs
+    '''Filter introns based on cutoffs
 
     Parameters:
     -----------
@@ -304,11 +305,12 @@ def refine_cluster(clu, cutoff, readcutoff):
             - ratio < ratio_cutoff
             - OR reads of the intron < readcutoff
         3. re-cluster with remaining introns
-    
+
     Returns:
     --------
         return : list of list
         list of refined (filtered) clusters
+
     '''
     
     remove = []
@@ -328,7 +330,7 @@ def refine_cluster(clu, cutoff, readcutoff):
             reCLU = True # any intron not passing filters will enforce reCLU
 
     
-    if len(intervals) == 0: return []
+    if len(intervals) == 0: return [] # base case
     
     # Below makes sure that after trimming/filtering, the clusters are still good
     # afterwards - each clusters have linked introns that pass filters.
@@ -351,14 +353,14 @@ def refine_cluster(clu, cutoff, readcutoff):
     
         if len(rc) > 0:
             if reCLU: # recompute because ratio changed after removal of some introns
-                return refine_cluster([(x, dic[x]) for x in A[0]], cutoff, readcutoff)
+                return refine_cluster([(x, dic[x]) for x in A[0]], cutoff, readcutoff) # recursive
             else:
                 return [[(x, dic[x]) for x in A[0]]]
     
     NCs = [] # As in N Clusters, here A has more than 1 clusters of introns
     for c in A: 
         if len(c) > 1: # c has more than 1 introns
-            NC = refine_cluster([(x, dic[x]) for x in c], cutoff, readcutoff)
+            NC = refine_cluster([(x, dic[x]) for x in c], cutoff, readcutoff) # recursive
             NCs += NC
     
     return NCs 
@@ -366,6 +368,33 @@ def refine_cluster(clu, cutoff, readcutoff):
 
 
 def refine_clusters(options):
+    '''Refine clusters.
+    
+    Refine clusters such that kept clusters that are written to file meets
+    the following criteria:
+        * introns a linked (share either 5' or 3' splice site)
+        * minimum total cluster reads cutoff
+        * minimum intron reads cutoff
+        * minimum reads ratio per cluster cutoff
+    
+    However, if constitutive flag `const` is on, then non-linked introns
+    are also written out, and they do not subject to cluster ratio and 
+    cluster reads cutoff filters.
+
+    Parameters:
+    -----------
+        options : argparse object
+
+    Returns:
+    --------
+        return : no returns. Use side-effects
+
+    Side-effects:
+    -------------
+        write refined clusters to file - `*_refined`. Output file is NOT
+        version sorted.
+
+    '''
 
     outPrefix = options.outprefix
     rundir = options.rundir
@@ -381,26 +410,26 @@ def refine_clusters(options):
 
     Ncl = 0
     for ln in open(inFile): # pooled juncs
-        clu = []
+        clu = [] # each cluster: [((start, end), reads),..]
         totN = 0 # total cluster reads
         chrom = ln.split()[0]
-        for ex in ln.split()[1:]:
+        for ex in ln.split()[1:]: # for an exon
             A, B, N = ex.split(":")
             clu.append(((int(A),int(B)), int(N)))
             totN += int(N)
         
         if totN < minclureads: continue
 
-        if options.const: # include constitutive introns
+        if options.const: # include constitutive introns. These are clusters that only have 1 intron, hence "constitutive"
             if len(clu) == 1:
                 buf = f'{chrom} '
                 for interval, count in clu:
                     buf += f"{interval[0]}:{interval[1]}" + f":{count}" + " "
                 Ncl += 1
-                fout.write(buf+'\n')
+                fout.write(buf+'\n') # e.g. 'chr:strand start:end:reads'
         
-        for cl in refine_linked(clu):            
-            rc = refine_cluster(cl,minratio, minreads)
+        for cl in refine_linked(clu): # only linked intron clusters
+            rc = refine_cluster(cl, minratio, minreads)
             if len(rc) > 0:
                 for clu in rc:
                     buf = f'{chrom} '
@@ -430,9 +459,12 @@ def addlowusage(options):
     Side-effects:
     ------------
         written files:
-            - [out_prefix]_lowusage_introns : file stores low usage introns
-            - [out_prefix]_refined_noisy: file stores all usage introns
-
+            - [out_prefix]_lowusage_introns : file stores low usage introns (by cluster).
+              Output file is version sorted.
+            - [out_prefix]_refined_noisy    : file stores all usage introns (by cluster),
+              although each cluster must pass min cluster reads cutoff. Output file is
+              version sorted.
+              
     '''
 
     global chromLst
@@ -457,9 +489,11 @@ def addlowusage(options):
     fout_lowusage = open(outFile_lowusageintrons,'w')
     
 
-    # get 5' sites, 5' sites, and clusters of introns from refined file
+    # get 5' sites, 5' sites, and clusters of introns from refined file, see data structure below
     exons5,exons3, cluExons = {}, {}, {}
-    cluN = 0 # number of clusters
+    cluN = 0 # clusterID
+
+    # construct 5' sites, 3' sites, and clusters dict from refined
     for ln in open(refined_cluster):
         chrom = ln.split()[0]
         cluN += 1
@@ -469,16 +503,16 @@ def addlowusage(options):
             if chrom not in exons5:
                 exons5[chrom] = {}
                 exons3[chrom] = {}
-            exons5[chrom][int(A)] = (chrom,cluN) # 5' sites, { k=(chrom, start), v=(chrom, cluster_ID) }
-            exons3[chrom][int(B)] = (chrom,cluN) # 3' sites, { k=(chrom, start), v=(chrom, cluster_ID) }
-            cluExons[(chrom,cluN)].append(exon) # introns, { k=(chrom, clusterID), v=['start:end:reads'] }
+            exons5[chrom][int(A)] = (chrom, cluN) # 5' sites, { k=chrom, v={ k=start, v=(chrom, clusterID) } }
+            exons3[chrom][int(B)] = (chrom, cluN) # 3' sites, { k=chrom, v={ k=end, v=(chrom, clusterID) } }
+            cluExons[(chrom, cluN)].append(exon) # introns, { k=(chrom, clusterID), v=['start:end:reads'] }
 
     
-    # this for loop essentially add back clusters stored in the pooled junc file into
-    # introns from the refined junc file list. While adding these back to all cluExons, 
-    # they are also added back to lowusage_intron
+    # Below for loop adds back clusters (previously filtered out in refined_clusters)
+    # in the pooled junc file. These previously removed introns are added to all 
+    # cluExons, as well as to lowusage_intron
     lowusage_intron = {} # { k=(chrom, clusterID), v=['start:end:reads'...]}
-    for ln in open(pooled): # read lines in pooled junc file
+    for ln in open(pooled): # each cluster/line from pool_juncs file
 
         clu = []
         totN = 0
@@ -486,21 +520,22 @@ def addlowusage(options):
 
         if chrom in exons5: # ensure chrom is in exons5 level-1 keys
 
+            # Below for loop adds introns that were filtered out in refined, aka noisy_introns, 
+            # back to a total intron cluster dict and to a lowusage (noisy) intron cluster dict
             for exon in ln.split()[1:]:
                 A, B, N = exon.split(":") # start, end, reads
 
-                # add in exons that are in pooled file but not in refined file
-                # add them to lowusage_intron. 
-                if int(A) in exons5[chrom]: # ensure 5' site is in exons5
-                    clu = exons5[chrom][int(A)] # get the cluster: (chrom, clusterID), key for cluExons
-                    if exon not in cluExons[clu]: # e.g. exon='start:end:reads'
-                        cluExons[clu].append(exon) # add in the exon (from pooled) if it's not in refined
+                # when 5' site in refined
+                if int(A) in exons5[chrom]:
+                    clu = exons5[chrom][int(A)] # set clu=(chrom, clusterID), key for cluExons
+                    if exon not in cluExons[clu]: # exon was filtered out by refined
+                        cluExons[clu].append(exon) # add it to cluExons
                         if clu not in lowusage_intron:
                             lowusage_intron[clu] = []
-                        lowusage_intron[clu].append(exon) # add this exon (from pooled) to lowusage_intron
-                        
-                # do the same as above, but using exons3 dict
-                elif int(B) in exons3[chrom]: # ensure 3' site is in exons3
+                        lowusage_intron[clu].append(exon) # also add it to lowusage
+                
+                # else when 3' site in refined, perform same procedure
+                elif int(B) in exons3[chrom]: # when 3' site is in refined
                     clu = exons3[chrom][int(B)]
                     if exon not in cluExons[clu]:
                         cluExons[clu].append(exon)
@@ -508,18 +543,19 @@ def addlowusage(options):
                             lowusage_intron[clu] = []
                         lowusage_intron[clu].append(exon)
 
-                else:# int(A) not in exons5[chrom] and int(B) not in exons3[chrom]:
+                # neither 5' nor 3' splice site in refined, only add cluster if intron meets minreads requirement
+                else:
                     if int(N) > minreads:
                         cluN += 1
                         cluExons[(chrom, cluN)] = [exon] # why are they not added to lowusage_intron?
     
     # write low usage introns
-    ks = natural_sort(lowusage_intron.keys())
-    for clu in ks: 
+    ks = natural_sort(lowusage_intron.keys()) # e.g. { k=(chrom, clusterID), v=['start:end:reads'...]}
+    for clu in ks: # e.g. (chrom, clusterID)
         fout_lowusage.write(clu[0] + " " + " ".join(lowusage_intron[clu])+'\n')
     fout_lowusage.close()
 
-    # write all introns
+    # write all intron clusters
     cluLst = natural_sort(cluExons.keys())
     for clu in cluLst:
         if not options.const: # if -C flag not set, do not write constitutive introns
@@ -900,9 +936,9 @@ def main(options, libl):
         refine_clusters(options)
         addlowusage(options)
     
-    sort_junctions(libl, options)
-    merge_junctions(options)
-    get_numers(options)
+    # sort_junctions(libl, options)
+    # merge_junctions(options)
+    # get_numers(options)
 
 
 if __name__ == "__main__":
