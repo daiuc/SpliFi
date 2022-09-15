@@ -822,6 +822,10 @@ def merge_files(fnames, fout, options):
 
 def merge_junctions(options):    
     '''Merge junctions
+
+    Merge a list of sorted junction files into a single merged junction file.
+    Each input sorted junction files must have the same introns, i.e. first
+    column of each row must be the same across all files to be merged.
     
     Parameters:
     -----------
@@ -834,10 +838,11 @@ def merge_junctions(options):
 
     Side-effects:
     -------------
-        Collect previously sorted junction files. Merge individual files into
-    batches of N (N<=100) files. Merged files are stored as temp files.
-
-
+        Collect previously sorted junction files. Merge junction files in batches. 
+    And finally, all batches are merged into a single file. Reads fractions are in
+    columns.
+        row1  : col1=`chrom`, col2 and beyond are input file names merged
+        row2+ : col1=`intron identifier`, reads fraction from each input file
     '''
 
     outPrefix = options.outprefix
@@ -845,50 +850,51 @@ def merge_junctions(options):
     
     fnameout = f"{rundir}/{outPrefix}"
 
-    flist = f"{rundir}/{outPrefix}_sortedlibs" # sorted junc file list
+    flist = f"{rundir}/{outPrefix}_sortedlibs" # sorted juncs of refind_noisy introns with reads frac
 
-    lsts = [] # list of junc file path
+    lsts = [] # = flist
     for ln in open(flist):
         lsts.append(ln.strip())
     if options.verbose:
         sys.stderr.write(f"merging {len(lsts)} junction files...\n")
     
     # Change 300 if max open file is < 300
-    N = min([300, max([100, int(len(lsts)**(0.5))])]) # why? 
+    # set up batch N per batch
+    N = min([300, max([100, int(len(lsts)**(0.5))])])
 
-    tmpfiles = []
-    while len(lsts) > 1:    
+    # tmpfiles = []
+    while len(lsts) > 1: # initial list of sorted junc files
         
         # convert lsts (list of file paths) to clst (list of lists)
         # each sublist is a batch of upto 100 files.
-        clst = []
+        clst = [] # list of batches, each batch has up to 100 sorted junc files
         for i in range(0, int(len(lsts)/N)+1): # merge in batches of max(100, len(lsts))
             lst = lsts[N*i:N*(i+1)]
             if len(lst) > 0:
                 clst.append(lst)
         lsts = [] # clear initial file list, now repurposed to store merged file names (temp)
     
-        for lst in clst: # now run in batches
+        for lst in clst: # run by batch
             if len(lst) == 0: 
                 continue
             tmpfile = tempfile.mktemp()
             os.mkdir(tmpfile)
             foutname = tmpfile+"/tmpmerge.gz"
-            fout = gzip.open(foutname,'wt') # merged file as temp
+            fout = gzip.open(foutname,'wt') # create a temp file for the batch of files to be merged
             
-            merge_files(lst, fout, options) # merge 1 batch of N (N<=100) files to 1 temp file
-            lsts.append(foutname) # record merged file name (temp)
-            tmpfiles.append(foutname) # why do we need both lsts and tempfiles here?
+            merge_files(lst, fout, options) # merge the batch into `fout`
+            lsts.append(foutname) # save the temp merged file name
+            # tmpfiles.append(foutname) # this line is not needed.
             fout.close()
             
     if not options.const:
-        shutil.move(lsts[0], fnameout+"_perind.counts.gz") # why only 1 file?
+        shutil.move(lsts[0], fnameout+"_perind.counts.gz") 
     else:
-        shutil.move(lsts[0], fnameout+"_perind.constcounts.gz") # why only 1 file?
+        shutil.move(lsts[0], fnameout+"_perind.constcounts.gz") 
 
 
 def get_numers(options):
-    '''Get numerators from count table
+    '''Get numerators from merged count table
 
     Parameters:
     -----------
@@ -901,7 +907,7 @@ def get_numers(options):
 
     Side-effects:
     -------------
-        Take in count tables, extract numerators for each sample, write out to file.
+        Take in count tables, extract numerators for each sample.
 
     '''
 
@@ -918,6 +924,8 @@ def get_numers(options):
     input_file=gzip.open(fname, 'r')
     fout = gzip.open(fnameout,'wt')
     first_line=True
+
+    sys.stderr.write(f"Extracting numerators (read counts) from {fname}...")
     
     for l in input_file:
         if first_line:
@@ -925,11 +933,12 @@ def get_numers(options):
             first_line=False
         else:
             l=l.decode().strip()
-            words=l.split(" ") # fractions
+            words=l.split(" ")
             fout.write(words[0]+ " "+ " ".join( [ g.split("/")[0] for g in words[1:] ] ) +'\n') # write intron and numerators
 
     input_file.close()
     fout.close()
+    sys.stderr.write(" done.\n")
 
 
 #-------------------------------------------
@@ -942,8 +951,8 @@ def main(options, libl):
         addlowusage(options)
     
     sort_junctions(libl, options)
-    # merge_junctions(options)
-    # get_numers(options)
+    merge_junctions(options)
+    get_numers(options)
 
 
 if __name__ == "__main__":
