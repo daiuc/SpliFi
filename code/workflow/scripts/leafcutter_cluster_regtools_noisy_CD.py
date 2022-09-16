@@ -941,6 +941,197 @@ def get_numers(options):
     sys.stderr.write(" done.\n")
 
 
+def median(lst):
+    n = len(lst)
+    s = sorted(lst)
+    return (sum(s[n//2-1:n//2+1])/2.0, s[n//2])[n % 2] if n else None
+
+
+
+def annotate_noisy(options):
+    '''Annotate introns
+
+    Produces 3 files. Details in side-effects.
+
+    Parameters:
+    -----------
+        options : argparse object
+    
+    Returns:
+    --------
+        return : no return. Use side-effects to write output files.
+    
+    Side-effects:
+    -------------
+        noisy counts :  output result file.
+            Count table that has noisy introns marked
+            with `*`. Each intron cluster only output up to 1 `pseudo` noisy
+            intron coordinates. This `pseudo` coordinates are constructed by
+            taking the min(start) and max(end) of all functional intron
+            coordinates, to create the longest range. Reads from all noisy
+            introns of a cluster are added together.
+        
+        noisy numerators : output result file.
+            Same as noisy counts, except here only reports the numerators.
+            Also, used `*` to mark both start and end pseudo coordinates
+            of noisy intron.
+        
+        noisy counts by intron : output file for diagnostics.
+            Same count table as the output of sorted juncs count table, 
+            except that each intron is annotated with `F`, `N`, or `PN` to
+            denote `putative_functional`, `noisy`, or `putative_noisy`.
+    
+    '''
+
+    outPrefix = options.outprefix
+    rundir = options.rundir    
+    fnameout = f"{rundir}/{outPrefix}"
+    noisy_annotation = options.noiseclass # intron annotation - noisy or funciton, etc. 
+
+    dic_class = {"putative_functional":"F", "putative_noisy":"PN", "noisy":"N"}
+    # dic_usage = {}
+
+    if noisy_annotation != None:
+
+        if options.verbose:
+            sys.stderr.write(f"Loading {noisy_annotation} for noisy splicing classification..\n")
+
+        dic_noise = {} # noisy intron annotation: { k=(chr, start, end, strand) : v=classfication }
+        if noisy_annotation[-3:] == '.gz':
+            for ln in gzip.open(noisy_annotation):
+                chrom, s, e, strand, classification = ln.decode().split()
+                dic_noise[(chrom,int(s),int(e)-1,strand)] = classification # intron annotation
+        else:
+            for ln in open(noisy_annotation):
+                chrom, s, e, strand, classification = ln.split()
+                dic_noise[(chrom,int(s),int(e)-1,strand)] = classification 
+
+        if options.verbose:
+            sys.stderr.write("Loaded..\n")
+
+
+    if not options.const:
+        fname =  fnameout+"_perind.counts.gz" # no constitutive introns
+    else:
+        fname = fnameout+"_perind.constcounts.gz"
+
+    noisyperind = fname.replace(".gz",".noise.gz") # eg: run/out_perind.counts.noise.gz
+    noisydiag = fname.replace(".gz",".noise_by_intron.gz") # eg: run/out_perind.counts.noise_by_intron.gz
+    numers = fname.replace(".gz",".noise.gz").replace("perind",'perind_numers') # eg: run/out_perind_numers.counts.noise.gz
+
+    fout = gzip.open(noisyperind,'wt')
+    foutdiag = gzip.open(noisydiag,'wt')
+    foutnumers = gzip.open(numers,'wt')
+
+    F = gzip.open(fname)
+    ln = F.readline().decode()
+    fout.write(ln)
+    foutdiag.write(ln)
+    foutnumers.write(" ".join(ln.split()[1:])+'\n')
+
+    # noisy_clusters = {}
+    clusters = {}
+
+    current_cluster = None
+
+    for ln in F:
+        ln = ln.decode().split()
+        intron = ln[0]
+        chrom, s, e, clu = intron.split(":") # chr, start, end, clu_1_+
+        strand = clu.split("_")[-1]
+    
+        if current_cluster != clu: # first line of a cluster
+            clusters[clu] = {"noise":[], "functional":[]} # { k=clusterID : v={ noise : [ln,...], functional : [ln,...] }}, ln is split
+            #print current_cluster, clu
+            
+            if current_cluster != None: # first line of a cluster (not first cluster of file)
+                #print [x[0] for x in clusters[current_cluster]['functional']], [x[0] for x in clusters[current_cluster]['noise']]
+                
+                # if 
+                if len(clusters[current_cluster]['noise']) > 0 and len(clusters[current_cluster]['functional']) > 0:
+                    ID = "%s:%d:%d:%s"%(clusters[current_cluster]['functional'][0][0].split(":")[0], 
+                                        min([int(x[0].split(":")[1]) for x in clusters[current_cluster]['functional']]), 
+                                        max([int(x[0].split(":")[2]) for x in clusters[current_cluster]['functional']]), 
+                                        clusters[current_cluster]['functional'][0][0].split(":")[3])
+
+                    usages = [0 for i in range(len(clusters[current_cluster]['noise'][0])-1)]
+                    totuse = [int(x.split("/")[1]) for x in clusters[current_cluster]['noise'][0][1:]]
+
+                    for noise_intron in clusters[current_cluster]['noise']:
+                        noise_use = [int(x.split("/")[0]) for x in noise_intron[1:]]
+                        for i in range(len(noise_use)):
+                            usages[i] += noise_use[i]
+
+                    # append * to intron ID to indicate noisy 
+                    fout.write(ID+"_*" +" "+ " ".join(["%d/%d"%(usages[i],totuse[i]) for i in range(len(usages))])+'\n')
+                    nID = tuple(ID.split(":"))
+                    
+                    foutnumers.write("%s:%s*:%s*:%s"%nID +" "+ " ".join(["%d"%(usages[i]) for i in range(len(usages))])+'\n')
+
+                    #print ID+"_*" +" "+ " ".join(["%d/%d"%(usages[i],totuse[i]) for i in range(len(usages))])
+                    for lnw in clusters[current_cluster]['functional']:
+                        fout.write(" ".join(lnw)+'\n')
+                        foutnumers.write(lnw[0]+" "+ " ".join(["%s"%y.split('/')[0] for y in lnw[1:]])+'\n')
+                    
+                clusters.pop(current_cluster)
+            
+            current_cluster = clu # first line of file (not incl. header) 
+        
+        intronid = (chrom,int(s),int(e),strand)
+        usages = [int(x.split("/")[0]) / (float(x.split("/")[1])+0.1) for x in ln[1:]] # intron usage ratios
+        if sum(usages) == 0: continue
+        med = median(usages) # median usage ratio among samples
+
+        if med >= 0.1:
+            # If median usage is above 0.1, consider it functional
+            classification = "putative_functional" # aka 'F'
+        else:
+            if intronid in dic_noise:
+                # intron found in GTEx/annotation, so use its classification, i.e. 'putative_functional' # aka 'F'
+                classification = dic_noise[intronid] # dic_noise: { k=(chr, start, end, strand) : v=classfication }
+            else:
+                # intron not found in GTEx/annotation and med < 0.1
+                classification = "noisy" # aka 'N'
+            
+        # if classification not in dic_usage: # dic_usage { k=classification : v=[] }
+        #     dic_usage[classification] = [] # initialize dic_usage, dict to store introns by class
+        
+        if dic_class[classification] in ["N","PN"]:
+            # noisy_clusters[clu] = '' 
+            clusters[clu]["noise"].append(ln) # add intron to clusters under key eg: ['clu_1_+']['noise']
+        else:
+            clusters[clu]["functional"].append(ln) # otherwise under key eg: ['clu_1_+]['functional']
+
+        # add class flag and write to *_perind.noise_by_intron.gz, eg: 'chr1:825552:829002:clu_1_+:F 1/14 0/25 1/33 1/14 1/33'
+        foutdiag.write(intron + f":{dic_class[classification]+' '+' '.join(ln[1:])+'\n'}")
+
+    # if current cluster has both noisy introns AND functional introns
+    # use min(start) and max(end) of functional introns to construct intron cluster IDs
+    if len(clusters[current_cluster]['noise']) > 0 and len(clusters[current_cluster]['functional']) > 0:
+        
+        fchrom, fstart, fend, fstrand = clusters[current_cluster]['functional'][0][0].split(":")[0], \
+            min([int(x[0].split(":")[1]) for x in clusters[current_cluster]['functional']]), \
+            max([int(x[0].split(":")[2]) for x in clusters[current_cluster]['functional']]), \
+            clusters[current_cluster]['functional'][0][0].split(":")[3]
+        ID = f"{fchrom}:{fstart}:{fend}:{fstrand}"
+        
+        usages = [0 for i in range(len(clusters[current_cluster]['noise'][0])-1)] # list of 0, len = N-samples
+        totuse = [int(x.split("/")[1]) for x in clusters[current_cluster]['noise'][0][1:]] # list of denominators
+
+        for noise_intron in clusters[current_cluster]['noise']:
+            noise_use = [int(x.split("/")[0]) for x in noise_intron[1:]] # numerators
+            
+            for i in range(len(noise_use)):
+                usages[i] += noise_use[i] # sum each samples noise reads across noisy introns
+            
+            # write noisy reads of the intron cluster
+            fout.write(ID +" "+ " ".join(["%d/%d"%(usages[i],totuse[i]) for i in range(len(usages))])+'\n')
+
+    foutdiag.close()
+    fout.close()
+
+
+
 #-------------------------------------------
 
 def main(options, libl):
@@ -953,6 +1144,7 @@ def main(options, libl):
     sort_junctions(libl, options)
     merge_junctions(options)
     get_numers(options)
+    annotate_noisy(options)
 
 
 if __name__ == "__main__":
