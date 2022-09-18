@@ -1,5 +1,4 @@
-# This file should contain everything to configure the workflow on a global scale.
-# In case of sample based data, it should be complemented by a samples.tsv file that contains
-# one row per sample. It can be parsed easily via pandas.
+# Snakemake workflow configurations
 
-samples: config/samples.tsv
+junction_list: resources/leafcutter_junc_files_list.txt
+intron_class : resources/intron_class.txt.gz # annotated intron class: e.g. functional or noisy

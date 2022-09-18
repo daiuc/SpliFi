@@ -4,7 +4,7 @@ import os
 ###### Config file and sample sheets #####
 configfile: "config.yaml"
 
-samples = pd.read_csv(config["samples"],sep='\t', index_col=0)
+# samples = pd.read_csv(config["samples"],sep='\t', index_col=0)
 
 # # How to access values in samples.tsv
 
