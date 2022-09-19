@@ -4,7 +4,7 @@
 
 rule RunNoisy:
     input: 
-        junc_list_file = 'my-temp-data/test.junclist.txt', #config['junction_list'],
+        junc_list_file =  config['junction_list'],# 'my-temp-data/test.junclist.txt',
         intron_class   = config['intron_class']
     output:
         perind_noise_counts = 'results/noise/out_perind.counts.noise.gz'
