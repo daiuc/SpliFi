@@ -1,5 +1,15 @@
 ---
 title: "SpliFi: Splicing Fedility"
+listing:
+  contents: posts
+  sort: "date desc"
+  type: default
+  page-size: 20
+  categories: true
+  sort-ui: false
+  filter-ui: false
+  feed: true
+page-layout: full
 execute:
   freeze: auto # re-render only when source changes
 ---

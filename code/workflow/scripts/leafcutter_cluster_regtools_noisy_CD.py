@@ -410,6 +410,9 @@ def refine_clusters(options):
 
     Ncl = 0
     for ln in open(inFile): # pooled juncs
+        if type(ln) == bytes:
+            ln = ln.decode('utf-8') # convert bytes to string
+        
         clu = [] # each cluster: [((start, end), reads),..]
         totN = 0 # total cluster reads
         chrom = ln.split()[0]
@@ -495,6 +498,9 @@ def addlowusage(options):
 
     # construct 5' sites, 3' sites, and clusters dict from refined
     for ln in open(refined_cluster):
+        if type(ln) == bytes:
+            ln = ln.decode('utf-8') # convert bytes to string
+
         chrom = ln.split()[0]
         cluN += 1
         cluExons[(chrom,cluN)] = [] # keys are (chrom, cluster_number)
@@ -513,6 +519,9 @@ def addlowusage(options):
     # cluExons, as well as to lowusage_intron
     lowusage_intron = {} # { k=(chrom, clusterID), v=['start:end:reads'...]}
     for ln in open(pooled): # each cluster/line from pool_juncs file
+
+        if type(ln) == bytes:
+            ln = ln.decode('utf-8') # convert bytes to string
 
         clu = []
         totN = 0
@@ -620,6 +629,10 @@ def sort_junctions(libl, options):
     
     # fill in exons, cluExons dict from `*refined_noisy` intron cluster file
     for ln in open(refined_cluster): # e.g. ln = "chr10:+ 135203:179993:5 135302:179993:29"
+
+        if type(ln) == bytes:
+            ln = ln.decode('utf-8') # convert bytes to string
+
         chrom = ln.split()[0] # e.g. "chr10:+"
         cluN += 1
         for exon in ln.split()[1:]: # e.g. "135203:179993:5 135302:179993:29"
@@ -683,7 +696,10 @@ def sort_junctions(libl, options):
 
             for ln in F: # 1 line: e.g. "chr17\t81701131\t81701534\t.\t1\t+"
 
-                lnsplit = ln.decode().split()
+                if type(ln) == bytes:
+                    ln = ln.decode('utf-8') # convert bytes to string
+                lnsplit = ln.split()
+
 
                 if len(lnsplit) < 6:
                     sys.stderr.write(f"Error in {lib} \n")
@@ -854,7 +870,10 @@ def merge_junctions(options):
 
     lsts = [] # = flist
     for ln in open(flist):
+        if type(ln) == bytes:
+            ln = ln.decode('utf-8') # convert bytes to string
         lsts.append(ln.strip())
+
     if options.verbose:
         sys.stderr.write(f"\nMerging {len(lsts)} junction files...\n")
     
@@ -1005,6 +1024,8 @@ def annotate_noisy(options):
                 dic_noise[(chrom,int(s),int(e)-1,strand)] = classification # intron annotation
         else:
             for ln in open(noisy_annotation):
+                if type(ln) == bytes:
+                    ln = ln.decode('utf-8') # convert bytes to string
                 chrom, s, e, strand, classification = ln.split()
                 dic_noise[(chrom,int(s),int(e)-1,strand)] = classification 
 
@@ -1037,7 +1058,9 @@ def annotate_noisy(options):
     current_cluster = None
 
     for ln in F:
-        ln = ln.decode().split()
+        if type(ln) == bytes:
+            ln = ln.decode('utf-8') # convert bytes to string
+        ln = ln.split()
         intron = ln[0]
         chrom, s, e, clu = intron.split(":") # chr, start, end, clu_1_+
         strand = clu.split("_")[-1]

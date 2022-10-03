@@ -1,4 +1,7 @@
 # Snakemake workflow configurations
 
-junction_list: resources/leafcutter_junc_files_list.txt
+junction_list: 
+  test: resources/leafcutter_junc_files_list.txt
+  Geuvadis: resources/Geuvadis_juncs.txt
+
 intron_class : resources/intron_class.txt.gz # annotated intron class: e.g. functional or noisy

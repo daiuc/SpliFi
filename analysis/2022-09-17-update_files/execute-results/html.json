@@ -1,0 +1,14 @@
+{
+  "hash": "0866936e01be3465a56c595bab6de2a0",
+  "result": {
+    "markdown": "---\ntitle: \"2022-09-19-update\"\nformat: \n  html: \n    code-fold: true\n---\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\n# noisy result\nnoisy_cts = fread(\"../code/results/noise/out_perind.counts.noise.gz\")\ncolnames(noisy_cts) = colnames(noisy_cts) %>% \n  str_extract(\"chrom|(SM\\\\-[A-Z0-9]{5})\")\n```\n:::\n\n\n\nFunctional introns: \n\n\n::: {.cell}\n\n```{.r .cell-code}\nnoisy_cts[!str_detect(chrom, \"\\\\*\"), chrom] %>% unique %>% length\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 44863\n```\n:::\n:::\n\n\nNoisy introns:\n\n::: {.cell}\n\n```{.r .cell-code}\nnoisy_cts[str_detect(chrom, \"\\\\*\"), chrom] %>% unique %>% length\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 10603\n```\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
