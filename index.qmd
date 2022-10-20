@@ -1,7 +1,9 @@
 ---
 title: "SpliFi: Splicing Fedility"
 listing:
-  contents: posts
+  contents: 
+    - posts
+    - analysis
   sort: "date desc"
   type: default
   page-size: 20

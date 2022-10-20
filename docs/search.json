@@ -32,7 +32,7 @@
     "href": "index.html",
     "title": "SpliFi: Splicing Fedility",
     "section": "",
-    "text": "Snakemake\n\nall snakemake related pipeline scripts and data/results are under code"
+    "text": "Snakemake\n\nall snakemake related pipeline scripts and data/results are under code\n\n\n:::{#quarto-listing-pipeline .hidden} \\(e = mC^2\\)\n:::{.hidden render-id=“pipeline-listing-listing”}\n:::{.list .quarto-listing-default}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n\n\n2022-09-19-update\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n\n\nAnalysis here\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n\n\nlabel: setup\n\n\n\n\n\n\n\n\n\n\n\nOct 3, 2022\n\n\nChao Dai\n\n\n\n\n\n\n\n\nanalysis1\n\n\n\n\n\n\n\n\n\n\n\n\nInvalid Date\n\n\nChao Dai\n\n\n\n\n:::\n\nNo matching items\n\n:::\n:::"
   },
   {
     "objectID": "analysis/2022-09-17-update.html",

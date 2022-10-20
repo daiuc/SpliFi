@@ -1,12 +1,6 @@
 ### Detect Noisy Introns ###
 
 
-# process GTEx
-
-
-
-
-
 def getRunNoisyInputs(wildcards):
     return config['junction_list'].get(wildcards.datasource)
 
@@ -30,4 +24,7 @@ rule RunNoisy:
             -j {input.junc_list_file} \
             -N {input.intron_class} \
             -r {params.run_dir} -o {params.out_prefix}
+        
+
+        
         '''

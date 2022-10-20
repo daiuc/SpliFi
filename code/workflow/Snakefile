@@ -13,3 +13,12 @@ configfile: "config/config.yaml"
 
 # include: "rules/other.smk"
 include: 'rules/noisy.smk'
+include: 'rules/qtl.smk'
+
+# rule getconda:
+#     input: "workflow/envs/leafcutter.yaml"
+#     output: touch("getconda.done")
+#     conda:
+#         "envs/leafcutter.yaml"
+#     shell:
+#         "echo done"
