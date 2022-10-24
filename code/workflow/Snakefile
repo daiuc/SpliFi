@@ -1,24 +1,33 @@
-# The main entry point of your workflow.
-# After configuring, running snakemake -n in a clone of this repository should successfully execute a dry-run of the workflow.
+'''
+Snakefile
 
-#include: "rules/common.smk"
+Include modules:
+    -   common.smk
+    -   noisy.smk
+    -   qtl.smk
+    -   other.smk
+
+configfiles:
+    -   config/config.yaml
+
+NOTE: 
+    -   For Geuvadis, currently running on only 1-to-1 samples.
+    When running on full Geuvadis dataset, make sure to modify
+    accordingly in these rules:
+        1.  `Geuvadis_Linked_SampleIDs` in `common.smk`
+        2.  `prep_genotype` in `qtl.smk`
+
+'''
+
+__author__ = "Chao Dai"
+__email__ = "chaodai@uchicago.edu"
+
+
 configfile: "config/config.yaml"
 
-
-# rule all:
-    # input:
-        # The first rule should define the default target files
-        # Subsequent target rules can be specified below. They should start with all_*.
-
-
-# include: "rules/other.smk"
+include: "rules/common.smk"
 include: 'rules/noisy.smk'
 include: 'rules/qtl.smk'
+include: "rules/other.smk"
 
-# rule getconda:
-#     input: "workflow/envs/leafcutter.yaml"
-#     output: touch("getconda.done")
-#     conda:
-#         "envs/leafcutter.yaml"
-#     shell:
-#         "echo done"
+

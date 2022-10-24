@@ -1,7 +1,10 @@
 # Snakemake workflow configurations
 
-samples:
-  geuvadis_lookup: resources/geuvadis-sample-run-pop-lookup.tsv
+Dataset:
+  Geuvadis:
+    Metadata: resources/geuvadis-sample-run-pop-lookup.tsv # geuvadis meta data (all samples)
+    Linked_SampleIDs: resources/geuvadis-1kgp-common-sample-id.txt # geuvadis sample IDs that have genotype in 1KGP
+    Linked_1to1_SampleIDs: resources/geuvadis-1kgp-common-1to1only-sample-id.txt # linkable sample IDs that only have 1 ERR ID
 
 junction_list: 
   test: resources/leafcutter_junc_files_list.txt

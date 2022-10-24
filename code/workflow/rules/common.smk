@@ -1,25 +1,35 @@
-import pandas as pd
+import gzip
 import os
+import glob
+import pandas as pd
 
 
-ERRs = []
-with open('resources/geuvadis-subset79-ERRs.txt') as f:
-    ERRs = f.readlines()
-ERRs = [x.strip() for x in ERRs]
 
+# Limit to autosomes
 CHROMS = ['chr'+str(i) for i in range(1,23)]
 
 
-rule Get1KGP_SampleIDs:
-    message: 'Collect all Sample IDs that exist in 1000 Genome Project Phase 3 VCF file'
-    input: 
-        vcf = '/project2/yangili1/zpmu/1kg_b38/CCDG_14151_B01_GRM_WGS_2020-08-05_chr1.filtered.shapeit2-duohmm-phased.vcf.gz'
-    output: 
-        'resources/SampleID_List_1000GenomePhase3.txt'
-    threads: 2
-    resources: cpu = 2, mem_mb = 15000, time = 2100
-    shell: 
-        '''
-        bcftools view -h {input.vcf} | \
-            awk ''
-        '''
+#-------------------- Geuvadis --------------------
+
+# Get Geuvadis metadata lookup table, key cols are Population ID, Sample ID, Run ID
+Geuvadis_Metadata = pd.read_csv(config['Dataset']['Geuvadis']['Metadata'], sep='\t')
+Geuvadis_Metadata.set_index(['Pop_id', 'Sample', 'run_id'], drop=False, inplace=True)
+
+# Get Geuvadis samples that have genotype in 1KGP
+# For now, use only samples with 1-to-1 Sample-to-ERR
+# For production, use the full linked samples
+Geuvadis_Linked_SampleIDs = []
+with open(config['Dataset']['Geuvadis']['Linked_1to1_SampleIDs']) as f:
+    Geuvadis_Linked_SampleIDs = [s.strip() for s in f.readlines()]
+
+def getERR(sample_id, lookup_df):
+    ERR = lookup_df.query('Sample == @sample_id').run_id
+    return list(set(ERR))
+
+Sample_ERR_Dict = dict(zip(Geuvadis_Linked_SampleIDs, 
+    [getERR(x, Geuvadis_Metadata) for x in Geuvadis_Linked_SampleIDs]))
+
+
+
+
+
