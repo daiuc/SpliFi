@@ -199,7 +199,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#samples-used" id="toc-samples-used" class="nav-link active" data-scroll-target="#samples-used">Samples used</a></li>
+  <li><a href="#qqplots---qtltools-adjusted-p-values" id="toc-qqplots---qtltools-adjusted-p-values" class="nav-link" data-scroll-target="#qqplots---qtltools-adjusted-p-values">qqplots - qtltools adjusted p-values</a></li>
+  <li><a href="#how-many-qtls-passing-qval-0.1" id="toc-how-many-qtls-passing-qval-0.1" class="nav-link" data-scroll-target="#how-many-qtls-passing-qval-0.1">How many qtls passing qval &lt; 0.1?</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -207,6 +215,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
+<section id="samples-used" class="level3">
+<h3 class="anchored" data-anchor-id="samples-used">Samples used</h3>
+<p>274 Geuvaids samples are used (see <a href="../analysis/Geuvadis-Samples.pub.html">details</a>) in this test run. These are samples that have single run (single ERR ID) that have matching genotype in 1000 genome project. <br> Ankeeta’s dataset has total 452 runs, representing lesst han 452 samples.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -221,21 +232,268 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_gend"</span>, <span class="st">"true_dof"</span>, <span class="st">"esti_dof"</span>, <span class="st">"beta_ml1"</span>, <span class="st">"beta_ml2"</span>,</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_nom"</span>, <span class="st">"pval_r2"</span>, <span class="st">"regression_slop"</span>, <span class="st">"pval_emp"</span>, </span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_adj"</span>, <span class="st">"qval"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>qtl_chr22 <span class="ot">=</span> <span class="st">"../code/results/qtltools/Geuvadis/cis_100000/perm/chr22.addQval.txt.gz"</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>qtl_chr22 <span class="ot">=</span> <span class="fu">fread</span>(qtl_chr22, <span class="at">col.names =</span> perm_out_cols)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">dir</span>(<span class="st">"../code/results/qtltools/Geuvadis/cis_100000/perm/"</span>, </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>           <span class="st">".+addQval.txt.gz"</span>, <span class="at">full.names =</span> T)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> naturalsort<span class="sc">::</span><span class="fu">naturalsort</span>(qtls)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(qtls) <span class="ot">=</span> <span class="fu">str_extract</span>(qtls, <span class="st">"chr[0-9]{1,2}"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span><span class="fu">fread</span>(.x, <span class="at">col.names =</span> perm_out_cols))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<p>qvalue summaries</p>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">chr1 - chr5</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">chr6 - chr10</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">chr11 - chr15</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">chr16 - chr22</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(<span class="fu">list</span>(<span class="at">p_emp =</span> qtl_chr22<span class="sc">$</span>pval_emp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>qval))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9994  0.9994  0.9709  0.9994  0.9994 
+
+$chr2
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9993  0.9993  0.9169  0.9993  0.9993 
+
+$chr3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9974  0.9974  0.9362  0.9974  0.9995 
+
+$chr4
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9995  0.9995  0.9756  0.9995  0.9995 
+
+$chr5
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9997  0.9997  0.9560  0.9997  0.9997 </code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>qval))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr6
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9928  0.9985  0.8854  0.9985  0.9998 
+
+$chr7
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9993  0.9993  0.9213  0.9993  0.9999 
+
+$chr8
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9953  0.9953  0.9514  0.9953  0.9988 
+
+$chr9
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9999  0.9999  0.9583  0.9999  0.9999 
+
+$chr10
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9991  0.9991  0.9729  0.9991  0.9996 </code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">11</span><span class="sc">:</span><span class="dv">15</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>qval))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr11
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9978  0.9978  0.9490  0.9978  0.9999 
+
+$chr12
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9975  0.9975  0.9583  0.9975  0.9994 
+
+$chr13
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0003942 0.9944400 0.9944400 0.9782456 0.9944400 0.9999700 
+
+$chr14
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0001227 0.9992600 0.9992600 0.9959244 0.9992600 0.9992600 
+
+$chr15
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.02255 0.99985 0.99985 0.99665 0.99985 0.99985 </code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">16</span><span class="sc">:</span><span class="dv">22</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>qval))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr16
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9976  0.9976  0.9257  0.9976  0.9999 
+
+$chr17
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9985  0.9985  0.9802  0.9985  0.9989 
+
+$chr18
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9983  0.9983  0.9661  0.9983  0.9999 
+
+$chr19
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9994  0.9994  0.9399  0.9994  0.9997 
+
+$chr20
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  1.0000  1.0000  0.9642  1.0000  1.0000 
+
+$chr21
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.01181 0.99675 0.99675 0.98502 0.99675 0.99675 
+
+$chr22
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.6624  0.9996  0.9996  0.9990  0.9996  0.9996 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="qqplots---qtltools-adjusted-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="qqplots---qtltools-adjusted-p-values">qqplots - qtltools adjusted p-values</h3>
+<p>These p-values are adjusted for number of variants, but not adjusted for phenotypes.</p>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">chr1 - chr5</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">chr6 - chr10</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">chr11 - chr15</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">chr16 - chr20</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-5" role="tab" aria-controls="tabset-2-5" aria-selected="false">chr16 - chr20</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr1 =</span> qtls<span class="sc">$</span>chr1<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr2 =</span> qtls<span class="sc">$</span>chr2<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr3 =</span> qtls<span class="sc">$</span>chr3<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr4 =</span> qtls<span class="sc">$</span>chr4<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr5 =</span> qtls<span class="sc">$</span>chr5<span class="sc">$</span>pval_emp</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr6 =</span> qtls<span class="sc">$</span>chr6<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr7 =</span> qtls<span class="sc">$</span>chr7<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr8 =</span> qtls<span class="sc">$</span>chr8<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr9 =</span> qtls<span class="sc">$</span>chr9<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr10 =</span> qtls<span class="sc">$</span>chr10<span class="sc">$</span>pval_emp</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr11 =</span> qtls<span class="sc">$</span>chr11<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr12 =</span> qtls<span class="sc">$</span>chr12<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr13 =</span> qtls<span class="sc">$</span>chr13<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr14 =</span> qtls<span class="sc">$</span>chr14<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr15 =</span> qtls<span class="sc">$</span>chr15<span class="sc">$</span>pval_emp</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr16 =</span> qtls<span class="sc">$</span>chr16<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr17 =</span> qtls<span class="sc">$</span>chr17<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr18 =</span> qtls<span class="sc">$</span>chr18<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr19 =</span> qtls<span class="sc">$</span>chr19<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr20 =</span> qtls<span class="sc">$</span>chr20<span class="sc">$</span>pval_emp</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-5-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr21 =</span> qtls<span class="sc">$</span>chr21<span class="sc">$</span>pval_emp,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr22 =</span> qtls<span class="sc">$</span>chr22<span class="sc">$</span>pval_emp</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="how-many-qtls-passing-qval-0.1" class="level3">
+<h3 class="anchored" data-anchor-id="how-many-qtls-passing-qval-0.1">How many qtls passing qval &lt; 0.1?</h3>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span> .x[qval <span class="sc">&lt;</span> .<span class="dv">1</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  rbindlist</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Total number of qtls: 845</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(<span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep=</span><span class="st">""</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>puta_qtls[, .(<span class="at">n_qtls =</span> <span class="fu">length</span>(<span class="fu">unique</span>(pid))), by <span class="ot">=</span> pchr] <span class="sc">%&gt;%</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  .[, .(<span class="at">qtls =</span> n_qtls, <span class="at">chr =</span> <span class="fu">factor</span>(pchr, chroms))] <span class="sc">%&gt;%</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_col</span>(<span class="fu">aes</span>(chr, qtls)) <span class="sc">+</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>) <span class="sc">+</span> </span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="geuvadis_qtl_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

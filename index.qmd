@@ -1,5 +1,5 @@
 ---
-title: "SpliFi: Splicing Fedility"
+title: "Project Splicing Fidelity"
 listing:
   contents: 
     - posts

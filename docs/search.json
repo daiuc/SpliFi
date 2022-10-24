@@ -32,7 +32,7 @@
     "href": "analysis/geuvadis_qtl.html",
     "title": "Geuvadis noisy splicing QTL",
     "section": "",
-    "text": "Code\nperm_out_cols = c(\"pid\", \"pchr\", \"pstart\", \"pend\", \"pstrand\", \"num_snp_tested\",\n                  \"best_nominal_dist\", \"best_gid\", \"best_gchr\", \"best_gstart\",\n                  \"best_gend\", \"true_dof\", \"esti_dof\", \"beta_ml1\", \"beta_ml2\",\n                  \"pval_nom\", \"pval_r2\", \"regression_slop\", \"pval_emp\", \n                  \"pval_adj\", \"qval\")\nqtl_chr22 = \"../code/results/qtltools/Geuvadis/cis_100000/perm/chr22.addQval.txt.gz\"\nqtl_chr22 = fread(qtl_chr22, col.names = perm_out_cols)\n\n\n\n\nCode\nleafcutter::multiqq(list(p_emp = qtl_chr22$pval_emp))"
+    "text": "qqplots - qtltools adjusted p-values\nThese p-values are adjusted for number of variants, but not adjusted for phenotypes.\n\nchr1 - chr5chr6 - chr10chr11 - chr15chr16 - chr20chr16 - chr20\n\n\n\n\nCode\nleafcutter::multiqq(\n  list(chr1 = qtls$chr1$pval_emp,\n       chr2 = qtls$chr2$pval_emp,\n       chr3 = qtls$chr3$pval_emp,\n       chr4 = qtls$chr4$pval_emp,\n       chr5 = qtls$chr5$pval_emp\n       )\n)\n\n\n\n\n\n\n\n\n\nCode\nleafcutter::multiqq(\n  list(chr6 = qtls$chr6$pval_emp,\n       chr7 = qtls$chr7$pval_emp,\n       chr8 = qtls$chr8$pval_emp,\n       chr9 = qtls$chr9$pval_emp,\n       chr10 = qtls$chr10$pval_emp\n       )\n)\n\n\n\n\n\n\n\n\n\nCode\nleafcutter::multiqq(\n  list(chr11 = qtls$chr11$pval_emp,\n       chr12 = qtls$chr12$pval_emp,\n       chr13 = qtls$chr13$pval_emp,\n       chr14 = qtls$chr14$pval_emp,\n       chr15 = qtls$chr15$pval_emp\n       )\n)\n\n\n\n\n\n\n\n\n\nCode\nleafcutter::multiqq(\n  list(chr16 = qtls$chr16$pval_emp,\n       chr17 = qtls$chr17$pval_emp,\n       chr18 = qtls$chr18$pval_emp,\n       chr19 = qtls$chr19$pval_emp,\n       chr20 = qtls$chr20$pval_emp\n       )\n)\n\n\n\n\n\n\n\n\n\nCode\nleafcutter::multiqq(\n  list(\n       chr21 = qtls$chr21$pval_emp,\n       chr22 = qtls$chr22$pval_emp\n       )\n)\n\n\n\n\n\n\n\n\n\n\nHow many qtls passing qval < 0.1?\n\n\nCode\nputa_qtls = map(qtls, ~ .x[qval < .1]) %>% \n  rbindlist\n\n\nTotal number of qtls: 845\n\n\nCode\nchroms = forcats::as_factor(paste(\"chr\", 1:22, sep=\"\"))\nputa_qtls[, .(n_qtls = length(unique(pid))), by = pchr] %>% \n  .[, .(qtls = n_qtls, chr = factor(pchr, chroms))] %>% \n  ggplot() + geom_col(aes(chr, qtls)) +\n    labs(x = NULL) + \n    theme(axis.text.x = element_text(angle = 30))"
   },
   {
     "objectID": "analysis/phenotype_pca.pub.html",
@@ -51,7 +51,7 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "SpliFi: Splicing Fedility",
+    "title": "Project Splicing Fidelity",
     "section": "",
     "text": "geuvadis\n\n\nupdates\n\n\nqtl\n\n\n\n\n\n\n\n\n\n\n\nOct 24, 2022\n\n\nChao Dai\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPCA\n\n\nGenotype\n\n\n1000 Genome\n\n\n\n\n\n\n\n\n\n\n\nOct 23, 2022\n\n\nChao Dai\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPCA\n\n\nPhenotype\n\n\nGeuvadis\n\n\n1000 Genome\n\n\n\n\n\n\n\n\n\n\n\nOct 23, 2022\n\n\nChao Dai\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ngeuvadis\n\n\n1000 genome project\n\n\nmetadata\n\n\n\n\n“Investigate which geuvadis samples have an overlapping genotype file in 1KGP Phase 3 vcf. And which of such samples have 1 or 1+ run ids (ERR).”\n\n\n\n\n\n\nOct 20, 2022\n\n\nChao Dai\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nGTEX\n\n\njunctions\n\n\n\n\n\n\n\n\n\n\n\nOct 20, 2022\n\n\nChao Dai\n\n\n\n\n\n\nNo matching items"
   }
