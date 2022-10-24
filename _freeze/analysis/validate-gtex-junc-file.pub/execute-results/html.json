@@ -1,0 +1,16 @@
+{
+  "hash": "2836996790d093f9ccef258032c7a7e0",
+  "result": {
+    "markdown": "---\ntitle: \"Validate GTEx V8 junction file\"\ncategories: \n  - GTEX\n  - \"junctions\"\ndate: 2022-10-20\nauthor: Chao Dai\n---\n\n\nGTEx V8 junction file was downloaded from [GTEx portal](https://gtexportal.org/home/datasets), specifically via this link: [GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz](https://storage.googleapis.com/gtex_analysis_v8/rna_seq_data/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz).\n\nDownloaded file path: \n\n- `resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz`\n\nBecause the file is rather large, a python script is used to compute the histogram of each junction. \n\n- `workflow/scripts/make_histogram_of_GTEx_juncs.py`\n\n\n\n\n\n\n\n\n### The GTEx V8 junction file include low reads\n\nSee plots below. It seems this data set does not filter out \n\n::: {.cell}\n\n```{.r .cell-code}\n# histograms for each junction\nhist_data = fread(\"../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_histogram.txt\")\n# junction coordinates and gene id\ncol_data = fread(\"../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_names.txt\", col.names = c(\"junc\", \"gene_id\"))\n```\n:::\n\n\n:::{.panel-tabset}\n\n#### Samples with 0-5 reads\n\n::: {.cell}\n\n```{.r .cell-code}\nggplot(hist_data) + geom_histogram(aes(`bin_0-5`), bins=20) +\n  labs(x = \"Num. of samples with <5 reads\", y = NULL)\n```\n\n::: {.cell-output-display}\n![](validate-gtex-junc-file.pub_files/figure-html/unnamed-chunk-3-1.png){width=672}\n:::\n:::\n\n\n#### Distribution of Min(reads)\n\n::: {.cell}\n\n```{.r .cell-code}\nggplot(hist_data) + stat_ecdf(aes(Min), bins = 20) +\n  labs(x = \"minimum reads\", y = NULL)\n```\n\n::: {.cell-output .cell-output-stderr}\n```\nWarning: Ignoring unknown parameters: bins\n```\n:::\n\n::: {.cell-output-display}\n![](validate-gtex-junc-file.pub_files/figure-html/unnamed-chunk-4-1.png){width=672}\n:::\n:::\n\n:::\n\n",
+    "supporting": [
+      "validate-gtex-junc-file.pub_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

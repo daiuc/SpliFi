@@ -1,0 +1,41 @@
+---
+title: "Geuvadis noisy splicing QTL"
+categories: 
+  - QTL
+  - Geuvadis
+  - "noisy splicing"
+date: 2022-10-23
+author: Chao Dai
+---
+
+
+```{r}
+#| label: setup
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(data.table)
+
+```
+
+```{r}
+metadata = fread("../code/resources/geuvadis-sample-run-pop-lookup.tsv")
+```
+
+
+```{r}
+perm_out_cols = c("pid", "pchr", "pstart", "pend", "pstrand", "num_snp_tested",
+                  "best_nominal_dist", "best_gid", "best_gchr", "best_gstart",
+                  "best_gend", "true_dof", "esti_dof", "beta_ml1", "beta_ml2",
+                  "pval_nom", "pval_r2", "regression_slop", "pval_emp", 
+                  "pval_adj", "qval")
+qtl_chr22 = "../code/results/qtltools/Geuvadis/cis_100000/perm/chr22.addQval.txt.gz"
+qtl_chr22 = fread(qtl_chr22, col.names = perm_out_cols)
+```
+
+```{r}
+leafcutter::multiqq(list(p_emp = qtl_chr22$pval_emp))
+```
+

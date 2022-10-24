@@ -1,6 +1,6 @@
 project:
   type: "website"
-  title: "Splicing Fidelity - SpliFi"
+  title: "Splicing Fidelity"
   output-dir: docs
   render:
     - "*.qmd"
@@ -9,29 +9,23 @@ project:
     - "!data/"
     - "!output"
 website:
-  title: "Splicing Fidelity - SpliFi"
+  title: "Splicing Fidelity"
   navbar:
-    left: 
+    left:
       - href: index.qmd
         text: Home
-      - href: analysis/index.qmd
-        text: Analysis
       - href: slides/index.qmd
         text: Slides
       - href: https://cdai.notion.site/Notes-0e18d7ec33cb44fc975cb9e139aa784b
         text: Notion
       - about.qmd
-    logo: assets/logo.png
     background: "dark"
     search: true
-      # - menu:
-      #   - href: analysis/analysis1.qmd
-      #     text: analysis
   # open-graph: true
-  # twitter-card: 
+  # twitter-card:
   #   title: twitter
   #   site: "@chaodai"
-  # comments: 
+  # comments:
   #   hypothesis:
   #     theme: classic
   #     openSidebar: false
@@ -39,3 +33,4 @@ format:
   html:
     theme: sandstone
     css: styles.css
+    toc: true

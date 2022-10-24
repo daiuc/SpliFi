@@ -3,25 +3,15 @@ title: "SpliFi: Splicing Fedility"
 listing:
   contents: 
     - posts
-    - analysis
+    - analysis/*.pub.qmd
   sort: "date desc"
   type: default
-  page-size: 20
+  page-size: 40
   categories: true
   sort-ui: false
   filter-ui: false
-  feed: true
 page-layout: full
 execute:
   freeze: auto # re-render only when source changes
 ---
 
-### Analysis
-
-- source `qmd` files in `analysis`
-- `render` will transfer html files automatically to `docs`
-- use `*.qmd`, not html files when linking pages to ensure automatic conversion to both html and pdf
-
-### Snakemake
-
-- all snakemake related pipeline scripts and data/results are under `code`

@@ -1,0 +1,106 @@
+---
+title: "Phenotype PCA results"
+categories: 
+  - PCA
+  - Phenotype
+  - Geuvadis
+  - "1000 Genome"
+date: 2022-10-23
+author: Chao Dai
+---
+
+
+```{r}
+#| label: setup
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(data.table)
+
+```
+
+```{r}
+metadata = fread("../code/resources/geuvadis-sample-run-pop-lookup.tsv")
+```
+
+
+```{r}
+#Geuvadis genotype PCA
+
+pca_file = dir("../code/results/Geuvadis/noise_pheno", ".+_pheno.+pca$", full.names = T)
+pca_file = naturalsort::naturalsort(pca_file)
+names(pca_file) = str_extract(pca_file, "chr[0-9]{1,2}")
+
+pca = map(pca_file, ~ fread(.x))
+
+pca = map(pca, ~ column_to_rownames(.x, "SampleID") %>% t %>% as.data.frame)
+pca = map(pca, 
+          ~ left_join(x = rownames_to_column(.x, "Sample"), 
+                      y = metadata[, c("Sample", "Pop_id")], 
+                      by = "Sample")
+)
+
+```
+
+
+### Are the samples in the same order?
+
+```{r}
+chr1_samples = pca$chr1$Sample
+map_lgl(pca, ~ all(chr1_samples == .x$Sample))
+```
+
+
+### Are the in the same order as genotype?
+
+```{r}
+geno_pca_chr1 = "../code/results/Genotype/Geuvadis/chr1_geno.pca"
+geno_pca_chr1 = fread(geno_pca_chr1)
+geno_samples = names(geno_pca_chr1)
+geno_samples = geno_samples[str_detect(geno_samples, "[A-Z]{2}[0-9]{5,7}")]
+```
+
+
+
+```{r}
+ggplot(pca$chr1) + 
+  geom_point(aes(PC2, PC1, color = Pop_id))
+```
+
+
+
+```{r}
+ggplot(pca$chr1) + 
+  geom_point(aes(PC4, PC3, color = Pop_id))
+```
+
+```{r}
+ggplot(pca$chr10) + 
+  geom_point(aes(PC5, PC6, color = Pop_id))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

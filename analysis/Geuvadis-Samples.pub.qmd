@@ -1,0 +1,148 @@
+---
+title: "Summarize Geuvadis samples"
+description: >
+  "Investigate which geuvadis samples have an overlapping genotype file in 1KGP Phase 3 vcf. And which of such samples have 1 or 1+ run ids (ERR)."
+categories: 
+  - "geuvadis"
+  - "1000 genome project"
+  - "metadata"
+date: 2022-10-20
+author: 'Chao Dai'
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(data.table)
+```
+
+### Geuvadis Samples
+
+```{r}
+# get geuvadis metadata
+geuvadis_meta = "../code/resources/geuvadis-sample-run-pop-lookup.tsv"
+geuvadis_meta = fread(geuvadis_meta)
+```
+
+::: panel-tabset
+#### by population
+
+```{r}
+#| echo: false
+geuvadis_meta[, .(N = length(unique(Sample))), by = "Pop_id"]
+```
+
+#### by number of ERRs
+
+```{r}
+#| echo: false
+geuvadis_meta[, .(Sample, run_id)] %>% 
+  unique %>% 
+  .[, .(N_ERR = length(unique(run_id))), by = Sample] %>% 
+  .[order(-N_ERR)] %>% 
+  ggplot() + geom_histogram(aes(N_ERR), binwidth = 1, color = 'white') +
+    scale_x_continuous(name = "Number of ERR IDs per sample", breaks = 1:8, labels = 1:8) +
+    labs(title = "Geuvadis - all samples")
+```
+:::
+
+### Common samples between Geuvadis and 1000 genome project genotypes
+
+Sample IDs, aka. `HG#####` or `NA#####` numbers are common keys that link samples
+in Geuvadis and 1000 genome project.
+
+Below table shows number of sampels in Geuvadis and 1KGP as well as the number of
+samples that can be linked.
+
+
+```{r}
+# get all genotype sample names
+cmd = "  view -h /project2/yangili1/zpmu/1kg_b38/CCDG_14151_B01_GRM_WGS_2020-08-05_chr1.filtered.shapeit2-duohmm-phased.vcf.gz | awk '$1 ~ /#CHROM/'"
+
+SamIDs_1kgp = system2("bcftools", cmd, stdout = T) %>% 
+  scan(text = ., what = character())
+SamIDs_1kgp = SamIDs_1kgp[10:length(SamIDs_1kgp)]
+
+# samples that can be linked between Geuvadis and 1KGP
+SamIDs_common = intersect(SamIDs_1kgp, geuvadis_meta$Sample)
+```
+
+|                      | N                                        |
+|----------------------|------------------------------------------|
+| Geuvadis Samples     | `r length(unique(geuvadis_meta$Sample))` |
+| 1KGP Phase 3 Samples | `r length(unique(SamIDs_1kgp))`          |
+| Samples in both      | `r length(SamIDs_common)`                |
+
+
+### Focusing on common samples
+
+```{r}
+# geuvadis linkable samples that only have 1 ERR IDs
+geuvadis_singleERR_samples = geuvadis_meta[Sample %in% SamIDs_common, .(Sample, run_id)] %>% 
+  unique %>% 
+  .[, .(N_ERR = length(unique(run_id))), by = Sample] %>%
+  .[N_ERR == 1, Sample]
+```
+
+Out of all `r length(unique(geuvadis_meta$Sample))` Geuvadis samples, 
+`r length(geuvadis_singleERR_samples)` of them has 1-to-1 ERR IDs. The other
+samples have multiple ERRs per sample.
+
+For my test analysis, I am running only on these 1-to-1 samples to establish 
+analysis pipeline, but later on formal analysis will include all linkable samples.
+
+
+### Saving sample ids to files
+
+Save all linkable Geuvadis sample ids to a text file, with 1 ID per row.
+```{r}
+#write_lines(SamIDs_common, "../code/resources/geuvadis-1kgp-common-sample-id.txt")
+```
+
+Save all 1-to-1 linkable Geuvadis sample ids to a text file, 1 ID per row.
+```{r}
+#write_lines(geuvadis_singleERR_samples, "../code/resources/geuvadis-1kgp-common-1to1only-sample-id.txt")
+```
+
+
+### Check junction file samples from Ankeeta
+
+```{r}
+noise = fread("../code/results/Geuvadis/noise/Geuvadis_perind.counts.noise.gz",
+              colClasses = 'character', nrows = 5)
+noise_ERRs = names(noise)
+noise_ERRs = noise_ERRs[noise_ERRs != "chrom"]
+noise_ERRs = str_extract(noise_ERRs, "ERR[0-9]{5,7}")
+noise_samples = filter(geuvadis_meta, run_id %in% noise_ERRs) %>% 
+  pull(Sample) %>%
+  unique
+```
+
+
+These samples in Ankeeta's dataset do not have genotype in 1KGP
+```{r}
+setdiff(noise_samples, SamIDs_1kgp)
+```
+
+
+Ankeeta's dataset has 452 ERR IDs, smaller than the full Geuvadis dataset (`r length(unique(geuvadis_meta$run_id))`).
+37% of samples have more than 1 runs.
+
+```{r}
+filter(geuvadis_meta, Sample %in% noise_samples) %>% 
+  select(Sample, run_id, Pop_id) %>% 
+  group_by(Sample) %>% 
+  mutate(N = length(unique(run_id))) %>% 
+  mutate(morethan1runs = N > 1) %>% 
+  ungroup %>% group_by(morethan1runs) %>% 
+  summarise(N_samples = length(unique(Sample)))
+```
+
+
+
+
+

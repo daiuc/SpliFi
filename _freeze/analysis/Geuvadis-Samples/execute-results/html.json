@@ -1,0 +1,16 @@
+{
+  "hash": "3d89d4773587c70e2ca09e6c73b1f1f8",
+  "result": {
+    "markdown": "---\ntitle: \"Geuvadis samples\"\ndescription: >\n  \"Investigate which geuvadis samples have an overlapping genotype file in 1KGP Phase 3 vcf. And which of such samples have 1 or 1+ run ids (ERR).\"\ncategories: \n  - Geuvadis\n  - \"1KGP\"\n  - \"metadata\"\ndate: 2022-10-20\nauthor: Chao Dai\n---\n\n\n\n\n### How many samples are there in Geuvadis?\n\n\n::: {.cell}\n\n```{.r .cell-code}\n# get geuvadis metadata\ngeuvadis_meta = \"../code/resources/geuvadis-sample-run-pop-lookup.tsv\"\ngeuvadis_meta = fread(geuvadis_meta)\n```\n:::\n\n\n::: panel-tabset\n#### Number of samples per population group\n\n\n::: {.cell}\n::: {.cell-output .cell-output-stdout}\n```\n   Pop_id  N\n1:    GBR 95\n2:    FIN 95\n3:    TSI 93\n4:    CEU 92\n5:    YRI 89\n```\n:::\n:::\n\n\n#### Many samples have only 1 Run but others have 1+ runs\n\n\n::: {.cell}\n::: {.cell-output-display}\n![](Geuvadis-Samples_files/figure-html/unnamed-chunk-4-1.png){width=672}\n:::\n:::\n\n:::\n\n### How many Geuvadis samples have a matching genotype in 1KGP phase 3?\n\n\n::: {.cell}\n\n```{.r .cell-code}\n# get all genotype sample names\ncmd = \"  view -h /project2/yangili1/zpmu/1kg_b38/CCDG_14151_B01_GRM_WGS_2020-08-05_chr1.filtered.shapeit2-duohmm-phased.vcf.gz | awk '$1 ~ /#CHROM/'\"\n\nSamIDs_1kgp = system2(\"bcftools\", cmd, stdout = T) %>% \n  scan(text = ., what = character())\nSamIDs_1kgp = SamIDs_1kgp[10:length(SamIDs_1kgp)]\n\nSamIDs_common = intersect(SamIDs_1kgp, geuvadis_meta$Sample)\n```\n:::\n\n\n|                      | N                                        |\n|----------------------|------------------------------------------|\n| Geuvadis Samples     | 464 |\n| 1KGP Phase 3 Samples | 3202          |\n| Samples in both      | 451                |\n\n### Saving Geuvadis and 1KGP shared sample IDs\n\nSample IDs saved to `../code/resources/geuvdis-1kgp-common-sample-id.txt`. \n\n\n::: {.cell}\n\n```{.r .cell-code}\nwrite_lines(SamIDs_common, \"../code/resources/geuvdis-1kgp-common-sample-id.txt\")\n```\n:::\n",
+    "supporting": [
+      "Geuvadis-Samples_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

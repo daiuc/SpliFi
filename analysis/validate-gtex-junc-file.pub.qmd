@@ -1,0 +1,58 @@
+---
+title: "Validate GTEx V8 junction file"
+categories: 
+  - GTEX
+  - "junctions"
+date: 2022-10-20
+author: Chao Dai
+---
+
+GTEx V8 junction file was downloaded from [GTEx portal](https://gtexportal.org/home/datasets), specifically via this link: [GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz](https://storage.googleapis.com/gtex_analysis_v8/rna_seq_data/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz).
+
+Downloaded file path: 
+
+- `resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions.gct.gz`
+
+Because the file is rather large, a python script is used to compute the histogram of each junction. 
+
+- `workflow/scripts/make_histogram_of_GTEx_juncs.py`
+
+
+```{r}
+#| label: setup
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(data.table)
+
+```
+
+
+
+### The GTEx V8 junction file include low reads
+
+See plots below. It seems this data set does not filter out 
+```{r}
+# histograms for each junction
+hist_data = fread("../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_histogram.txt")
+# junction coordinates and gene id
+col_data = fread("../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_names.txt", col.names = c("junc", "gene_id"))
+```
+
+:::{.panel-tabset}
+
+#### Samples with 0-5 reads
+```{r}
+ggplot(hist_data) + geom_histogram(aes(`bin_0-5`), bins=20) +
+  labs(x = "Num. of samples with <5 reads", y = NULL)
+```
+
+#### Distribution of Min(reads)
+```{r}
+ggplot(hist_data) + stat_ecdf(aes(Min), bins = 20) +
+  labs(x = "minimum reads", y = NULL)
+```
+:::
+

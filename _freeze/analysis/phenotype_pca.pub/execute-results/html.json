@@ -1,0 +1,16 @@
+{
+  "hash": "a5ff7c73288a076391c4bbacf20976e4",
+  "result": {
+    "markdown": "---\ntitle: \"Phenotype PCA results\"\ncategories: \n  - PCA\n  - Phenotype\n  - Geuvadis\n  - \"1000 Genome\"\ndate: 2022-10-23\nauthor: Chao Dai\n---\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nmetadata = fread(\"../code/resources/geuvadis-sample-run-pop-lookup.tsv\")\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\n#Geuvadis genotype PCA\n\npca_file = dir(\"../code/results/Geuvadis/noise_pheno\", \".+_pheno.+pca$\", full.names = T)\npca_file = naturalsort::naturalsort(pca_file)\nnames(pca_file) = str_extract(pca_file, \"chr[0-9]{1,2}\")\n\npca = map(pca_file, ~ fread(.x))\n\npca = map(pca, ~ column_to_rownames(.x, \"SampleID\") %>% t %>% as.data.frame)\npca = map(pca, \n          ~ left_join(x = rownames_to_column(.x, \"Sample\"), \n                      y = metadata[, c(\"Sample\", \"Pop_id\")], \n                      by = \"Sample\")\n)\n```\n:::\n\n\n\n### Are the samples in the same order?\n\n\n::: {.cell}\n\n```{.r .cell-code}\nchr1_samples = pca$chr1$Sample\nmap_lgl(pca, ~ all(chr1_samples == .x$Sample))\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n chr1  chr2  chr3  chr4  chr5  chr6  chr7  chr8  chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 \n TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE \n```\n:::\n:::\n\n\n\n### Are the in the same order as genotype?\n\n\n::: {.cell}\n\n```{.r .cell-code}\ngeno_pca_chr1 = \"../code/results/Genotype/Geuvadis/chr1_geno.pca\"\ngeno_pca_chr1 = fread(geno_pca_chr1)\ngeno_samples = names(geno_pca_chr1)\ngeno_samples = geno_samples[str_detect(geno_samples, \"[A-Z]{2}[0-9]{5,7}\")]\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nggplot(pca$chr1) + \n  geom_point(aes(PC2, PC1, color = Pop_id))\n```\n\n::: {.cell-output-display}\n![](phenotype_pca.pub_files/figure-html/unnamed-chunk-6-1.png){width=672}\n:::\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nggplot(pca$chr1) + \n  geom_point(aes(PC4, PC3, color = Pop_id))\n```\n\n::: {.cell-output-display}\n![](phenotype_pca.pub_files/figure-html/unnamed-chunk-7-1.png){width=672}\n:::\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nggplot(pca$chr10) + \n  geom_point(aes(PC5, PC6, color = Pop_id))\n```\n\n::: {.cell-output-display}\n![](phenotype_pca.pub_files/figure-html/unnamed-chunk-8-1.png){width=672}\n:::\n:::\n",
+    "supporting": [
+      "phenotype_pca.pub_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

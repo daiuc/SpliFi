@@ -1,0 +1,99 @@
+---
+title: "Genotype PCA results"
+categories: 
+  - PCA
+  - Genotype
+  - "1000 Genome"
+date: 2022-10-23
+author: Chao Dai
+---
+
+
+```{r}
+#| label: setup
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(data.table)
+
+```
+
+```{r}
+metadata = fread("../code/resources/geuvadis-sample-run-pop-lookup.tsv")
+```
+
+
+```{r}
+#Geuvadis genotype PCA
+
+pca_file = dir("../code/results/Genotype/Geuvadis", ".+geno.+pca$", full.names = T)
+pca_file = naturalsort::naturalsort(pca_file)
+names(pca_file) = str_extract(pca_file, "chr[0-9]{1,2}")
+
+pca = map(pca_file, ~ fread(.x))
+
+walk(pca, ~.x[, PC := str_extract(SampleID, "PC[0-9]{1,3}$")])
+pca = map(pca, ~.x[, -c("SampleID")])
+pca = map(pca, ~ column_to_rownames(.x, "PC") %>% t %>% as.data.frame)
+pca = map(pca, 
+          ~ left_join(x = rownames_to_column(.x, "Sample"), 
+                      y = metadata[, c("Sample", "Pop_id")], 
+                      by = "Sample")
+)
+
+```
+
+
+### Are the column orders the same for each chromosome?
+
+The answer is yes. See below:
+```{r}
+chr1_cols = pca$chr1 %>% names
+map_lgl(pca, ~ all(chr1_cols == names(.x)))
+
+```
+
+
+
+```{r}
+ggplot(pca$chr1) + 
+  geom_point(aes(PC2, PC1, color = Pop_id))
+```
+
+
+
+```{r}
+ggplot(pca$chr1) + 
+  geom_point(aes(PC4, PC3, color = Pop_id))
+```
+
+```{r}
+ggplot(pca$chr1) + 
+  geom_point(aes(PC5, PC6, color = Pop_id))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

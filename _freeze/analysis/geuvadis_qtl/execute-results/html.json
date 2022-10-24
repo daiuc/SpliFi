@@ -1,0 +1,16 @@
+{
+  "hash": "f8460a8af6afc9f44c890286d0b9fd4a",
+  "result": {
+    "markdown": "---\ntitle: \"Geuvadis noisy splicing QTL\"\ncategories: \n  - QTL\n  - Geuvadis\n  - \"noisy splicing\"\ndate: 2022-10-23\nauthor: Chao Dai\n---\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nmetadata = fread(\"../code/resources/geuvadis-sample-run-pop-lookup.tsv\")\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nperm_out_cols = c(\"pid\", \"pchr\", \"pstart\", \"pend\", \"pstrand\", \"num_snp_tested\",\n                  \"best_nominal_dist\", \"best_gid\", \"best_gchr\", \"best_gstart\",\n                  \"best_gend\", \"true_dof\", \"esti_dof\", \"beta_ml1\", \"beta_ml2\",\n                  \"pval_nom\", \"pval_r2\", \"regression_slop\", \"pval_emp\", \n                  \"pval_adj\", \"qval\")\nqtl_chr22 = \"../code/results/qtltools/Geuvadis/cis_100000/perm/chr22.addQval.txt.gz\"\nqtl_chr22 = fread(qtl_chr22, col.names = perm_out_cols)\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nleafcutter::multiqq(list(p_emp = qtl_chr22$pval_emp))\n```\n\n::: {.cell-output-display}\n![](geuvadis_qtl_files/figure-html/unnamed-chunk-4-1.png){width=672}\n:::\n:::\n",
+    "supporting": [
+      "geuvadis_qtl_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

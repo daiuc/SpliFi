@@ -1,0 +1,10 @@
+---
+title: "Geuvadis dataset noisy splicing QTLs"
+author: "Chao Dai"
+date: "2022-10-24"
+categories: 
+    - geuvadis
+    - updates
+    - qtl
+---
+
