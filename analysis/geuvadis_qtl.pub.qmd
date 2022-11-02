@@ -26,7 +26,8 @@ Ankeeta's dataset has total 452 runs, representing lesst han 452 samples.
 
 library(tidyverse)
 library(data.table)
-
+library(GenomicFeatures)
+library(GenomicRanges)
 ```
 
 ```{r}
@@ -40,7 +41,7 @@ perm_out_cols = c("pid", "pchr", "pstart", "pend", "pstrand", "num_snp_tested",
                   "best_gend", "true_dof", "esti_dof", "beta_ml1", "beta_ml2",
                   "pval_nom", "pval_r2", "regression_slop", "pval_emp", 
                   "pval_adj", "qval")
-qtls = dir("../code/results/qtltools/Geuvadis/cis_100000/perm/", 
+qtls = dir("../code/results/qtltools/Geuvadis/cis_100000/perm", 
            ".+addQval.txt.gz", full.names = T)
 qtls = naturalsort::naturalsort(qtls)
 names(qtls) = str_extract(qtls, "chr[0-9]{1,2}")
@@ -157,5 +158,11 @@ puta_qtls[, .(n_qtls = length(unique(pid))), by = pchr] %>%
 
 
 
+```{r}
+# load in GFF
+gff = "../../genome_index/hs38/gencode.v38.annotation.gff3"
+
+txdb = maketx
+```
 
 

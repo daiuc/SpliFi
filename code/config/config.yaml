@@ -11,3 +11,4 @@ junction_list:
   Geuvadis: resources/Geuvadis_juncs.txt
 
 intron_class : resources/intron_class.txt.gz # annotated intron class: e.g. functional or noisy
+
