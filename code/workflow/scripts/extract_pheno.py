@@ -35,17 +35,21 @@ parser.add_argument("-O", "--outcount", dest="outcount",
     type=str, required=True,
     help="output count file")
 
-parser.add_argument("--samplelist", dest="samplelist",
+parser.add_argument("--outsample", dest="outsample",
     type=str, required=True,
     help="output sample list file")
 
-parser.add_argument("-L", "--lookuptable", dest="lookuptable",
+parser.add_argument("-K", "--lookuptable", dest="lookuptable",
     type=str, required=True,
     help="Geuvadis metadata look up table e.g. ERR <-> Sample")   
 
-parser.add_argument("-S", "--subset", dest="subset",
-    type=str, required=True,
+parser.add_argument("--subset", dest="subset",
+    type=str, required=False,
     help="Geuvadis samples with only 1 ERR ID that has genotype")
+
+parser.add_argument("--pop", dest="population",
+    type=str, required=True, default="EUR",
+    help="Geuvadis population, e.g. YRI or EUR")
 
 
 def getERR(sample_id, lookup_df):
@@ -63,9 +67,10 @@ Geuvadis_Metadata = pd.read_csv(options.lookuptable, sep='\t')
 Geuvadis_Metadata.set_index(['Pop_id', 'Sample', 'run_id'], 
     drop=False, inplace=True)
 
-Geuvadis_Linked_SampleIDs = []
-with open(options.subset) as f_subset:
-    Geuvadis_Linked_SampleIDs = [s.strip() for s in f_subset.readlines()]
+if options.subset:
+    Geuvadis_Linked_SampleIDs = []
+    with open(options.subset) as f_subset:
+        Geuvadis_Linked_SampleIDs = [s.strip() for s in f_subset.readlines()]
 
 
 N = 0
@@ -74,10 +79,19 @@ if os.path.exists(options.outcount):
     print(f"{options.outcount} exists. Removing it first.")
     os.remove(options.outcount)
     fout = gzip.open(options.outcount, 'wt')
-    fout2 = open(options.samplelist, 'w')
+    fout2 = open(options.outsample, 'w')
 else:
     fout = gzip.open(options.outcount, 'wt')
-    fout2 = open(options.samplelist, 'w')
+    fout2 = open(options.outsample, 'w')
+
+pop = options.population
+if pop in Geuvadis_Metadata.Pop_id.unique():
+    pop_ids = [pop]
+elif pop == 'EUR':
+    pop_ids = [p for p in Geuvadis_Metadata.Pop_id.unique() if p != 'YRI']
+else:
+    print('pop must be "EUR" or one of the five population IDs.')
+
 
 for ln in fin:
     # if N > 100:
@@ -85,14 +99,26 @@ for ln in fin:
         
     if N == 0:
         headers = ln.decode().split()
-        headers = [x.split(".")[0] if x != "chrom" else x for x in headers]
-        new_headers = [getSample(c, Geuvadis_Metadata) if c != "chrom" else c for c in headers]
-        select_cols = [c for c in new_headers if c in ['chrom'] + Geuvadis_Linked_SampleIDs]
-        select_idx = [new_headers.index(x) for x in select_cols]
-        select_samples = [c for c in select_cols if c != "chrom"]
-        fout.write(' '.join(select_cols) + '\n') # write count file header
-        fout2.write('\n'.join(select_samples)) # write sample ID list
+        headers = [x.split(".")[0] if x != "chrom" else x for x in headers] # chrom, ERR1, ERR2, ...
+        sample_ids = [getSample(c, Geuvadis_Metadata) for c in headers if c != "chrom"]
+        new_headers = ['chrom'] + sample_ids # chrom, sampleID1, sampleID2...
         
+        # select samples that has a genotype and that are in desired population
+        if options.subset:
+            select_samples = [s for s in sample_ids if s in Geuvadis_Linked_SampleIDs]
+            select_samples = [s for s in select_samples if s in list(Geuvadis_Metadata.query('Pop_id in @pop_ids').Sample)]
+        else:
+            select_samples = sample_ids
+            select_samples = [s for s in select_samples if s in list(Geuvadis_Metadata.query('Pop_id in @pop_ids').Sample)]
+
+        # selected column
+        select_cols = [c for c in new_headers if c in ['chrom'] + select_samples]
+        select_idx = [new_headers.index(x) for x in select_cols]
+
+        fout.write(' '.join(select_cols) + '\n') # write count file header
+        fout2.write('\n'.join(select_samples)) # write sample ID list        
+
+
     if N > 0:
         ln = ln.decode().split()
         select_data = [ln[idx] for idx in select_idx]

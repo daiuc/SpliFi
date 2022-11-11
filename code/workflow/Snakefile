@@ -25,6 +25,12 @@ __email__ = "chaodai@uchicago.edu"
 
 configfile: "config/config.yaml"
 
+wildcard_constraints:
+    datasource = "Geuvadis|GTEx",
+    population = "YRI|EUR",
+    chrom = "chr[0-9]{1,2}",
+    window = "[0-9]+"
+
 include: "rules/common.smk"
 include: 'rules/noisy.smk'
 include: 'rules/qtl.smk'

@@ -12,22 +12,31 @@ rule ExtractPhenotypeBySamples:
     '''
     message: 'Prepare phenotype count table'
     input: 
-        counts = 'results/Geuvadis/noise/Geuvadis_perind.counts.noise.gz',
+        counts = 'results/pheno/Geuvadis/noise_counts/Geuvadis_perind.counts.noise.gz',
         metadata = config['Dataset']['Geuvadis']['Metadata'],
         Linked_1to1_Samples = config['Dataset']['Geuvadis']['Linked_1to1_SampleIDs']
     output: 
-        counts = 'results/{datasource}/noise_pheno/{datasource}_pheno_extract.count.gz',
-        samplelist = 'results/{datasource}/noise_pheno/samplelist_pheno.txt'
+        counts     = 'results/pheno/{datasource}/{population}/noise_pheno/pheno_extract.count.gz',
+        samplelist = 'results/pheno/{datasource}/{population}/noise_pheno/samplelist_pheno.txt'
     params: 
-        py_script = 'workflow/scripts/extract_pheno.py'
+        py_script = 'workflow/scripts/extract_pheno.py',
+        population = "{population}"
     threads: 1
     resources: cpu = 1, mem_mb = 15000, time = 2100
     shell: 
         '''
             python {params.py_script} -I {input.counts} \
-                -O {output.counts} --samplelist {output.samplelist} \
-                -L {input.metadata} -S {input.Linked_1to1_Samples}
+                --outcount {output.counts} \
+                --outsample {output.samplelist} \
+                --lookuptable {input.metadata} \
+                --subset {input.Linked_1to1_Samples} \
+                --pop {params.population}
         '''
+    # in future analysis, use geuvadis-1kgp-common-sample-id.txt to subset samples
+    # such that all Geuvadis samples with a 1KGP genotype match is selected.
+    # Currently, only samples with only 1 ERR id and with a match with 1kgp genotype is selected.
+    # NOTE by this subselect, YRI only has 21 samples with genotype and having 1 ERR_id only.
+    # thus for this practice run, only run EUR sanokes,
 
 
 rule ExtractGenotypeVCF:
@@ -40,7 +49,7 @@ rule ExtractGenotypeVCF:
     input: 
         vcf =  '/project2/yangili1/zpmu/1kg_b38/CCDG_14151_B01_GRM_WGS_2020-08-05_{chrom}.filtered.shapeit2-duohmm-phased.vcf.gz',
         sample_file = rules.ExtractPhenotypeBySamples.output.samplelist
-    output: 'results/Genotype/{datasource}/{chrom}.vcf.gz'
+    output: 'results/geno/{datasource}/{population}/{chrom}.vcf.gz'
     params:
         min_MAF = 0.05,
         max_HWE = 1e-3
@@ -62,7 +71,7 @@ rule ExtractGenotypeVCF:
 
 rule PrepPhenoTable:
 	input: rules.ExtractPhenotypeBySamples.output.counts
-	output: touch('results/{datasource}/noise_pheno/PrepPhenoTable.done')
+	output: touch('results/pheno/{datasource}/{population}/noise_pheno/PrepPhenoTable.done')
 	params:
 		py_script = 'workflow/submodules/leafcutter/scripts/prepare_phenotype_table.py'
 	conda: 'leafcutter'
@@ -74,15 +83,13 @@ rule PrepPhenoTable:
 rule MakePhenoBed:
     message:'### Make phenotype bed format required by QTLtools'
     input:
-        flag = 'results/{datasource}/noise_pheno/PrepPhenoTable.done',
-        pheno = 'results/{datasource}/noise_pheno/{datasource}_pheno_extract.count.gz.phen_{chrom}'
+        flag  = 'results/pheno/{datasource}/{population}/noise_pheno/PrepPhenoTable.done',
+        pheno = 'results/pheno/{datasource}/{population}/noise_pheno/pheno_extract.count.gz.phen_{chrom}'
     output:
-        pheno = 'results/{datasource}/noise_pheno/{chrom}_pheno.bed.gz'
-    wildcard_constraints:
-        chrom = "chr[0-9]{1,2}"
+        pheno = 'results/pheno/{datasource}/{population}/noise_pheno/{chrom}.bed.gz'
     params:
         rscript = 'workflow/scripts/Make_pheno_bed.R',
-        out_dir = 'results/{datasource}/noise_pheno/'
+        out_dir = 'results/pheno/{datasource}/{population}/noise_pheno/'
     threads: 1
     shell:
         '''
@@ -96,9 +103,7 @@ rule MakePhenoBed:
 rule PhenotypePCA:
     message: '### Run PCA on phenotype with permutation'
     input: rules.MakePhenoBed.output.pheno
-    output: 'results/{datasource}/noise_pheno/{chrom}_pheno.pca'
-    wildcard_constraints:
-        chrom = "chr[0-9]{1,2}"
+    output: 'results/pheno/{datasource}/{population}/noise_pheno/{chrom}.pca'
     params:
         rscript = 'workflow/scripts/PermuteAndPCA.R'
     threads: 1
@@ -109,10 +114,10 @@ rule PhenotypePCA:
 
 rule GenotypePCA:
     message: '### Run pca on genotype'
-    input: 'results/Genotype/{datasource}/{chrom}.vcf.gz'
-    output: 'results/Genotype/{datasource}/{chrom}_geno.pca'
+    input:  'results/geno/{datasource}/{population}/{chrom}.vcf.gz'
+    output: 'results/geno/{datasource}/{population}/{chrom}.pca'
     params:
-        out_prefix = 'results/Genotype/{datasource}/{chrom}_geno'
+        out_prefix = 'results/geno/{datasource}/{population}/{chrom}'
     threads: 1
     shell:
         '''
@@ -131,9 +136,7 @@ rule MakeCovarianceMatrix:
     input:
         PhenoPCs = rules.PhenotypePCA.output,
         GenoPCs = rules.GenotypePCA.output
-    output: 'results/qtltools/{datasource}/{chrom}_CovMatrix.txt'
-    wildcard_constraints:
-        chrom = "chr[0-9]{1,2}"
+    output: 'results/pheno/{datasource}/{population}/noise_pheno/{chrom}_CovMatrix.txt'
     params:
         Geno_PCs = 4,
         rscript = 'workflow/scripts/Make_CovMatrix.R'
@@ -146,15 +149,12 @@ rule MakeCovarianceMatrix:
 rule MapQTL_Perm:
     message: 'Map QTL using permutation pass'
     input:
-        vcf = 'results/Genotype/{datasource}/{chrom}.vcf.gz',
-        bed = 'results/{datasource}/noise_pheno/{chrom}_pheno.bed.gz',
-        cov = 'results/qtltools/{datasource}/{chrom}_CovMatrix.txt'
-    output: 'results/qtltools/{datasource}/cis_{window}/perm/{chrom}.txt'
+        vcf = 'results/geno/{datasource}/{population}/{chrom}.vcf.gz',
+        bed = 'results/pheno/{datasource}/{population}/noise_pheno/{chrom}.bed.gz',
+        cov = 'results/pheno/{datasource}/{population}/noise_pheno/{chrom}_CovMatrix.txt'
+    output: 'results/qtl/noise/{datasource}/{population}/cis_{window}/perm/{chrom}.txt'
     params:
         cis_window = '{window}'
-    wildcard_constraints:
-        chrom = "chr[0-9]{1,2}",
-        window = "[0-9]+"
     resources: cpu = 1, mem = 12000, time = 1000
     shell:
         '''
@@ -169,8 +169,8 @@ rule MapQTL_Perm:
 
 rule AddQvalueToPermutationPass:
     message: '### Add qvalue to the output of QTLtools permutation pass'
-    input: 'results/qtltools/{datasource}/cis_{window}/perm/{chrom}.txt'
-    output: 'results/qtltools/{datasource}/cis_{window}/perm/{chrom}.addQval.txt.gz'
+    input:  'results/qtl/noise/{datasource}/{population}/cis_{window}/perm/{chrom}.txt'
+    output: 'results/qtl/noise/{datasource}/{population}/cis_{window}/perm/{chrom}.addQval.txt.gz'
     params:
         rscript = 'workflow/scripts/AddQvalueToQTLtoolsOutput.R'
     shell:

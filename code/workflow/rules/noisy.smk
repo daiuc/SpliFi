@@ -13,7 +13,7 @@ rule MakeJunctionList:
         4.  save file paths in a file
     '''
     message: '### Make a list of junction input file'
-    output: 'results/{datasource}/juncs/junc-file-list.txt'
+    output: 'results/pheno/{datasource}/juncs/junc-file-list.txt'
     params:
         junc_dir = '/project2/yangili1/ankeetashah/noisysQTL/geuvadis/geuvadis_juncs/'
     run:
@@ -45,11 +45,9 @@ rule RunNoisy:
         junc_list_file =  rules.MakeJunctionList.output,
         intron_class   = config['intron_class']
     output:
-        perind_noise_counts = 'results/{datasource}/noise/{datasource}_perind.counts.noise.gz'
-    wildcard_constraints:
-        datasource = '(test)|(Geuvadis)|(GTEx)|(TCGA)'
+        perind_noise_counts = 'results/pheno/{datasource}/noise_counts/{datasource}_perind.counts.noise.gz'
     params:
-        run_dir    = 'results/{datasource}/noise',
+        run_dir    = 'results/pheno/{datasource}/noise_counts',
         out_prefix = '{datasource}', # note do not include parent dir
         py_script  = 'workflow/scripts/leafcutter_cluster_regtools_noisy_CD.py'
     threads: 1
