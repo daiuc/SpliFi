@@ -1,3 +1,6 @@
 [submodule "code/workflow/submodules/leafcutter"]
 	path = code/workflow/submodules/leafcutter
 	url = https://github.com/davidaknowles/leafcutter.git
+[submodule "code/workflow/submodules/ggsashimi"]
+	path = code/workflow/submodules/ggsashimi
+	url = git@github.com:guigolab/ggsashimi.git

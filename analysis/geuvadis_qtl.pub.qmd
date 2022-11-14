@@ -4,13 +4,13 @@ categories:
   - QTL
   - Geuvadis
   - "noisy splicing"
-date: 2022-10-23
+date: 2022-11-13
 author: "Chao Dai"
 ---
 
 ### Samples used
 
-274 Geuvaids samples are used (see [details](Geuvadis-Samples.pub.qmd)) in this 
+253 Geuvaids EUR samples are used (see [details](Geuvadis-Samples.pub.qmd)) in this 
 test run. These are samples that have single run (single ERR ID) that have matching 
 genotype in 1000 genome project.
 <br>
@@ -41,7 +41,7 @@ perm_out_cols = c("pid", "pchr", "pstart", "pend", "pstrand", "num_snp_tested",
                   "best_gend", "true_dof", "esti_dof", "beta_ml1", "beta_ml2",
                   "pval_nom", "pval_r2", "regression_slop", "pval_emp", 
                   "pval_adj", "qval")
-qtls = dir("../code/results/qtltools/Geuvadis/cis_100000/perm", 
+qtls = dir("../code/results/qtl/noise/Geuvadis/EUR/cis_100000/perm", 
            ".+addQval.txt.gz", full.names = T)
 qtls = naturalsort::naturalsort(qtls)
 names(qtls) = str_extract(qtls, "chr[0-9]{1,2}")
@@ -159,10 +159,48 @@ puta_qtls[, .(n_qtls = length(unique(pid))), by = pchr] %>%
 
 
 ```{r}
-# load in GFF
-gff = "../../genome_index/hs38/gencode.v38.annotation.gff3"
+# load in annotation
+anno.gene = "../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv"
+mycols = c("seqname", "start", "end", "strand", "gene_name")
+anno.gene = fread(anno.gene) 
+anno.gene = anno.gene[gene_type %in% c("protein_coding") & 
+                        feature %in% c("gene") & 
+                        source %in% c("HAVANA"), ..mycols] %>% 
+  unique %>% 
+  makeGRangesFromDataFrame(keep.extra.columns = T)
 
-txdb = maketx
+# remove scaffolds
+chroms = paste("chr", 1:22, sep = "")
+anno.gene = anno.gene[seqnames(anno.gene) %in% chroms]
 ```
+
+
+```{r}
+
+# annotate pid with gene names
+puta_loci = puta_qtls[, .(pid, pchr, pstart, pend, pstrand)] %>% 
+  makeGRangesFromDataFrame(keep.extra.columns = T, 
+                           seqnames.field = "pchr", 
+                           start.field = "pstart", 
+                           end.field = "pend",
+                           strand.field = "pstrand")
+
+hits = GenomicRanges::findOverlaps(puta_loci, anno.gene, minoverlap = 1)
+hits = cbind(puta_loci[queryHits(hits)] %>% mcols,
+                 anno.gene[subjectHits(hits)] %>% mcols
+                 )
+hits = as.data.table(hits) %>% 
+  .[,  list(genes = pull(.SD, gene_name) %>% paste0(collapse = ",")), by = "pid"]
+
+puta_qtls = hits[puta_qtls, on = "pid", nomatch = NA]
+
+```
+
+
+```{r}
+puta_qtls[!is.na(genes)][order(qval)]
+```
+
+
 
 

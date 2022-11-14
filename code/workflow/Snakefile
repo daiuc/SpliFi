@@ -31,8 +31,9 @@ wildcard_constraints:
     chrom = "chr[0-9]{1,2}",
     window = "[0-9]+"
 
-include: "rules/common.smk"
+include: 'rules/common.smk'
 include: 'rules/noisy.smk'
+include: 'rules/gtex.smk'
 include: 'rules/qtl.smk'
 include: "rules/other.smk"
 

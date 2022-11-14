@@ -1,0 +1,94 @@
+---
+title: "GTEx Samples"
+categories: 
+  - GTEx
+  - "noisy splicing"
+date: 2022-11-13
+author: "Chao Dai"
+code-fold: true
+---
+
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(data.table)
+
+library(reticulate)
+reticulate::use_python('/scratch/midway2/chaodai/miniconda3/envs/smk/bin/python')
+```
+
+
+```
+# used to generate lookup table for GTEx samples
+gtex.meta = "../code/resources/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"
+mycols = c("SAMPID", "SMTS", "SMTSD")
+gtex.meta = fread(gtex.meta)
+gtex.meta = gtex.meta[, ..mycols] %>% unique
+fwrite(gtex.meta, "../code/resources/GTEx-SampleID-Tissue-Lookup.tsv")
+```
+
+```{python}
+# use python to stream junction file, otherwise it's too large to read in memory
+import gzip
+
+N = 0
+with gzip.open('../code/resources/GTEx/juncs/munged_juncs.txt.gz') as g:
+  for ln in g:
+    if N > 3:
+      break
+    if N == 0:
+      header = ln.decode().split()
+      print(header[0:10])
+    
+    N += 1
+```
+
+
+
+All `17382` GTEx samples are included in Tissue lookup table. 
+```{r}
+gtex.lookup = fread("../code/resources/GTEx-SampleID-Tissue-Lookup.tsv")
+gtex.junc.SID = py$header[6:length(py$header)]
+```
+
+
+```{r}
+length(unique(gtex.junc.SID))
+length(unique(gtex.lookup$SAMPID))
+
+intersect(gtex.lookup$SAMPID, gtex.junc.SID) %>% length
+```
+
+
+The number of samples across tissue type vary significantly.
+
+```{r}
+gtex.lookup[, .(N = length(unique(SAMPID))), by = SMTS] %>% 
+  ggplot() + geom_col(aes(x = forcats::fct_reorder(SMTS, N), 
+                          y = N, fill = SMTS)) +
+    labs(x = NULL) +
+    scale_y_log10(breaks = c(10, 100, 500, 1000, 1500, 2000, 3000)) + 
+    theme(legend.position = "None", axis.text.x = element_text(angle = 90))
+```
+
+
+
+```{r}
+nms = fread("../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_names.txt")
+gtf = fread("../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv")
+
+```
+```{r}
+length(nms$Description %>% unique)
+
+length(unique(gtf$gene_id))
+```
+
+```{r}
+setdiff(nms$Description, gtf$gene_id) %>% length
+```
+
+
+
+
