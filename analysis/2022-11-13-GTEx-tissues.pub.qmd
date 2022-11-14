@@ -76,17 +76,27 @@ gtex.lookup[, .(N = length(unique(SAMPID))), by = SMTS] %>%
 
 ```{r}
 nms = fread("../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_names.txt")
-gtf = fread("../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv")
+nms[, gene_id2 := str_extract(Description, "^ENSG[0-9]+")]
+gtf = fread("../../genome_index/hs38/gencode.v42.chr_patch_hapl_scaff.annotation.csv.gz")
+gtf[, gene_id2 := str_extract(gene_id, "^ENSG[0-9]+")]
 
 ```
+
+
 ```{r}
 length(nms$Description %>% unique)
-
 length(unique(gtf$gene_id))
+
+length(nms$gene_id2 %>% unique)
+length(unique(gtf$gene_id2))
+
 ```
 
 ```{r}
 setdiff(nms$Description, gtf$gene_id) %>% length
+setdiff(nms$gene_id2, gtf$gene_id2) %>% length
+setdiff(nms$gene_id2, gtf$gene_id2) %>% unique
+
 ```
 
 
