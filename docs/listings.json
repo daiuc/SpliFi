@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/analysis/2022-11-14-PacBio-QC.pub.html",
       "/analysis/2022-11-13-GTEx-tissues.pub.html",
       "/analysis/geuvadis_qtl.pub.html",
       "/analysis/genotype_pca.pub.html",

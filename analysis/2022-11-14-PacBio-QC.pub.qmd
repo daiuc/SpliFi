@@ -1,0 +1,38 @@
+---
+date: 2022-11-14
+author: "Chao Dai"
+code-fold: true
+execute: 
+  warning: false
+  message: false
+categories: 
+  - pacbio
+  - longread
+---
+
+## Previously mapped bams from Ankeeta
+
+Iso-seq bams are here: `/project2/yangili1/noisy_splicing_code/iso-seq` or symlink `~/cdai/SpliFi/code/resources/iso-seq`.
+
+All long read sequences were mapped using minimap2 v2.17-r941 with the following command:
+
+```
+minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa
+
+# -a output in the SAM format
+# -x splice/splice:hq - long-read/Pacbio-CCS spliced alignment
+# -uf how to find GT-AG. f: transcript strand
+# -C5 Cost for a non-canonical GT-AG splicing
+
+```
+
+
+```{bash}
+bams=(../code/resources/iso-seq/*bam)
+for b in ${bams[@]}; do
+  echo $b
+  samtools view -h $b | awk '$1 ~ /@PG/ && NR < 2000'
+  echo
+done
+```
+
