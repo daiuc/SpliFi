@@ -36,3 +36,17 @@ for b in ${bams[@]}; do
 done
 ```
 
+
+
+```{r}
+library(tidyverse)
+
+head(mpg)
+```
+
+```{python}
+print("a")
+```
+
+
+

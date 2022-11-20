@@ -37,7 +37,7 @@ parser.add_argument("-G", "--gencode", dest="gencode",
 options = parser.parse_args()
 
 # dictionary of {'gene_id': 'strand'}
-anno = pd.read_csv(options.gencode)
+anno = pd.read_csv(options.gencode, sep="\t", names=['chrom', 'A', 'B', 'gene_id', 'dot', 'strand'])
 strand_lk = dict(anno[['gene_id', 'strand']].drop_duplicates().values)
 print(f"Gene ID to strand lookup table, {len(strand_lk)} records.")
 

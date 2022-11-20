@@ -38,3 +38,11 @@ include: 'rules/qtl.smk'
 include: "rules/other.smk"
 
 
+
+
+localrules: SplitGTExSampleIDList
+
+# rule all:
+#     input:
+#         expand('resources/GTEx/juncs/split_juncs/{GTEx_SamID}.tsv.gz', GTEx_SamID=GTEX_SAMPLE_IDS)
+

@@ -17,3 +17,4 @@ intron_class : resources/intron_class.txt.gz # annotated intron class: e.g. func
 
 annotation:
   gencode: /project2/yangili1/cdai/genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv
+  gencode_v26_genes: /project2/yangili1/cdai/genome_index/hs38/gencode.v26.primary_assembly.annotation.genes.bed.gz

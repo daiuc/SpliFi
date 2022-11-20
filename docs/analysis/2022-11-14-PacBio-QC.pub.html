@@ -191,7 +191,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 # -uf how to find GT-AG. f: transcript strand
 # -C5 Cost for a non-canonical GT-AG splicing
 </code></pre>
-<div class="cell" data-execution_count="1">
+<div class="cell">
 <details>
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">bams</span><span class="op">=</span><span class="va">(</span>../code/resources/iso-seq/<span class="pp">*</span>bam<span class="va">)</span></span>
@@ -202,160 +202,85 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM10_3p.bam.fastq.hg38.sort.bam</code></pre>
+<pre><code>../code/resources/iso-seq/demux.5p--YG_GM10_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM10_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM10_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM1_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM1_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM1_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM2_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM2_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM2_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM3_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM3_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM3_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM4_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM4_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM4_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM5_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM5_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM5_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM6_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM6_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM6_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM7_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM7_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM7_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM8_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM8_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM8_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/demux.5p--YG_GM9_3p.bam.fastq.hg38.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM9_3p.bam.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM9_3p.bam.fastq.hg38.sort.bam
+
+../code/resources/iso-seq/SRR1163655.fastq.hg38.bam.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.20-r1061   CL:minimap2 -ax splice -uf -C5 /project2/yangili1/ankeetashah/hg38_LCL/hg38_fa/hg38.fa SRR1163655.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/SRR1163655.fastq.hg38.bam.sort.bam
+
+../code/resources/iso-seq/SRR1163657.fastq.hg38.bam.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.20-r1061   CL:minimap2 -ax splice -uf -C5 /project2/yangili1/ankeetashah/hg38_LCL/hg38_fa/hg38.fa SRR1163657.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/SRR1163657.fastq.hg38.bam.sort.bam
+
+../code/resources/iso-seq/SRR1163658.fastq.hg38.bam.sort.bam
+@PG ID:minimap2 PN:minimap2 VN:2.20-r1061   CL:minimap2 -ax splice -uf -C5 /project2/yangili1/ankeetashah/hg38_LCL/hg38_fa/hg38.fa SRR1163658.fastq
+@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/SRR1163658.fastq.hg38.bam.sort.bam</code></pre>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM10_3p.bam.fastq</code></pre>
 </div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mpg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM10_3p.bam.fastq.hg38.sort.bam</code></pre>
+<pre><code># A tibble: 6 × 11
+  manufacturer model displ  year   cyl trans      drv     cty   hwy fl    class  
+  &lt;chr&gt;        &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  
+1 audi         a4      1.8  1999     4 auto(l5)   f        18    29 p     compact
+2 audi         a4      1.8  1999     4 manual(m5) f        21    29 p     compact
+3 audi         a4      2    2008     4 manual(m6) f        20    31 p     compact
+4 audi         a4      2    2008     4 auto(av)   f        21    30 p     compact
+5 audi         a4      2.8  1999     6 auto(l5)   f        16    26 p     compact
+6 audi         a4      2.8  1999     6 manual(m5) f        18    26 p     compact</code></pre>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
 </div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> abc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM1_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM1_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM1_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM2_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM2_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM2_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM3_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM3_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM3_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM4_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM4_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM4_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM5_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM5_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM5_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM6_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM6_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM6_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM7_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM7_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM7_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM8_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM8_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM8_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/demux.5p--YG_GM9_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.17-r941    CL:minimap2 -ax splice -uf -C5 /scratch/midway2/ankeetashah/LCL/hg38.fa ../ccs/../ccs/demux.5p--YG_GM9_3p.bam.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/demux.5p--YG_GM9_3p.bam.fastq.hg38.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/SRR1163655.fastq.hg38.bam.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.20-r1061   CL:minimap2 -ax splice -uf -C5 /project2/yangili1/ankeetashah/hg38_LCL/hg38_fa/hg38.fa SRR1163655.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/SRR1163655.fastq.hg38.bam.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/SRR1163657.fastq.hg38.bam.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.20-r1061   CL:minimap2 -ax splice -uf -C5 /project2/yangili1/ankeetashah/hg38_LCL/hg38_fa/hg38.fa SRR1163657.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/SRR1163657.fastq.hg38.bam.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>../code/resources/iso-seq/SRR1163658.fastq.hg38.bam.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:minimap2 PN:minimap2 VN:2.20-r1061   CL:minimap2 -ax splice -uf -C5 /project2/yangili1/ankeetashah/hg38_LCL/hg38_fa/hg38.fa SRR1163658.fastq</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>@PG ID:samtools PN:samtools PP:minimap2 VN:1.15 CL:samtools view -h ../code/resources/iso-seq/SRR1163658.fastq.hg38.bam.sort.bam</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code></code></pre>
+<pre><code>abc</code></pre>
 </div>
 </div>
 

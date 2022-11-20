@@ -42,10 +42,12 @@ fin = gzip.open(options.inputfile)
 fout = gzip.open(options.outputfile, 'wt')
 
 print('split munged output..')
+
+
 N = 0
 for ln in fin:
-    if N > 10000: # diagnosis
-        break
+    # if N > 10000: # diagnosis
+    #     break
     
     if N > 100 and N % 5000 == 0:
         print(f"Written {N} lines..")

@@ -11,6 +11,9 @@ code-fold: true
 
 ```{r}
 #| label: setup
+#| include: false
+#| message: false
+#| warning: false
 library(tidyverse)
 library(data.table)
 
@@ -42,6 +45,7 @@ with gzip.open('../code/resources/GTEx/juncs/munged_juncs.txt.gz') as g:
       print(header[0:10])
     
     N += 1
+    
 ```
 
 
@@ -77,28 +81,40 @@ gtex.lookup[, .(N = length(unique(SAMPID))), by = SMTS] %>%
 ```{r}
 nms = fread("../code/resources/GTEx/juncs/GTEx_Analysis_2017-06-05_v8_STARv2.5.3a_junctions_names.txt")
 nms[, gene_id2 := str_extract(Description, "^ENSG[0-9]+")]
-gtf = fread("../../genome_index/hs38/gencode.v42.chr_patch_hapl_scaff.annotation.csv.gz")
-gtf[, gene_id2 := str_extract(gene_id, "^ENSG[0-9]+")]
+genes = fread("../../genome_index/hs38/gencode.v26.primary_assembly.annotation.genes.bed.gz",
+              col.names = c("chrom", "start", "end", "gene_id", "dot", "strand")) %>% unique
+genes[, gene_id2 := str_extract(gene_id, "^ENSG[0-9]+")]
 
 ```
 
 
 ```{r}
+
 length(nms$Description %>% unique)
-length(unique(gtf$gene_id))
+length(unique(genes$gene_id))
 
-length(nms$gene_id2 %>% unique)
-length(unique(gtf$gene_id2))
+```
+
+
+```{r}
+all(nms$Description %in% unique(genes$gene_id))
+```
+
+
+
+```{r}
+
+setdiff(nms$Description, genes$gene_id) %>% length
+setdiff(nms$Description, genes$gene_id) %>% unique %>% head
 
 ```
 
 ```{r}
-setdiff(nms$Description, gtf$gene_id) %>% length
-setdiff(nms$gene_id2, gtf$gene_id2) %>% length
-setdiff(nms$gene_id2, gtf$gene_id2) %>% unique
+
+setdiff(nms$gene_id2, genes$gene_id2) %>% length
+setdiff(nms$gene_id2, genes$gene_id2) %>% unique %>% head
 
 ```
-
 
 
 
