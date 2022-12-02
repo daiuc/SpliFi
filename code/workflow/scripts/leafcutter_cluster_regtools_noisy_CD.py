@@ -294,6 +294,8 @@ def refine_linked(clusters):
         if len(unassigned) > 0:
             current = [unassigned[0]]
             splicesites = set([current[0][0][0],current[0][0][1]])
+            if len(unassigned) == 1: # assign the last intron
+                newClusters.append(current)
             unassigned = unassigned[1:]
     return newClusters
 
