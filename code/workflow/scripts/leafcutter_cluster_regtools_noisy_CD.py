@@ -19,16 +19,28 @@ Junction files are processed using regtools:
 
 Procedure sequence: 
 
-    1. pool_junc_reads
-    2. refine_clusters
-    3. addlowusage
+    1. pool_junc_reads:
+        Pool introns from a list of junction files. Output file is a text file,
+        where each line stores introns that belong to a single cluster, eg:
+            chr1:- 5754:5878:5 5810:6470:405 5890:6470:9 6173:6470:150
+        First column is `chrom:strand`; subsequent columns are `start:end:reads ...`
+        Any junctions that overlap are considered within an intron cluster.
+    
+    2. refine_clusters:
+        Take the pooled junction reads from the 1st procedure and refine it,
+        such that filters such as minimal junction reads, minimal cluster
+        reads, or ratios are met. Importantly, it ensures introns within 
+        a cluster must be linked - sharing either a 5' or a 3' splice site.
+        Output file is a text file, where each line stores linked intron cluster:
+            chr1:- 5754:5878:5
+            chr1:- 5810:6470:405 5890:6470:9 6173:6470:150
+
+    3. addlowusage:
+        Take refined clusters (each cluster is comprised of linked introns). 
     4. sort_junctions
     5. merge_junctions
     6. get_numers
     7. annotate_noisy
-
-NOTE: currently there is a bug, likely at step 4  - sort_junctions. Problem
-is all numerators are 0 in refined output. 
 
 NOTE: 
     * Minimum version requirement - python v3.6
