@@ -413,12 +413,14 @@ def refine_clusters(options):
     fout = open(outFile,'w')
 
     sys.stderr.write(f"\nRefine clusters from {inFile}...\n")
+    if minclureads == 0: 
+        sys.stderr.write(f"\n minimum cluster reads set to 0, skip any filtering on reads or ratios...\n")
 
     Ncl = 0
     for ln in open(inFile): # pooled juncs
         if type(ln) == bytes:
             ln = ln.decode('utf-8') # convert bytes to string
-        
+
         clu = [] # each cluster: [((start, end), reads),..]
         totN = 0 # total cluster reads
         chrom = ln.split()[0]
@@ -436,9 +438,13 @@ def refine_clusters(options):
                     buf += f"{interval[0]}:{interval[1]}" + f":{count}" + " "
                 Ncl += 1
                 fout.write(buf+'\n') # e.g. 'chr:strand start:end:reads'
-        
+
+        #[[((413430, 423479), 3)], [((410646, 413144), 3), ((410646, 413147), 62), ((410646, 420671), 4)]] 
         for cl in refine_linked(clu): # only linked intron clusters
-            rc = refine_cluster(cl, minratio, minreads)
+            if minclureads != 0:
+                rc = refine_cluster(cl, minratio, minreads)
+            else: rc = [cl]
+            
             if len(rc) > 0:
                 for clu in rc:
                     buf = f'{chrom} '
@@ -446,6 +452,8 @@ def refine_clusters(options):
                         buf += f"{interval[0]}:{interval[1]}" + f":{count}" + " "
                     Ncl += 1
                     fout.write(buf+'\n')
+            
+
     sys.stderr.write(f"Split into {Ncl} clusters...\n")
     fout.close()
 
