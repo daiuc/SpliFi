@@ -52,6 +52,7 @@ import tempfile
 import os
 import gzip
 import shutil
+from glob import glob1
 
 
 __author__    = "Yang Li, Chao Dai"
@@ -1243,6 +1244,11 @@ if __name__ == "__main__":
 
     parser.add_argument("-f", "--offset", dest="offset", default = 0,
         help="Offset sometimes useful for off by 1 annotations. (default 0)")
+    
+    parser.add_argument("-T", "--keeptemp", dest="keeptemp", \
+        action="store_true", default = False, 
+        help="keep temporary files. (default false)")
+
 
     options = parser.parse_args()
 
@@ -1265,3 +1271,13 @@ if __name__ == "__main__":
         [f"{x}" for x in range(1,23)]+['X','Y']
 
     main(options, libl)
+
+    if not options.keeptemp:
+        for tmp in glob1(options.rundir, '*junc.sorted.gz'):
+            os.remove(os.path.join(options.rundir, tmp))
+        os.remove(os.path.join(options.rundir, options.outprefix) + '_sortedlibs')
+        sys.stderr.write('Remove generated temp files... Done.')
+
+
+
+
