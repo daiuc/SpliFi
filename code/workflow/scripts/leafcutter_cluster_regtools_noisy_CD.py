@@ -19,28 +19,62 @@ Junction files are processed using regtools:
 
 Procedure sequence: 
 
+    Steps 1-3 may be skipped if running with provided cluster file. (-c path/to/clusterfile)
+    Otherwise, the script generates cluster file that includes noisy introns.
+
     1. pool_junc_reads:
-        Pool introns from a list of junction files. Output file is a text file,
-        where each line stores introns that belong to a single cluster, eg:
-            chr1:- 5754:5878:5 5810:6470:405 5890:6470:9 6173:6470:150
-        First column is `chrom:strand`; subsequent columns are `start:end:reads ...`
-        Any junctions that overlap are considered within an intron cluster.
+            Pool introns from a list of junction files. 
+            Output text file - file name: {out_prefix}_pooled.
+            Each line stores a cluster of introns: 
+                e.g. chr1:+ 779093:803918:3 793042:795469:4
+            Each cluster include both linked (sharing splice sites) and unlinked 
+            introns.
     
     2. refine_clusters:
-        Take the pooled junction reads from the 1st procedure and refine it,
-        such that filters such as minimal junction reads, minimal cluster
-        reads, or ratios are met. Importantly, it ensures introns within 
-        a cluster must be linked - sharing either a 5' or a 3' splice site.
-        Output file is a text file, where each line stores linked intron cluster:
-            chr1:- 5754:5878:5
-            chr1:- 5810:6470:405 5890:6470:9 6173:6470:150
+            Take the pooled junction reads from the 1st procedure and refine it.
+            Output text file - file name: {out_prefix}_refined.
+            such that filters such as minimal junction reads, minimal cluster
+            reads, or ratios are met. Importantly, it ensures introns within 
+            a cluster must be linked - sharing either a 5' or a 3' splice site.
+            Each line is a linked intron cluster, eg:
+                chr1:- 5754:5878:5
+                chr1:- 5810:6470:405 5890:6470:9 6173:6470:150
 
     3. addlowusage:
-        Take refined clusters (each cluster is comprised of linked introns). 
+            Step 2 produces refined clusters that pass filters. To detect noisy
+            splicing, we add lowly expressed introns back into these filtered
+            intron clusters. Step 3 takes input from step 2, {output_prefix}_refined, 
+            then add back noisy introns to each cluster. Note that each cluster
+            would still pass cluster reads filter.
+            Output 2 sorted text file:
+            - {out_prefix}_lowusage_introns: noisy introns only (intermediate) 
+            - {out_prefix}_refined_noisy: refined clusters including noisy introns (final output)
+
     4. sort_junctions
+            Sort junction files using step 3 {out_prefix}_refined_noisy file, or if -c specified, use
+            provided cluster file to sort input junctions following the same order in cluster file.
+            Out a sorted junction file {out_prefix}_{libName}.junc.sorted.gz for each library in junc list.
+    
     5. merge_junctions
+            Merge sorted junc files, specified in {out_prefix}_sortedlibs, aka. 
+            each {out_prefix}_{libName}.junc.sorted.gz. The result is a count table
+            with rows are introns, columns are counts for each library.
+            Write out: {out_prefix}_perind.counts.gz
+
     6. get_numers
+            Write out the numerators from {out_prefix}_perind.counts.gz. 
+            Output file: {out_prefix}_perind_numers.counts.gz
+    
     7. annotate_noisy
+            Annotate {out_prefix}_perind.counts.gz. Introns are marked with noisy vers functional. 
+            `*` appended coordinates indicate noisy. 
+            Output several files:
+                - {out_prefix}_perind.counts.noise.gz: output functional introns (intact), and 
+                  noisy introns. Note the start and end coordinates of noisy introns are recalibrated
+                  to the min(starts) and max(ends) of all functional introns within cluster.
+                - {out_prefix}_perind_numers.counts.noise.gz: same as above, except write numerators.
+                - {out_prefix}_perind.counts.noise_by_intron.gz: same as the first output, except here
+                  noisy introns' coordinates are kept as their original coordinates. 
 
 NOTE: 
     * Minimum version requirement - python v3.6
@@ -52,7 +86,6 @@ import tempfile
 import os
 import gzip
 import shutil
-from glob import glob1
 
 
 __author__    = "Yang Li, Chao Dai"
@@ -605,7 +638,7 @@ def sort_junctions(libl, options):
     Parameters:
     -----------
         libl : str
-            A list of junction files
+            A list of junction file paths
         options: argparse object
             Attributes store command line options
     
@@ -665,44 +698,41 @@ def sort_junctions(libl, options):
 
     merges = {} # stores junc file names as dict { k=filename : v=[filename] }
     for ll in libl:
-        lib=ll.rstrip()
+        lib = ll.rstrip() # 1 junc file path
+        libN = lib.split('/')[-1].split('.')[0] # get library name from junc file name eg. GTEX-1117F-0226-SM-5GZZ7
         if not os.path.isfile(lib):
             continue
-        libN = lib # junc file name
         if libN not in merges:
             merges[libN] = [] # why use list, `libN` should always be one element
         merges[libN].append(lib)
 
-    fout_runlibs = open(runName+"_sortedlibs",'w') # file to store sorted junc file names
+    fout_runlibs = open(os.path.join(rundir, outPrefix) + '_sortedlibs', 'w') # intermediate file to store sorted junc file names to be written
 
-    # loop each junc key, might have >1 junc files
+    # operate on each libN (library), each libN can have more than 1+ junc files
     for libN in merges: 
-        libName = f"{rundir}/{libN.split('/')[-1]}" # e.g. test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz
-        by_chrom = {}
-        foutName = libName.split('.junc')[0] + \
-            f'.{runName.split("/")[-1]}.junc.sorted.gz' # e.g. 'test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz.out.sorted.gz'
-
-        # write to description file storing the names of sorted junc files
-        fout_runlibs.write(foutName + '\n') # e.g. 'test/run/out_sortedlibs'
+        by_chrom = {} # to store junctions from original unsorted junc file
+        
+        
+        # write sorted junc file names into intermediate file
+        foutName = os.path.join(rundir, outPrefix + '_' + libN + '.junc.sorted.gz') # 'test/gtex_w_clu/gtex_GTEX-1IDJU-0006-SM-CMKFK.junc.sorted.gz'
+        fout_runlibs.write(foutName + '\n') # e.g. 'test/gtex_w_clu/gtex_sortedlibs'
 
         if options.verbose:   
             sys.stderr.write(f"Sorting {libN}..\n")
-        
-        if len(merges[libN]) > 1: # maybe unnecessary, since libN value is always a single file?
+        if len(merges[libN]) > 1: 
             if options.verbose:   
                 sys.stderr.write(f"merging {' '.join(merges[libN])}...\n")
-        else:
-            pass
-        fout = gzip.open(foutName,'wt') # e.g. 'test/run/GTEX-1117F-0226-SM-5GZZ7.leafcutter.junc.gz.out.sorted.gz'
+        else: pass
+        fout = gzip.open(foutName,'wt') # e.g. 'test/gtex_w_clu/gtex_GTEX-1IDJU-0006-SM-CMKFK.junc.sorted.gz'
 
         ### Process and write junction files
         
         # write header
-        fout.write(f'chrom {libN.split("/")[-1].split(".junc")[0]}\n') # 'chrom GTEX-111VG-0526-SM-5N9BW.leafcutter\n'
-        # works best when junc file has `.junc` in file name.
+        fout.write(f'chrom {libN}\n') # 'chrom GTEX-111VG-0526-SM-5N9BW\n'
 
-        # for each junc file, construct cluster dict: 
-        # by_chrom { k=chrom : v={ k=(start, end) : v=reads } }
+        # for each juncfile of library (libN), which may be more than 1, 
+        # store read counts by intron in by_chrom
+        # e.g. { ('chr1', '+') : { (100, 300) : 5, (500, 700): 10, ... } }
         for lib in merges[libN]:
             if ".gz" in lib: 
                 F = gzip.open(lib)
@@ -714,7 +744,6 @@ def sort_junctions(libl, options):
                 if type(ln) == bytes:
                     ln = ln.decode('utf-8') # convert bytes to string
                 lnsplit = ln.split()
-
 
                 if len(lnsplit) < 6:
                     sys.stderr.write(f"Error in {lib} \n")
@@ -737,7 +766,7 @@ def sort_junctions(libl, options):
             
                 chrom = (chrom, strand)
                 if chrom not in by_chrom: 
-                    by_chrom[chrom] = {} # note key is tuple: ('chr1', '+')
+                    by_chrom[chrom] = {} # store introns from junc file, key: ('chr1', '+')
                 
                 intron = (A, B)
                 if intron in by_chrom[chrom]: # sum up reads by intron from junc files
@@ -749,22 +778,22 @@ def sort_junctions(libl, options):
         # Note clusters are from refined_noisy, while reads are from junc file
         for clu in cluExons: # cluExons: { k=cluID : v=[(chrom, start, end)...]}
             buf = []
-            ks = cluExons[clu] # ks: [(chrom, start, end), ..]
+            ks = cluExons[clu] # eg: [('chr1:+', 827776, 829002), ..] introns of a clu
             ks.sort() # no need to version sort within cluster
 
             # Step 1: sum cluster level reads from each intron
-            tot = 0 # total read counts per cluster
+            # gather (sum) reads for each cluster in refined_noisy, read counts are from junc file (by_chrom)
+            tot = 0 # sum of total read counts per cluster
             usages = []
             for exon in ks:
                 chrom, start, end = exon
-                chrom = tuple(chrom.split(":")) # note tuple: ('chr3', '+')
+                chrom = tuple(chrom.split(":")) # convert 'chr3:+' to ('chr3', '+') as in by_chrom
                 start, end = int(start), int(end)
 
-                if chrom not in by_chrom: # not in junc files
+                if chrom not in by_chrom:
                     pass
-
                 elif (start, end) in by_chrom[chrom]:
-                    tot += by_chrom[chrom][(start,end)] # sum total cluster reads from junc introns
+                    tot += by_chrom[chrom][(start,end)]
 
             # Step 2: append intron usage fraction to stream buffer
             for exon in ks:
@@ -773,7 +802,7 @@ def sort_junctions(libl, options):
                 chrom = tuple(chrom.split(":"))
                 chromID, strand = chrom # chromID eg: 'chr3'
 
-                intron = chromID, start, end+1, strand # note converting to 1-based coordinates
+                intron = chromID, start, end+1, strand # converting to 1-based coordinates
 
                 if chrom not in by_chrom: 
                     # if refined exon chrom is not found in junc file, write 0/cluster_total
@@ -879,10 +908,8 @@ def merge_junctions(options):
     outPrefix = options.outprefix
     rundir = options.rundir
     
-    fnameout = f"{rundir}/{outPrefix}"
-
-    flist = f"{rundir}/{outPrefix}_sortedlibs" # sorted juncs of refind_noisy introns with reads frac
-
+    fnameout = os.path.join(f'{rundir}/{outPrefix}')
+    flist = fnameout + '_sortedlibs' # sorted juncs file list
     lsts = [] # = flist
     for ln in open(flist):
         if type(ln) == bytes:
@@ -1106,10 +1133,10 @@ def annotate_noisy(options):
                             usages[i] += noise_use[i]
 
                     # append * to intron ID to indicate noisy 
-                    fout.write(ID+"_*" +" "+ " ".join([f"{usages[i]}/{totuse[i]}" for i in range(len(usages))])+'\n')
+                    fout.write(ID + "_*" + " " + " ".join([f"{usages[i]}/{totuse[i]}" for i in range(len(usages))])+'\n')
                     nID = tuple(ID.split(":"))
                     
-                    foutnumers.write(f"{nID[0]}:{nID[1]}*:{nID[2]}*:{nID[3]}" + " " + \
+                    foutnumers.write(f"{nID[0]}:{nID[1]}:{nID[2]}:{nID[3]}_*" + " " + \
                         " ".join([f"{usages[i]}" for i in range(len(usages))])+'\n')
 
                     # write counts and numerators of functional introns 
@@ -1176,8 +1203,7 @@ def annotate_noisy(options):
     sys.stderr.write(f"Annotation done.\n")
 
 
-
-#-------------------------------------------
+#-------------------------------------------------------------------
 
 def main(options, libl):
     
@@ -1191,6 +1217,8 @@ def main(options, libl):
     get_numers(options)
     annotate_noisy(options)
 
+
+#-------------------------------------------------------------------
 
 if __name__ == "__main__":
 
@@ -1249,11 +1277,13 @@ if __name__ == "__main__":
         action="store_true", default = False, 
         help="keep temporary files. (default false)")
 
-
     options = parser.parse_args()
 
     if options.juncfiles == None:
         sys.stderr.write("Error: no junction file provided...\n")
+        exit(0)
+    if options.noiseclass == None:
+        sys.stderr.write("Error: no intron class annotation provided...\nRequired for current implementation...\n")
         exit(0)
     
     # Get the junction file list
@@ -1273,11 +1303,12 @@ if __name__ == "__main__":
     main(options, libl)
 
     if not options.keeptemp:
-        for tmp in glob1(options.rundir, '*junc.sorted.gz'):
-            os.remove(os.path.join(options.rundir, tmp))
+        sys.stderr.write('Remove generated temp files... \n')
+        with open(os.path.join(options.rundir, options.outprefix) + '_sortedlibs') as f:
+            for tmp in [ln.strip() for ln in f.readlines()]:
+                os.remove(tmp)
         os.remove(os.path.join(options.rundir, options.outprefix) + '_sortedlibs')
-        sys.stderr.write('Remove generated temp files... Done.')
-
+        sys.stderr.write('Done.\n')
 
 
 
