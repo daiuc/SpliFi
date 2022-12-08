@@ -725,20 +725,20 @@ def sort_junctions(libl, options):
         else: pass
         fout = gzip.open(foutName,'wt') # e.g. 'test/gtex_w_clu/gtex_GTEX-1IDJU-0006-SM-CMKFK.junc.sorted.gz'
 
-        ### Process and write junction files
+        #-------- Process and write junction files --------
         
         # write header
         fout.write(f'chrom {libN}\n') # 'chrom GTEX-111VG-0526-SM-5N9BW\n'
 
-        # for each juncfile of library (libN), which may be more than 1, 
-        # store read counts by intron in by_chrom
-        # e.g. { ('chr1', '+') : { (100, 300) : 5, (500, 700): 10, ... } }
+
+        #-------- Gather counts from all junc files of library --------
+        # store in by_chrom: { ('chr1', '+') : { (100, 300) : 5, (500, 700): 10, ... } }
         for lib in merges[libN]:
             if ".gz" in lib: 
                 F = gzip.open(lib)
             else: 
                 F = open(lib)
-
+        
             for ln in F: # 1 line: e.g. "chr17\t81701131\t81701534\t.\t1\t+"
 
                 if type(ln) == bytes:
@@ -773,9 +773,11 @@ def sort_junctions(libl, options):
                     by_chrom[chrom][intron] += int(counts)
                 else:
                     by_chrom[chrom][intron] = int(counts)
-                
+        
+        
+        #------- Take clusters from refined_noisy, assign reads -------
+        # reads are from by_chrom (junc files)
         # For each intron cluster, write fraction for each intron (one intron per line).
-        # Note clusters are from refined_noisy, while reads are from junc file
         for clu in cluExons: # cluExons: { k=cluID : v=[(chrom, start, end)...]}
             buf = []
             ks = cluExons[clu] # eg: [('chr1:+', 827776, 829002), ..] introns of a clu
