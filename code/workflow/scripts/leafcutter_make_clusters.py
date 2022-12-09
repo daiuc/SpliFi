@@ -2,6 +2,14 @@
 
 '''Cluster introns(junctions)
 
+This script take junction files and output intron clusters. By default, only 
+clusters that have linked introns (sharing 5' or 3' splice site) are written
+out. If --includeconst is on, then both linked intron clusters and constitutive
+clusters are written out. Regardless, all introns within a cluster with linked
+introns are written out, including both linked introns and unlinked introns.
+
+By default, no read filters are applied.
+
 
 Junction files are processed using regtools:
 
@@ -512,8 +520,8 @@ if __name__ == "__main__":
               ..., or 1, 2, ... (default: true)")
     
     parser.add_argument("-C", "--includeconst", dest="const", \
-        action="store_false", default = True, 
-        help="also include constitutive introns. (default: true)")
+        action="store_true", default = False, 
+        help="also include constitutive introns. (default: false)")
 
     parser.add_argument("-f", "--offset", dest="offset", default = 0,
         help="Offset sometimes useful for off by 1 annotations. (default 0)")
