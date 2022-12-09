@@ -27,22 +27,27 @@ configfile: "config/config.yaml"
 
 wildcard_constraints:
     datasource = "Geuvadis|GTEx",
-    population = "YRI|EUR",
+    population = "CEU|FIN|GBR|TSI|YRI|EUR",
+    geuvadis_sid = "[A-Z]{2}[0-9]{5,6}",
     chrom = "chr[0-9]{1,2}",
     window = "[0-9]+"
 
 include: 'rules/common.smk'
-include: 'rules/noisy.smk'
+include: 'rules/geuvadis.smk'
 include: 'rules/gtex.smk'
 include: 'rules/qtl.smk'
+include: 'rules/rna.smk'
 include: "rules/other.smk"
 
 
+with open('results/pheno/Geuvadis/EUR/noise_pheno/samplelist_pheno.txt') as F:
+    GEUVDIS_SIDS = [x.strip() for x in F.readlines()]
 
+localrules: all, SplitGTExSampleIDList
 
-localrules: SplitGTExSampleIDList
-
-# rule all:
-#     input:
+rule all:
+    input:
+        expand('results/pheno/{datasource}/{population}/ge/{geuvadis_sid}.counts.summary', \
+                datasource = ['Geuvadis'], population = ['EUR'], geuvadis_sid=GEUVDIS_SIDS)
 #         expand('resources/GTEx/juncs/split_juncs/{GTEx_SamID}.tsv.gz', GTEx_SamID=GTEX_SAMPLE_IDS)
 
