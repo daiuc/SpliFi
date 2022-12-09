@@ -15,6 +15,11 @@ CHROMS = ['chr'+str(i) for i in range(1,23)]
 Geuvadis_Metadata = pd.read_csv(config['Dataset']['Geuvadis']['Metadata'], sep='\t')
 Geuvadis_Metadata.set_index(['Pop_id', 'Sample', 'run_id'], drop=False, inplace=True)
 
+# GTEx metadata for all samples present in the junction file
+Gtex_Metadata = pd.read_csv(config['Dataset']['GTEx']['Junc_meta'], sep='\t')
+Gtex_Metadata.set_index(['SAMPID', 'SMTS', 'SMTSD', 'SUBJID'], drop=False, inplace=True)
+
+
 # Get Geuvadis samples that have genotype in 1KGP
 # For now, use only samples with 1-to-1 Sample-to-ERR
 # For production, use the full linked samples

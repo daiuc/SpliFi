@@ -178,7 +178,6 @@ rule AddQvalueToPermutationPass:
             Rscript {params.rscript} {input} {output}
         '''
 
-
     # QTLtools cis permutation pass output fields:
     # - 1. phenotype_id
     # - 2. phenotype_chr
@@ -200,6 +199,10 @@ rule AddQvalueToPermutationPass:
     # - 18. regression_slop
     # - 19. pval_empirical (by direct permutation method)
     # - 20. pval_adjusted (adjusted p-value, note, this has not been genome-wide multiple-tested on phenotypes)
+
+
+
+
 
 
 
