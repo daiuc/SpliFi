@@ -27,6 +27,7 @@ configfile: "config/config.yaml"
 
 wildcard_constraints:
     datasource = "Geuvadis|GTEx",
+    datasource2 = "Geuvadis|GTEx",
     population = "CEU|FIN|GBR|TSI|YRI|EUR",
     geuvadis_sid = "[A-Z]{2}[0-9]{5,6}",
     chrom = "chr[0-9]{1,2}",

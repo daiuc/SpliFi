@@ -21,10 +21,10 @@ geno = fread(geno_pca)
 geno = head(geno, geno_N_PCs)
 
 pheno_samples = names(pheno)
-pheno_samples = pheno_samples[str_detect(pheno_samples, "[A-Z]{2}[0-9]{5,7}")]
+pheno_samples = pheno_samples[2:length(pheno_samples)]
 
 geno_samples = names(geno)
-geno_samples = geno_samples[str_detect(geno_samples, "[A-Z]{2}[0-9]{5,7}")]
+geno_samples = geno_samples[2:length(geno_samples)]
 
 if (length(setdiff(geno_samples, pheno_samples)) == 0 &
     length(setdiff(pheno_samples, geno_samples)) == 0) {

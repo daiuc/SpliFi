@@ -34,7 +34,7 @@ rule SplitGTExSampleIDList:
         out_prefix = 'resources/GTEx/juncs/SampleIDs.part_'
     run:
         from math import ceil
-        with open('resources/GTEx/juncs/SampleIDs.txt') as f:
+        with open(input[0]) as f:
             SAMIDS = [c.strip() for c in f.readlines()]
             R = params.Num_Groups # number of split parts
             L = ceil(len(SAMIDS)/R) # number of samples per part
