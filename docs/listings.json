@@ -2,9 +2,13 @@
   {
     "listing": "/index.html",
     "items": [
+      "/analysis/2022-12-12-GTEx-Kidney-nsqtl.pub.html",
+      "/analysis/2022-12-12-GTEx-Liver-nsqtl.pub.html",
+      "/analysis/2022-12-12-GTEx-Muscle-nsqtl.pub.html",
+      "/analysis/2022-12-12-Geuvadis-nsqtl.pub.html",
       "/analysis/2022-11-14-PacBio-QC.pub.html",
       "/analysis/2022-11-13-GTEx-tissues.pub.html",
-      "/analysis/geuvadis_qtl.pub.html",
+      "/analysis/2022-11-13-geuvadis_qtl.pub.html",
       "/analysis/genotype_pca.pub.html",
       "/analysis/phenotype_pca.pub.html",
       "/analysis/Geuvadis-Samples.pub.html",

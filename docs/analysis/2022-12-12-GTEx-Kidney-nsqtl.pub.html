@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.149">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Chao Dai">
+<meta name="dcterms.date" content="2022-12-12">
+
+<title>Splicing Fidelity - r paste0("Geuvadis sfQTL - GTEx - ", params$tissue, collapse = "")</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Splicing Fidelity</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../slides/index.html">Slides</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://cdai.notion.site/Notes-0e18d7ec33cb44fc975cb9e139aa784b">Notion</a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html">About</a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Geuvadis sfQTL - GTEx - Kidney</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">sfQTL</div>
+                <div class="quarto-category">GTEx</div>
+                <div class="quarto-category">Kidney</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Chao Dai </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 12, 2022</p>
+      </div>
+    </div>
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#qqplots---qtltools-adjusted-p-values" id="toc-qqplots---qtltools-adjusted-p-values" class="nav-link active" data-scroll-target="#qqplots---qtltools-adjusted-p-values">qqplots - qtltools adjusted p-values</a></li>
+  <li><a href="#how-many-qtls-passing-qval-0.1" id="toc-how-many-qtls-passing-qval-0.1" class="nav-link" data-scroll-target="#how-many-qtls-passing-qval-0.1">How many qtls passing qval &lt; 0.1?</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">=</span> <span class="fu">fread</span>(<span class="st">"../code/resources/geuvadis-sample-run-pop-lookup.tsv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>perm_out_cols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"pid"</span>, <span class="st">"pchr"</span>, <span class="st">"pstart"</span>, <span class="st">"pend"</span>, <span class="st">"pstrand"</span>, <span class="st">"num_snp_tested"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_nominal_dist"</span>, <span class="st">"best_gid"</span>, <span class="st">"best_gchr"</span>, <span class="st">"best_gstart"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_gend"</span>, <span class="st">"true_dof"</span>, <span class="st">"esti_dof"</span>, <span class="st">"beta_ml1"</span>, <span class="st">"beta_ml2"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_nom"</span>, <span class="st">"pval_r2"</span>, <span class="st">"regression_slop"</span>, <span class="st">"pval_emp"</span>, </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_adj"</span>, <span class="st">"q"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>folder <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">"../code/results/qtl/noisy/GTEx/"</span>, params<span class="sc">$</span>tissue, <span class="st">"/cis_100000/perm"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">dir</span>(folder, <span class="st">".+addQval.txt.gz"</span>, <span class="at">full.names =</span> T)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> naturalsort<span class="sc">::</span><span class="fu">naturalsort</span>(qtls)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(qtls) <span class="ot">=</span> <span class="fu">str_extract</span>(qtls, <span class="st">"chr[0-9]{1,2}"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span><span class="fu">fread</span>(.x, <span class="at">col.names =</span> perm_out_cols))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>qvalue summaries</p>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">chr1 - chr5</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">chr6 - chr10</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">chr11 - chr15</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">chr16 - chr22</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9956  0.9956  0.9506  0.9956  0.9990 
+
+$chr2
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9983  0.9983  0.9422  0.9983  0.9995 
+
+$chr3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00001 0.95995 0.99458 0.93503 0.99458 0.99897 
+
+$chr4
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0001453 0.9214300 0.9922800 0.9251889 0.9922800 0.9973100 
+
+$chr5
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9829  0.9927  0.9302  0.9927  0.9969 </code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr6
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9086  0.9752  0.8910  0.9967  0.9991 
+
+$chr7
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.8583  0.9735  0.8914  0.9956  0.9996 
+
+$chr8
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9274  0.9274  0.8954  0.9274  0.9469 
+
+$chr9
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000326 0.9999900 0.9999900 0.9584453 0.9999900 0.9999900 
+
+$chr10
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9896  0.9896  0.9352  0.9896  0.9999 </code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">11</span><span class="sc">:</span><span class="dv">15</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr11
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9866  0.9979  0.9277  0.9979  0.9994 
+
+$chr12
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9660  0.9950  0.9317  0.9950  0.9993 
+
+$chr13
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000005 0.9494700 0.9578600 0.9240940 0.9889000 0.9992100 
+
+$chr14
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9180  0.9981  0.9133  0.9981  0.9996 
+
+$chr15
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000105 0.9984200 0.9984200 0.9592913 0.9984200 0.9995700 </code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">16</span><span class="sc">:</span><span class="dv">22</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$chr16
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9958  0.9958  0.9554  0.9958  0.9997 
+
+$chr17
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9373  0.9990  0.9228  0.9990  1.0000 
+
+$chr18
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9540  0.9981  0.9362  0.9981  0.9990 
+
+$chr19
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9652  0.9971  0.9218  0.9971  0.9984 
+
+$chr20
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000519 0.9997400 0.9997400 0.9432532 0.9997400 0.9997400 
+
+$chr21
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.006961 0.781200 0.975310 0.855793 0.989740 0.996760 
+
+$chr22
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.9242  0.9960  0.9224  0.9960  0.9993 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="qqplots---qtltools-adjusted-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="qqplots---qtltools-adjusted-p-values">qqplots - qtltools adjusted p-values</h3>
+<p>These p-values are adjusted for number of variants, but not adjusted for phenotypes.</p>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">chr1 - chr5</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">chr6 - chr10</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">chr11 - chr15</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">chr16 - chr20</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-5" role="tab" aria-controls="tabset-2-5" aria-selected="false">chr16 - chr20</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr1 =</span> qtls<span class="sc">$</span>chr1<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr2 =</span> qtls<span class="sc">$</span>chr2<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr3 =</span> qtls<span class="sc">$</span>chr3<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr4 =</span> qtls<span class="sc">$</span>chr4<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr5 =</span> qtls<span class="sc">$</span>chr5<span class="sc">$</span>pval_emp</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr6 =</span> qtls<span class="sc">$</span>chr6<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr7 =</span> qtls<span class="sc">$</span>chr7<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr8 =</span> qtls<span class="sc">$</span>chr8<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr9 =</span> qtls<span class="sc">$</span>chr9<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr10 =</span> qtls<span class="sc">$</span>chr10<span class="sc">$</span>pval_emp</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr11 =</span> qtls<span class="sc">$</span>chr11<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr12 =</span> qtls<span class="sc">$</span>chr12<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr13 =</span> qtls<span class="sc">$</span>chr13<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr14 =</span> qtls<span class="sc">$</span>chr14<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr15 =</span> qtls<span class="sc">$</span>chr15<span class="sc">$</span>pval_emp</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr16 =</span> qtls<span class="sc">$</span>chr16<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr17 =</span> qtls<span class="sc">$</span>chr17<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr18 =</span> qtls<span class="sc">$</span>chr18<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr19 =</span> qtls<span class="sc">$</span>chr19<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr20 =</span> qtls<span class="sc">$</span>chr20<span class="sc">$</span>pval_emp</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-5-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr21 =</span> qtls<span class="sc">$</span>chr21<span class="sc">$</span>pval_emp,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr22 =</span> qtls<span class="sc">$</span>chr22<span class="sc">$</span>pval_emp</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="how-many-qtls-passing-qval-0.1" class="level3">
+<h3 class="anchored" data-anchor-id="how-many-qtls-passing-qval-0.1">How many qtls passing qval &lt; 0.1?</h3>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span> .x[q <span class="sc">&lt;</span> .<span class="dv">1</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  rbindlist</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Total number of qtls: 387</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(<span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep=</span><span class="st">""</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>puta_qtls[, .(<span class="at">n_qtls =</span> <span class="fu">length</span>(<span class="fu">unique</span>(pid))), by <span class="ot">=</span> pchr] <span class="sc">%&gt;%</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  .[, .(<span class="at">qtls =</span> n_qtls, <span class="at">chr =</span> <span class="fu">factor</span>(pchr, chroms))] <span class="sc">%&gt;%</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_col</span>(<span class="fu">aes</span>(chr, qtls)) <span class="sc">+</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>) <span class="sc">+</span> </span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in annotation</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> <span class="st">"../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>mycols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"seqname"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"strand"</span>, <span class="st">"gene_name"</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> <span class="fu">fread</span>(anno.gene) </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> anno.gene[gene_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"protein_coding"</span>) <span class="sc">&amp;</span> </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                        feature <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"gene"</span>) <span class="sc">&amp;</span> </span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                        source <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"HAVANA"</span>), ..mycols] <span class="sc">%&gt;%</span> </span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  unique <span class="sc">%&gt;%</span> </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">makeGRangesFromDataFrame</span>(<span class="at">keep.extra.columns =</span> T)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co"># remove scaffolds</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> <span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep =</span> <span class="st">""</span>)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> anno.gene[<span class="fu">seqnames</span>(anno.gene) <span class="sc">%in%</span> chroms]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># annotate pid with gene names</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>puta_loci <span class="ot">=</span> puta_qtls[, .(pid, pchr, pstart, pend, pstrand)] <span class="sc">%&gt;%</span> </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">makeGRangesFromDataFrame</span>(<span class="at">keep.extra.columns =</span> T, </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">seqnames.field =</span> <span class="st">"pchr"</span>, </span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">start.field =</span> <span class="st">"pstart"</span>, </span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                           <span class="at">end.field =</span> <span class="st">"pend"</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                           <span class="at">strand.field =</span> <span class="st">"pstrand"</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> GenomicRanges<span class="sc">::</span><span class="fu">findOverlaps</span>(puta_loci, anno.gene, <span class="at">minoverlap =</span> <span class="dv">1</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> <span class="fu">cbind</span>(puta_loci[<span class="fu">queryHits</span>(hits)] <span class="sc">%&gt;%</span> mcols,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>                 anno.gene[<span class="fu">subjectHits</span>(hits)] <span class="sc">%&gt;%</span> mcols</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                 )</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> <span class="fu">as.data.table</span>(hits) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  .[,  <span class="fu">list</span>(<span class="at">genes =</span> <span class="fu">pull</span>(.SD, gene_name) <span class="sc">%&gt;%</span> <span class="fu">paste0</span>(<span class="at">collapse =</span> <span class="st">","</span>)), by <span class="ot">=</span> <span class="st">"pid"</span>]</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> hits[puta_qtls, on <span class="ot">=</span> <span class="st">"pid"</span>, nomatch <span class="ot">=</span> <span class="cn">NA</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>puta_qtls[<span class="sc">!</span><span class="fu">is.na</span>(genes)][<span class="fu">order</span>(q)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                        pid                     genes  pchr    pstart      pend pstrand num_snp_tested best_nominal_dist               best_gid best_gchr best_gstart best_gend
+  1:  chr19:13109839:13110157:clu_57676_-_*                     TRMT1 chr19  13109840  13110157       -            225                 0 chr19_13109889_C_G_b38     chr19    13109889  13109889
+  2:    chr16:1962271:1964448:clu_49996_-_*                      RPS2 chr16   1962272   1964448       -            714                 0  chr16_1964282_A_G_b38     chr16     1964282   1964282
+  3:   chr6:32948869:32949270:clu_21269_-_* XXbac-BPG181M17.5,HLA-DMA  chr6  32948870  32949270       -            898                92  chr6_32948778_G_A_b38      chr6    32948778  32948778
+  4:  chr18:74255776:74263348:clu_56946_-_*                     CYB5A chr18  74255777  74263348       -            813             -6024 chr18_74269372_A_G_b38     chr18    74269372  74269372
+  5:  chr14:94110798:94115780:clu_44084_+_*                     IFI27 chr14  94110799  94115780       +            587                 0 chr14_94111842_C_A_b38     chr14    94111842  94111842
+ ---                                                                                                                                                                                           
+354: chr5:139481343:139482209:clu_20342_-_*                    STING1  chr5 139481344 139482209       -            187                 0 chr5_139481493_C_T_b38      chr5   139481493 139481493
+355: chr9:137087219:137088074:clu_30585_+_*                    MAN1B1  chr9 137087220 137088074       +            396             48684 chr9_137136758_A_G_b38      chr9   137136758 137136758
+356:  chr16:20451682:20465516:clu_48628_+_*                    ACSM2A chr16  20451683  20465516       +            546                 0 chr16_20459855_G_A_b38     chr16    20459855  20459855
+357:  chr16:57045493:57047544:clu_49220_+_*                     NLRC5 chr16  57045494  57047544       +            582                 0 chr16_57046616_C_A_b38     chr16    57046616  57046616
+358: chr5:138206685:138213151:clu_20296_-_*                     CDC23  chr5 138206686 138213151       -            238             99589 chr5_138107097_C_G_b38      chr5   138107097 138107097
+     true_dof esti_dof beta_ml1 beta_ml2    pval_nom  pval_r2 regression_slop    pval_emp    pval_adj          q
+  1:       74  60.9055 0.996077 32.19540 9.79911e-24 0.746239       0.0894693 0.000999001 3.23245e-18 6.1804e-15
+  2:       74  59.6047 0.999088 49.68740 1.39203e-21 0.710054      -0.0520308 0.000999001 5.88995e-16 9.0411e-13
+  3:       74  53.4332 0.906773 35.66740 5.38459e-24 0.750295       0.2795240 0.000999001 1.01196e-14 1.1860e-11
+  4:       74  57.4512 1.026190 50.78240 1.07345e-19 0.674143      -0.0264278 0.000999001 2.94948e-14 1.3715e-11
+  5:       74  61.9605 0.994779 38.18900 7.44570e-19 0.656748       0.0544326 0.000999001 2.28867e-14 2.4054e-11
+ ---                                                                                                            
+354:       74  49.8055 0.744813  9.91605 5.80246e-08 0.329871       0.0322634 0.002997000 1.02738e-03 9.5620e-02
+355:       74  44.9348 0.813061 18.65930 5.17508e-09 0.371311      -0.0754316 0.009990010 6.14226e-04 9.5732e-02
+356:       74  66.3109 1.024900 55.50920 5.69636e-06 0.244256       0.0889125 0.001998000 8.12464e-04 9.5933e-02
+357:       74  54.5750 0.884148 57.69940 1.24534e-07 0.316257       0.0296024 0.002997000 8.78607e-04 9.6333e-02
+358:       74  56.0492 0.934865 13.28590 3.22482e-06 0.255380       0.0302799 0.001998000 1.13019e-03 9.8176e-02</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

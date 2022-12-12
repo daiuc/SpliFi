@@ -1,20 +1,14 @@
 ---
-title: "Geuvadis noisy splicing QTL"
-categories: 
-  - QTL
-  - Geuvadis
-  - "noisy splicing"
-date: 2022-11-13
+params:
+  tissue: "Liver"
 author: "Chao Dai"
+title: '`r paste0("Geuvadis sfQTL - GTEx - ", params$tissue, collapse = "")`'
+categories:
+  - sfQTL
+  - GTEx
+  - '`r params$tissue`'
+date: 2022-12-12
 ---
-
-### Samples used
-
-253 Geuvaids EUR samples are used (see [details](Geuvadis-Samples.pub.qmd)) in this 
-test run. These are samples that have single run (single ERR ID) that have matching 
-genotype in 1000 genome project.
-<br>
-Ankeeta's dataset has total 452 runs, representing lesst han 452 samples.
 
 
 
@@ -30,19 +24,15 @@ library(GenomicFeatures)
 library(GenomicRanges)
 ```
 
-```{r}
-metadata = fread("../code/resources/geuvadis-sample-run-pop-lookup.tsv")
-```
-
 
 ```{r}
 perm_out_cols = c("pid", "pchr", "pstart", "pend", "pstrand", "num_snp_tested",
                   "best_nominal_dist", "best_gid", "best_gchr", "best_gstart",
                   "best_gend", "true_dof", "esti_dof", "beta_ml1", "beta_ml2",
                   "pval_nom", "pval_r2", "regression_slop", "pval_emp", 
-                  "pval_adj", "qval")
-qtls = dir("../code/results/qtl/noise/Geuvadis/EUR/cis_100000/perm", 
-           ".+addQval.txt.gz", full.names = T)
+                  "pval_adj", "q")
+folder = paste0("../code/results/qtl/noisy/GTEx/", params$tissue, "/cis_100000/perm")
+qtls = dir(folder, ".+addQval.txt.gz", full.names = T)
 qtls = naturalsort::naturalsort(qtls)
 names(qtls) = str_extract(qtls, "chr[0-9]{1,2}")
 qtls = map(qtls, ~fread(.x, col.names = perm_out_cols))
@@ -50,35 +40,39 @@ qtls = map(qtls, ~fread(.x, col.names = perm_out_cols))
 
 qvalue summaries
 
-::: {.panel-tabset}
+::: panel-tabset
 #### chr1 - chr5
+
 ```{r}
-map(qtls[1:5], ~ summary(.x$qval))
+map(qtls[1:5], ~ summary(.x$q))
 ```
+
 #### chr6 - chr10
+
 ```{r}
-map(qtls[6:10], ~ summary(.x$qval))
+map(qtls[6:10], ~ summary(.x$q))
 ```
 
 #### chr11 - chr15
+
 ```{r}
-map(qtls[11:15], ~ summary(.x$qval))
+map(qtls[11:15], ~ summary(.x$q))
 ```
+
 #### chr16 - chr22
+
 ```{r}
-map(qtls[16:22], ~ summary(.x$qval))
+map(qtls[16:22], ~ summary(.x$q))
 ```
-
 :::
-
-
 
 ### qqplots - qtltools adjusted p-values
 
 These p-values are adjusted for number of variants, but not adjusted for phenotypes.
 
-:::{.panel-tabset}
+::: panel-tabset
 #### chr1 - chr5
+
 ```{r}
 leafcutter::multiqq(
   list(chr1 = qtls$chr1$pval_emp,
@@ -89,7 +83,9 @@ leafcutter::multiqq(
        )
 )
 ```
+
 #### chr6 - chr10
+
 ```{r}
 leafcutter::multiqq(
   list(chr6 = qtls$chr6$pval_emp,
@@ -100,7 +96,9 @@ leafcutter::multiqq(
        )
 )
 ```
+
 #### chr11 - chr15
+
 ```{r}
 leafcutter::multiqq(
   list(chr11 = qtls$chr11$pval_emp,
@@ -113,6 +111,7 @@ leafcutter::multiqq(
 ```
 
 #### chr16 - chr20
+
 ```{r}
 leafcutter::multiqq(
   list(chr16 = qtls$chr16$pval_emp,
@@ -124,8 +123,8 @@ leafcutter::multiqq(
 )
 ```
 
-
 #### chr16 - chr20
+
 ```{r}
 leafcutter::multiqq(
   list(
@@ -134,14 +133,12 @@ leafcutter::multiqq(
        )
 )
 ```
-
 :::
 
-
-### How many qtls passing qval < 0.1?
+### How many qtls passing qval \< 0.1?
 
 ```{r}
-puta_qtls = map(qtls, ~ .x[qval < .1]) %>% 
+puta_qtls = map(qtls, ~ .x[q < .1]) %>% 
   rbindlist
 ```
 
@@ -155,8 +152,6 @@ puta_qtls[, .(n_qtls = length(unique(pid))), by = pchr] %>%
     labs(x = NULL) + 
     theme(axis.text.x = element_text(angle = 30))
 ```
-
-
 
 ```{r}
 # load in annotation
@@ -173,7 +168,6 @@ anno.gene = anno.gene[gene_type %in% c("protein_coding") &
 chroms = paste("chr", 1:22, sep = "")
 anno.gene = anno.gene[seqnames(anno.gene) %in% chroms]
 ```
-
 
 ```{r}
 
@@ -196,11 +190,8 @@ puta_qtls = hits[puta_qtls, on = "pid", nomatch = NA]
 
 ```
 
-
 ```{r}
-puta_qtls[!is.na(genes)][order(qval)]
+puta_qtls[!is.na(genes)][order(q)]
 ```
-
-
 
 

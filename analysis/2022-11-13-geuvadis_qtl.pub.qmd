@@ -1,0 +1,206 @@
+---
+title: "Geuvadis sfQTL"
+categories: 
+  - QTL
+  - Geuvadis
+  - "noisy splicing"
+date: 2022-11-13
+author: "Chao Dai"
+---
+
+### Samples used
+
+253 Geuvaids EUR samples are used (see [details](Geuvadis-Samples.pub.qmd)) in this 
+test run. These are samples that have single run (single ERR ID) that have matching 
+genotype in 1000 genome project.
+<br>
+Ankeeta's dataset has total 452 runs, representing lesst han 452 samples.
+
+
+
+```{r}
+#| label: setup
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(data.table)
+library(GenomicFeatures)
+library(GenomicRanges)
+```
+
+```{r}
+metadata = fread("../code/resources/geuvadis-sample-run-pop-lookup.tsv")
+```
+
+
+```{r}
+perm_out_cols = c("pid", "pchr", "pstart", "pend", "pstrand", "num_snp_tested",
+                  "best_nominal_dist", "best_gid", "best_gchr", "best_gstart",
+                  "best_gend", "true_dof", "esti_dof", "beta_ml1", "beta_ml2",
+                  "pval_nom", "pval_r2", "regression_slop", "pval_emp", 
+                  "pval_adj", "qval")
+qtls = dir("../code/results/qtl/oldGeuv/EUR/cis_100000/perm/", 
+           ".+addQval.txt.gz", full.names = T)
+qtls = naturalsort::naturalsort(qtls)
+names(qtls) = str_extract(qtls, "chr[0-9]{1,2}")
+qtls = map(qtls, ~fread(.x, col.names = perm_out_cols))
+```
+
+qvalue summaries
+
+::: {.panel-tabset}
+#### chr1 - chr5
+```{r}
+map(qtls[1:5], ~ summary(.x$qval))
+```
+#### chr6 - chr10
+```{r}
+map(qtls[6:10], ~ summary(.x$qval))
+```
+
+#### chr11 - chr15
+```{r}
+map(qtls[11:15], ~ summary(.x$qval))
+```
+#### chr16 - chr22
+```{r}
+map(qtls[16:22], ~ summary(.x$qval))
+```
+
+:::
+
+
+
+### qqplots - qtltools adjusted p-values
+
+These p-values are adjusted for number of variants, but not adjusted for phenotypes.
+
+:::{.panel-tabset}
+#### chr1 - chr5
+```{r}
+leafcutter::multiqq(
+  list(chr1 = qtls$chr1$pval_emp,
+       chr2 = qtls$chr2$pval_emp,
+       chr3 = qtls$chr3$pval_emp,
+       chr4 = qtls$chr4$pval_emp,
+       chr5 = qtls$chr5$pval_emp
+       )
+)
+```
+#### chr6 - chr10
+```{r}
+leafcutter::multiqq(
+  list(chr6 = qtls$chr6$pval_emp,
+       chr7 = qtls$chr7$pval_emp,
+       chr8 = qtls$chr8$pval_emp,
+       chr9 = qtls$chr9$pval_emp,
+       chr10 = qtls$chr10$pval_emp
+       )
+)
+```
+#### chr11 - chr15
+```{r}
+leafcutter::multiqq(
+  list(chr11 = qtls$chr11$pval_emp,
+       chr12 = qtls$chr12$pval_emp,
+       chr13 = qtls$chr13$pval_emp,
+       chr14 = qtls$chr14$pval_emp,
+       chr15 = qtls$chr15$pval_emp
+       )
+)
+```
+
+#### chr16 - chr20
+```{r}
+leafcutter::multiqq(
+  list(chr16 = qtls$chr16$pval_emp,
+       chr17 = qtls$chr17$pval_emp,
+       chr18 = qtls$chr18$pval_emp,
+       chr19 = qtls$chr19$pval_emp,
+       chr20 = qtls$chr20$pval_emp
+       )
+)
+```
+
+
+#### chr16 - chr20
+```{r}
+leafcutter::multiqq(
+  list(
+       chr21 = qtls$chr21$pval_emp,
+       chr22 = qtls$chr22$pval_emp
+       )
+)
+```
+
+:::
+
+
+### How many qtls passing qval < 0.1?
+
+```{r}
+puta_qtls = map(qtls, ~ .x[qval < .1]) %>% 
+  rbindlist
+```
+
+Total number of qtls: `r length(puta_qtls$pid)`
+
+```{r}
+chroms = forcats::as_factor(paste("chr", 1:22, sep=""))
+puta_qtls[, .(n_qtls = length(unique(pid))), by = pchr] %>% 
+  .[, .(qtls = n_qtls, chr = factor(pchr, chroms))] %>% 
+  ggplot() + geom_col(aes(chr, qtls)) +
+    labs(x = NULL) + 
+    theme(axis.text.x = element_text(angle = 30))
+```
+
+
+
+```{r}
+# load in annotation
+anno.gene = "../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv"
+mycols = c("seqname", "start", "end", "strand", "gene_name")
+anno.gene = fread(anno.gene) 
+anno.gene = anno.gene[gene_type %in% c("protein_coding") & 
+                        feature %in% c("gene") & 
+                        source %in% c("HAVANA"), ..mycols] %>% 
+  unique %>% 
+  makeGRangesFromDataFrame(keep.extra.columns = T)
+
+# remove scaffolds
+chroms = paste("chr", 1:22, sep = "")
+anno.gene = anno.gene[seqnames(anno.gene) %in% chroms]
+```
+
+
+```{r}
+
+# annotate pid with gene names
+puta_loci = puta_qtls[, .(pid, pchr, pstart, pend, pstrand)] %>% 
+  makeGRangesFromDataFrame(keep.extra.columns = T, 
+                           seqnames.field = "pchr", 
+                           start.field = "pstart", 
+                           end.field = "pend",
+                           strand.field = "pstrand")
+
+hits = GenomicRanges::findOverlaps(puta_loci, anno.gene, minoverlap = 1)
+hits = cbind(puta_loci[queryHits(hits)] %>% mcols,
+                 anno.gene[subjectHits(hits)] %>% mcols
+                 )
+hits = as.data.table(hits) %>% 
+  .[,  list(genes = pull(.SD, gene_name) %>% paste0(collapse = ",")), by = "pid"]
+
+puta_qtls = hits[puta_qtls, on = "pid", nomatch = NA]
+
+```
+
+
+```{r}
+puta_qtls[!is.na(genes)][order(qval)]
+```
+
+
+
+
