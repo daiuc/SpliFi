@@ -1,12 +1,12 @@
 ---
 params:
   population: "EUR"
-title: "Geuvadis sfQTL - `r params$population`"
+title: "Geuvadis sfQTL - EUR"
 categories: 
   - QTL
   - Geuvadis
   - "noisy splicing"
-  - '`r params$population`'
+  - 'EUR'
 date: 2022-12-12
 author: "Chao Dai"
 ---

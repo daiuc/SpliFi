@@ -2,11 +2,11 @@
 params:
   tissue: "Kidney"
 author: "Chao Dai"
-title: '`r paste0("Geuvadis sfQTL - GTEx - ", params$tissue, collapse = "")`'
+title: 'GTEx sfQTL - Kidney'
 categories:
   - sfQTL
   - GTEx
-  - '`r params$tissue`'
+  - Kidney
 date: 2022-12-12
 ---
 

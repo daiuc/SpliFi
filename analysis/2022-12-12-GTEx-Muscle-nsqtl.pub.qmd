@@ -2,11 +2,11 @@
 params:
   tissue: "Muscle"
 author: "Chao Dai"
-title: '`r paste0("Geuvadis sfQTL - GTEx - ", params$tissue, collapse = "")`'
+title: "GTEx spQTL - Muscle"
 categories:
   - sfQTL
   - GTEx
-  - '`r params$tissue`'
+  - Muscle
 date: 2022-12-12
 ---
 
