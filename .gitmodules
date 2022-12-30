@@ -4,3 +4,6 @@
 [submodule "code/workflow/submodules/ggsashimi"]
 	path = code/workflow/submodules/ggsashimi
 	url = git@github.com:guigolab/ggsashimi.git
+[submodule "code/workflow/submodules/pyGenomeTracks"]
+	path = code/workflow/submodules/pyGenomeTracks
+	url = git@github.com:Zepeng-Mu/pyGenomeTracks.git

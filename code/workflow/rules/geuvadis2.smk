@@ -77,9 +77,9 @@ rule AnnotateNoisySplicingGeuvadis:
         intron_class    = config['intron_class'],
         intron_clusters = 'resources/{datasource}/juncs/intron_clusters/leafcutter_clusters'
     output:
-        perind_noise_counts = 'results/pheno/noisy/{datasource}/{population}/leafcutter_perind.counts.noise.gz'
+        perind_noise_counts = 'results/pheno/noisy-geuv/{datasource}/{population}/leafcutter_perind.counts.noise.gz'
     params:
-        run_dir    = 'results/pheno/noisy/{datasource}/{population}',
+        run_dir    = 'results/pheno/noisy-geuv/{datasource}/{population}',
         out_prefix = 'leafcutter', # note do not include parent dir
         py_script  = 'workflow/scripts/leafcutter_cluster_regtools_noisy_CD.py'
     threads: 1
