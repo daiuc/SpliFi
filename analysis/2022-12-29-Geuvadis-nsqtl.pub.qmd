@@ -1,0 +1,430 @@
+---
+title: "Geuvadis sfQTL - EUR"
+categories:
+  - QTL
+  - Geuvadis
+  - 'EUR'
+  - "noisy splicing"
+  - 'YRI'
+date: 2023-1-5
+author: "Chao Dai"
+---
+
+# Introduction
+
+  - method 1: uses ranknorm and a few filters to create phenotype bed. Then
+subsequent qtl steps are the same.
+
+  - method 2: uses leafcutter prepphenotype python script. Then subsequent QTL 
+steps are the same.
+
+
+
+```{r}
+#| label: setup
+
+suppressMessages(library(data.table))
+suppressMessages(library(tidyverse))
+```
+
+
+-----------------------------------------------------------------------
+
+# Geuvadis - EUR - method 1
+
+Compare sfQTL and QTLs called using randomized phenotypes.
+
+```{r}
+# QTLs called on randomized noise splicing phenotypes
+rqtls = dir("../code/results/qtlQC/perm/Geuvadis/EUR/cis_100000", 
+            "chr.*addQ.*gz", full.names = T) %>% naturalsort::naturalsort()
+names(rqtls) = str_extract(rqtls, "chr[0-9]{1,2}")
+rqtls = map(rqtls, fread)
+```
+
+```{r}
+# QTLs called on noisy splicing
+
+qtls = dir("../code/results/qtl/noisy/Geuvadis/EUR/cis_100000/perm", 
+           "chr.*addQ.*gz", full.names = T) %>% naturalsort::naturalsort()
+names(qtls) = str_extract(qtls, "chr[0-9]{1,2}")
+qtls = map(qtls, fread)
+```
+
+```{r}
+#| message: false
+#| warning: false
+# plot qq for each chromosome
+ggls = map(paste("chr", 1:22, sep=""),
+            ~ leafcutter::multiqq(list("random" = rqtls[[.x]][["pval_emp"]],
+                                       "qtl" = qtls[[.x]][["pval_emp"]])) + 
+                lims(x = c(0,4), y = c(0,4)) +
+                labs(title = paste0(.x,
+                                    " N=", length(qtls[[.x]][["phenotype_id"]])
+                                    )) +
+                theme(legend.title = element_blank(),
+                      legend.position = "bottom",
+                      legend.box.spacing = unit(0, "pt"),
+                      legend.margin=margin(0,0,0,0),
+                      text = element_text(size=8))
+            )
+```
+
+## qq plots
+
+N = number of phenotypes. Since I only shuffled labels of phenotype ids, the number of phenotype ids in actual data and randomized data are the same.
+
+`pval_emp` or the The P-value of association adjusted for the number of variants tested in cis given by the direct method is plotted. Since it's empirical p-value, with 1000 permutations, p value saturates at 0.001.
+
+::: panel-tabset
+#### chr1-6
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[1:6], nrow = 2)
+```
+
+#### chr7-12
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[7:12], nrow = 2)
+```
+
+#### chr13-18
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[13:18], nrow = 2)
+```
+
+#### chr19-22
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[19:22], ncol = 3)
+```
+:::
+
+## Number of qtls at 10% FDR
+
+Number of phenotypes: 
+
+  - `r map_int(qtls, ~.x[["phenotype_id"]] %>% length) %>% sum`
+
+Number of qtls at 10% FDR: 
+
+  - total: `r map_int(qtls, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% sum` - by chrom
+
+```{r}
+map_int(qtls, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% 
+  sort(decreasing = T) %>% print
+```
+
+
+
+-----------------------------------------------------------------------
+
+# Geuvadis - EUR - method 2
+
+Compare sfQTL and QTLs called using randomized phenotypes.
+
+
+```{r}
+# QTLs called on noisy splicing
+
+qtls2 = dir("../code/results/qtl/noisy/Geuvadis/EUR/cis_100000/perm/method2", 
+           "chr.*addQ.*gz", full.names = T) %>% naturalsort::naturalsort()
+names(qtls2) = str_extract(qtls2, "chr[0-9]{1,2}")
+qtls2 = map(qtls2, fread)
+```
+
+```{r}
+#| message: false
+#| warning: false
+# plot qq for each chromosome
+ggls = map(paste("chr", 1:22, sep=""),
+            ~ leafcutter::multiqq(list("random" = rqtls[[.x]][["pval_emp"]],
+                                       "qtl" = qtls2[[.x]][["pval_emp"]])) + 
+                lims(x = c(0,4), y = c(0,4)) +
+                labs(title = paste0(.x,
+                                    " N=", length(qtls2[[.x]][["phenotype_id"]])
+                                    )) +
+                theme(legend.title = element_blank(),
+                      legend.position = "bottom",
+                      legend.box.spacing = unit(0, "pt"),
+                      legend.margin=margin(0,0,0,0),
+                      text = element_text(size=8))
+            )
+```
+
+## qq plots
+
+N = number of phenotypes. Since I only shuffled labels of phenotype ids, the number of phenotype ids in actual data and randomized data are the same.
+
+`pval_emp` or the The P-value of association adjusted for the number of variants tested in cis given by the direct method is plotted. Since it's empirical p-value, with 1000 permutations, p value saturates at 0.001.
+
+::: panel-tabset
+#### chr1-6
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[1:6], nrow = 2)
+```
+
+#### chr7-12
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[7:12], nrow = 2)
+```
+
+#### chr13-18
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[13:18], nrow = 2)
+```
+
+#### chr19-22
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[19:22], ncol = 3)
+```
+:::
+
+## Number of qtls at 10% FDR
+
+Number of phenotypes: 
+
+  - `r map_int(qtls2, ~.x[["phenotype_id"]] %>% length) %>% sum`
+
+Number of qtls at 10% FDR: 
+
+  - total: `r map_int(qtls2, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% sum` - by chrom
+
+```{r}
+map_int(qtls2, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% 
+  sort(decreasing = T) %>% print
+```
+
+
+## Method 1 QTLs vs. Method 2 QTLs
+
+
+```{r}
+n1 = map_dfr(qtls, ~.x[q<0.1]) %>% .[, phenotype_id] %>% unique
+n2 = map_dfr(qtls2, ~.x[q<0.1]) %>% .[, phenotype_id] %>% unique
+
+```
+
+Number of QTLs found in both methods as a percentage of method 1 QTLs: 
+
+  - `r length(intersect(n1,n2)) / length(unique(n1))`
+
+------------------------------------------------------------------------
+
+# Geuvadis - YRI - method 1
+
+
+Compare sfQTL and QTLs called using randomized phenotypes.
+
+```{r}
+# QTLs called on randomized noise splicing phenotypes
+rqtls = dir("../code/results/qtlQC/perm/Geuvadis/YRI/cis_100000", 
+            "chr.*addQ.*gz", full.names = T) %>% naturalsort::naturalsort()
+names(rqtls) = str_extract(rqtls, "chr[0-9]{1,2}")
+rqtls = map(rqtls, fread)
+```
+
+```{r}
+# QTLs called on noisy splicing
+
+qtls = dir("../code/results/qtl/noisy/Geuvadis/YRI/cis_100000/perm", 
+           "chr.*addQ.*gz", full.names = T) %>% naturalsort::naturalsort()
+names(qtls) = str_extract(qtls, "chr[0-9]{1,2}")
+qtls = map(qtls, fread)
+```
+
+```{r}
+#| message: false
+#| warning: false
+# plot qq for each chromosome
+ggls = map(paste("chr", 1:22, sep=""),
+            ~ leafcutter::multiqq(list("random" = rqtls[[.x]][["pval_emp"]],
+                                       "qtl" = qtls[[.x]][["pval_emp"]])) + 
+                lims(x = c(0,4), y = c(0,4)) +
+                labs(title = paste0(.x,
+                                    " N=", length(qtls[[.x]][["phenotype_id"]])
+                                    )) +
+                theme(legend.title = element_blank(),
+                      legend.position = "bottom",
+                      legend.box.spacing = unit(0, "pt"),
+                      legend.margin=margin(0,0,0,0),
+                      text = element_text(size=8))
+            )
+```
+
+## qq plots
+
+N = number of phenotypes. Since I only shuffled labels of phenotype ids, the number of phenotype ids in actual data and randomized data are the same.
+
+`pval_emp` or the The P-value of association adjusted for the number of variants tested in cis given by the direct method is plotted. Since it's empirical p-value, with 1000 permutations, p value saturates at 0.001.
+
+::: panel-tabset
+#### chr1-6
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[1:6], nrow = 2)
+```
+
+#### chr7-12
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[7:12], nrow = 2)
+```
+
+#### chr13-18
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[13:18], nrow = 2)
+```
+
+#### chr19-22
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[19:22], ncol = 3)
+```
+:::
+
+## Number of qtls at 10% FDR
+
+Number of phenotypes:
+
+-   `r map_int(qtls, ~.x[["phenotype_id"]] %>% length) %>% sum`
+
+Number of qtls at 10% FDR:
+
+-   total: `r map_int(qtls, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% sum` - by chrom
+
+```{r}
+map_int(qtls, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% 
+  sort(decreasing = T) %>% print
+```
+
+
+
+
+
+
+
+------------------------------------------------------------------------
+
+# Geuvadis - YRI - method 2
+
+
+Compare sfQTL and QTLs called using randomized phenotypes.
+
+
+```{r}
+# QTLs called on noisy splicing
+
+qtls2 = dir("../code/results/qtl/noisy/Geuvadis/YRI/cis_100000/perm/method2", 
+           "chr.*addQ.*gz", full.names = T) %>% naturalsort::naturalsort()
+names(qtls2) = str_extract(qtls2, "chr[0-9]{1,2}")
+qtls2 = map(qtls2, fread)
+```
+
+```{r}
+#| message: false
+#| warning: false
+# plot qq for each chromosome
+ggls = map(paste("chr", 1:22, sep=""),
+            ~ leafcutter::multiqq(list("random" = rqtls[[.x]][["pval_emp"]],
+                                       "qtl" = qtls2[[.x]][["pval_emp"]])) + 
+                lims(x = c(0,4), y = c(0,4)) +
+                labs(title = paste0(.x,
+                                    " N=", length(qtls2[[.x]][["phenotype_id"]])
+                                    )) +
+                theme(legend.title = element_blank(),
+                      legend.position = "bottom",
+                      legend.box.spacing = unit(0, "pt"),
+                      legend.margin=margin(0,0,0,0),
+                      text = element_text(size=8))
+            )
+```
+
+## qq plots
+
+N = number of phenotypes. Since I only shuffled labels of phenotype ids, the number of phenotype ids in actual data and randomized data are the same.
+
+`pval_emp` or the The P-value of association adjusted for the number of variants tested in cis given by the direct method is plotted. Since it's empirical p-value, with 1000 permutations, p value saturates at 0.001.
+
+::: panel-tabset
+#### chr1-6
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[1:6], nrow = 2)
+```
+
+#### chr7-12
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[7:12], nrow = 2)
+```
+
+#### chr13-18
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[13:18], nrow = 2)
+```
+
+#### chr19-22
+
+```{r}
+#| warning: false
+gridExtra::grid.arrange(grobs = ggls[19:22], ncol = 3)
+```
+:::
+
+## Number of qtls at 10% FDR
+
+Number of phenotypes:
+
+-   `r map_int(qtls2, ~.x[["phenotype_id"]] %>% length) %>% sum`
+
+Number of qtls at 10% FDR:
+
+-   total: `r map_int(qtls2, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% sum` - by chrom
+
+```{r}
+map_int(qtls2, ~.x[q<0.1] %>% .[["phenotype_id"]] %>% length) %>% 
+  sort(decreasing = T) %>% print
+```
+
+
+## Method 1 QTLs vs. Method 2 QTLs
+
+
+```{r}
+n1 = map_dfr(qtls, ~.x[q<0.1]) %>% .[, phenotype_id] %>% unique
+n2 = map_dfr(qtls2, ~.x[q<0.1]) %>% .[, phenotype_id] %>% unique
+
+```
+
+Number of QTLs found in both methods as a percentage of method 1 QTLs: 
+
+  - `r length(intersect(n1,n2)) / length(unique(n1))`
+
+
+
+
+

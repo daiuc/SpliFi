@@ -38,6 +38,7 @@ include: 'rules/geuvadis.smk'
 include: 'rules/gtex.smk'
 include: 'rules/qtl.smk'
 include: 'rules/rna.smk'
+include: 'rules/qtlQC.smk'
 include: "rules/other.smk"
 
 

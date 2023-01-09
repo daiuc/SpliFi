@@ -9,7 +9,7 @@
 <meta name="author" content="Chao Dai">
 <meta name="dcterms.date" content="2022-12-12">
 
-<title>Splicing Fidelity - r paste0("Geuvadis sfQTL - GTEx - ", params$tissue, collapse = "")</title>
+<title>Splicing Fidelity - GTEx sfQTL - Kidney</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -166,7 +166,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Geuvadis sfQTL - GTEx - Kidney</h1>
+      <h1 class="title">GTEx sfQTL - Kidney</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">sfQTL</div>
                 <div class="quarto-category">GTEx</div>
@@ -217,22 +217,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">=</span> <span class="fu">fread</span>(<span class="st">"../code/resources/geuvadis-sample-run-pop-lookup.tsv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>perm_out_cols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"pid"</span>, <span class="st">"pchr"</span>, <span class="st">"pstart"</span>, <span class="st">"pend"</span>, <span class="st">"pstrand"</span>, <span class="st">"num_snp_tested"</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_nominal_dist"</span>, <span class="st">"best_gid"</span>, <span class="st">"best_gchr"</span>, <span class="st">"best_gstart"</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_gend"</span>, <span class="st">"true_dof"</span>, <span class="st">"esti_dof"</span>, <span class="st">"beta_ml1"</span>, <span class="st">"beta_ml2"</span>,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_nom"</span>, <span class="st">"pval_r2"</span>, <span class="st">"regression_slop"</span>, <span class="st">"pval_emp"</span>, </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_adj"</span>, <span class="st">"q"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>folder <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">"../code/results/qtl/noisy/GTEx/"</span>, params<span class="sc">$</span>tissue, <span class="st">"/cis_100000/perm"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">dir</span>(folder, <span class="st">".+addQval.txt.gz"</span>, <span class="at">full.names =</span> T)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> naturalsort<span class="sc">::</span><span class="fu">naturalsort</span>(qtls)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(qtls) <span class="ot">=</span> <span class="fu">str_extract</span>(qtls, <span class="st">"chr[0-9]{1,2}"</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span><span class="fu">fread</span>(.x, <span class="at">col.names =</span> perm_out_cols))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>perm_out_cols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"pid"</span>, <span class="st">"pchr"</span>, <span class="st">"pstart"</span>, <span class="st">"pend"</span>, <span class="st">"pstrand"</span>, <span class="st">"num_snp_tested"</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_nominal_dist"</span>, <span class="st">"best_gid"</span>, <span class="st">"best_gchr"</span>, <span class="st">"best_gstart"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"best_gend"</span>, <span class="st">"true_dof"</span>, <span class="st">"esti_dof"</span>, <span class="st">"beta_ml1"</span>, <span class="st">"beta_ml2"</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_nom"</span>, <span class="st">"pval_r2"</span>, <span class="st">"regression_slop"</span>, <span class="st">"pval_emp"</span>, </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pval_adj"</span>, <span class="st">"q"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>folder <span class="ot">=</span> <span class="fu">paste0</span>(<span class="st">"../code/results/qtl/noisy/GTEx/"</span>, params<span class="sc">$</span>tissue, <span class="st">"/cis_100000/perm"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">dir</span>(folder, <span class="st">".+addQval.txt.gz"</span>, <span class="at">full.names =</span> T)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> naturalsort<span class="sc">::</span><span class="fu">naturalsort</span>(qtls)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(qtls) <span class="ot">=</span> <span class="fu">str_extract</span>(qtls, <span class="st">"chr[0-9]{1,2}"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span><span class="fu">fread</span>(.x, <span class="at">col.names =</span> perm_out_cols))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>qvalue summaries</p>
@@ -243,7 +237,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$chr1
@@ -272,7 +266,7 @@ $chr5
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$chr6
@@ -301,7 +295,7 @@ $chr10
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">11</span><span class="sc">:</span><span class="dv">15</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">11</span><span class="sc">:</span><span class="dv">15</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$chr11
@@ -330,7 +324,7 @@ $chr15
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">16</span><span class="sc">:</span><span class="dv">22</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(qtls[<span class="dv">16</span><span class="sc">:</span><span class="dv">22</span>], <span class="sc">~</span> <span class="fu">summary</span>(.x<span class="sc">$</span>q))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$chr16
@@ -375,12 +369,30 @@ $chr22
 <div class="cell">
 <details>
 <summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr1 =</span> qtls<span class="sc">$</span>chr1<span class="sc">$</span>pval_emp,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr2 =</span> qtls<span class="sc">$</span>chr2<span class="sc">$</span>pval_emp,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr3 =</span> qtls<span class="sc">$</span>chr3<span class="sc">$</span>pval_emp,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr4 =</span> qtls<span class="sc">$</span>chr4<span class="sc">$</span>pval_emp,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr5 =</span> qtls<span class="sc">$</span>chr5<span class="sc">$</span>pval_emp</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div class="cell">
+<details>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr1 =</span> qtls<span class="sc">$</span>chr1<span class="sc">$</span>pval_emp,</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr2 =</span> qtls<span class="sc">$</span>chr2<span class="sc">$</span>pval_emp,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr3 =</span> qtls<span class="sc">$</span>chr3<span class="sc">$</span>pval_emp,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr4 =</span> qtls<span class="sc">$</span>chr4<span class="sc">$</span>pval_emp,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr5 =</span> qtls<span class="sc">$</span>chr5<span class="sc">$</span>pval_emp</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr6 =</span> qtls<span class="sc">$</span>chr6<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr7 =</span> qtls<span class="sc">$</span>chr7<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr8 =</span> qtls<span class="sc">$</span>chr8<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr9 =</span> qtls<span class="sc">$</span>chr9<span class="sc">$</span>pval_emp,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr10 =</span> qtls<span class="sc">$</span>chr10<span class="sc">$</span>pval_emp</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>       )</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -389,16 +401,16 @@ $chr22
 </div>
 </div>
 </div>
-<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
 <div class="cell">
 <details>
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr6 =</span> qtls<span class="sc">$</span>chr6<span class="sc">$</span>pval_emp,</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr7 =</span> qtls<span class="sc">$</span>chr7<span class="sc">$</span>pval_emp,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr8 =</span> qtls<span class="sc">$</span>chr8<span class="sc">$</span>pval_emp,</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr9 =</span> qtls<span class="sc">$</span>chr9<span class="sc">$</span>pval_emp,</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr10 =</span> qtls<span class="sc">$</span>chr10<span class="sc">$</span>pval_emp</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr11 =</span> qtls<span class="sc">$</span>chr11<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr12 =</span> qtls<span class="sc">$</span>chr12<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr13 =</span> qtls<span class="sc">$</span>chr13<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr14 =</span> qtls<span class="sc">$</span>chr14<span class="sc">$</span>pval_emp,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr15 =</span> qtls<span class="sc">$</span>chr15<span class="sc">$</span>pval_emp</span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>       )</span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -407,16 +419,16 @@ $chr22
 </div>
 </div>
 </div>
-<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
 <div class="cell">
 <details>
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr11 =</span> qtls<span class="sc">$</span>chr11<span class="sc">$</span>pval_emp,</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr12 =</span> qtls<span class="sc">$</span>chr12<span class="sc">$</span>pval_emp,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr13 =</span> qtls<span class="sc">$</span>chr13<span class="sc">$</span>pval_emp,</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr14 =</span> qtls<span class="sc">$</span>chr14<span class="sc">$</span>pval_emp,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr15 =</span> qtls<span class="sc">$</span>chr15<span class="sc">$</span>pval_emp</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr16 =</span> qtls<span class="sc">$</span>chr16<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr17 =</span> qtls<span class="sc">$</span>chr17<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr18 =</span> qtls<span class="sc">$</span>chr18<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr19 =</span> qtls<span class="sc">$</span>chr19<span class="sc">$</span>pval_emp,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr20 =</span> qtls<span class="sc">$</span>chr20<span class="sc">$</span>pval_emp</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>       )</span>
 <span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -425,37 +437,19 @@ $chr22
 </div>
 </div>
 </div>
-<div id="tabset-2-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-4-tab">
-<div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">chr16 =</span> qtls<span class="sc">$</span>chr16<span class="sc">$</span>pval_emp,</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr17 =</span> qtls<span class="sc">$</span>chr17<span class="sc">$</span>pval_emp,</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr18 =</span> qtls<span class="sc">$</span>chr18<span class="sc">$</span>pval_emp,</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr19 =</span> qtls<span class="sc">$</span>chr19<span class="sc">$</span>pval_emp,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr20 =</span> qtls<span class="sc">$</span>chr20<span class="sc">$</span>pval_emp</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>       )</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output-display">
-<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-</div>
 <div id="tabset-2-5" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-5-tab">
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr21 =</span> qtls<span class="sc">$</span>chr21<span class="sc">$</span>pval_emp,</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr22 =</span> qtls<span class="sc">$</span>chr22<span class="sc">$</span>pval_emp</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>       )</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>leafcutter<span class="sc">::</span><span class="fu">multiqq</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr21 =</span> qtls<span class="sc">$</span>chr21<span class="sc">$</span>pval_emp,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">chr22 =</span> qtls<span class="sc">$</span>chr22<span class="sc">$</span>pval_emp</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -467,68 +461,68 @@ $chr22
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span> .x[q <span class="sc">&lt;</span> .<span class="dv">1</span>]) <span class="sc">%&gt;%</span> </span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  rbindlist</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> <span class="fu">map</span>(qtls, <span class="sc">~</span> .x[q <span class="sc">&lt;</span> .<span class="dv">1</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  rbindlist</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>Total number of qtls: 387</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(<span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep=</span><span class="st">""</span>))</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>puta_qtls[, .(<span class="at">n_qtls =</span> <span class="fu">length</span>(<span class="fu">unique</span>(pid))), by <span class="ot">=</span> pchr] <span class="sc">%&gt;%</span> </span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  .[, .(<span class="at">qtls =</span> n_qtls, <span class="at">chr =</span> <span class="fu">factor</span>(pchr, chroms))] <span class="sc">%&gt;%</span> </span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_col</span>(<span class="fu">aes</span>(chr, qtls)) <span class="sc">+</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>) <span class="sc">+</span> </span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> forcats<span class="sc">::</span><span class="fu">as_factor</span>(<span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep=</span><span class="st">""</span>))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>puta_qtls[, .(<span class="at">n_qtls =</span> <span class="fu">length</span>(<span class="fu">unique</span>(pid))), by <span class="ot">=</span> pchr] <span class="sc">%&gt;%</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  .[, .(<span class="at">qtls =</span> n_qtls, <span class="at">chr =</span> <span class="fu">factor</span>(pchr, chroms))] <span class="sc">%&gt;%</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> <span class="fu">geom_col</span>(<span class="fu">aes</span>(chr, qtls)) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>) <span class="sc">+</span> </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<p><img src="2022-12-12-GTEx-Kidney-nsqtl.pub_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in annotation</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> <span class="st">"../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv"</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>mycols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"seqname"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"strand"</span>, <span class="st">"gene_name"</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> <span class="fu">fread</span>(anno.gene) </span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> anno.gene[gene_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"protein_coding"</span>) <span class="sc">&amp;</span> </span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                        feature <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"gene"</span>) <span class="sc">&amp;</span> </span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                        source <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"HAVANA"</span>), ..mycols] <span class="sc">%&gt;%</span> </span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  unique <span class="sc">%&gt;%</span> </span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">makeGRangesFromDataFrame</span>(<span class="at">keep.extra.columns =</span> T)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co"># remove scaffolds</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> <span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep =</span> <span class="st">""</span>)</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> anno.gene[<span class="fu">seqnames</span>(anno.gene) <span class="sc">%in%</span> chroms]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in annotation</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> <span class="st">"../../genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv"</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>mycols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"seqname"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, <span class="st">"strand"</span>, <span class="st">"gene_name"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> <span class="fu">fread</span>(anno.gene) </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> anno.gene[gene_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"protein_coding"</span>) <span class="sc">&amp;</span> </span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                        feature <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"gene"</span>) <span class="sc">&amp;</span> </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                        source <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"HAVANA"</span>), ..mycols] <span class="sc">%&gt;%</span> </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  unique <span class="sc">%&gt;%</span> </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">makeGRangesFromDataFrame</span>(<span class="at">keep.extra.columns =</span> T)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co"># remove scaffolds</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>chroms <span class="ot">=</span> <span class="fu">paste</span>(<span class="st">"chr"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>, <span class="at">sep =</span> <span class="st">""</span>)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>anno.gene <span class="ot">=</span> anno.gene[<span class="fu">seqnames</span>(anno.gene) <span class="sc">%in%</span> chroms]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># annotate pid with gene names</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>puta_loci <span class="ot">=</span> puta_qtls[, .(pid, pchr, pstart, pend, pstrand)] <span class="sc">%&gt;%</span> </span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">makeGRangesFromDataFrame</span>(<span class="at">keep.extra.columns =</span> T, </span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">seqnames.field =</span> <span class="st">"pchr"</span>, </span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">start.field =</span> <span class="st">"pstart"</span>, </span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                           <span class="at">end.field =</span> <span class="st">"pend"</span>,</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                           <span class="at">strand.field =</span> <span class="st">"pstrand"</span>)</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> GenomicRanges<span class="sc">::</span><span class="fu">findOverlaps</span>(puta_loci, anno.gene, <span class="at">minoverlap =</span> <span class="dv">1</span>)</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> <span class="fu">cbind</span>(puta_loci[<span class="fu">queryHits</span>(hits)] <span class="sc">%&gt;%</span> mcols,</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>                 anno.gene[<span class="fu">subjectHits</span>(hits)] <span class="sc">%&gt;%</span> mcols</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                 )</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> <span class="fu">as.data.table</span>(hits) <span class="sc">%&gt;%</span> </span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  .[,  <span class="fu">list</span>(<span class="at">genes =</span> <span class="fu">pull</span>(.SD, gene_name) <span class="sc">%&gt;%</span> <span class="fu">paste0</span>(<span class="at">collapse =</span> <span class="st">","</span>)), by <span class="ot">=</span> <span class="st">"pid"</span>]</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> hits[puta_qtls, on <span class="ot">=</span> <span class="st">"pid"</span>, nomatch <span class="ot">=</span> <span class="cn">NA</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># annotate pid with gene names</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>puta_loci <span class="ot">=</span> puta_qtls[, .(pid, pchr, pstart, pend, pstrand)] <span class="sc">%&gt;%</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">makeGRangesFromDataFrame</span>(<span class="at">keep.extra.columns =</span> T, </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">seqnames.field =</span> <span class="st">"pchr"</span>, </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">start.field =</span> <span class="st">"pstart"</span>, </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                           <span class="at">end.field =</span> <span class="st">"pend"</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                           <span class="at">strand.field =</span> <span class="st">"pstrand"</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> GenomicRanges<span class="sc">::</span><span class="fu">findOverlaps</span>(puta_loci, anno.gene, <span class="at">minoverlap =</span> <span class="dv">1</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> <span class="fu">cbind</span>(puta_loci[<span class="fu">queryHits</span>(hits)] <span class="sc">%&gt;%</span> mcols,</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                 anno.gene[<span class="fu">subjectHits</span>(hits)] <span class="sc">%&gt;%</span> mcols</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                 )</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>hits <span class="ot">=</span> <span class="fu">as.data.table</span>(hits) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  .[,  <span class="fu">list</span>(<span class="at">genes =</span> <span class="fu">pull</span>(.SD, gene_name) <span class="sc">%&gt;%</span> <span class="fu">paste0</span>(<span class="at">collapse =</span> <span class="st">","</span>)), by <span class="ot">=</span> <span class="st">"pid"</span>]</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>puta_qtls <span class="ot">=</span> hits[puta_qtls, on <span class="ot">=</span> <span class="st">"pid"</span>, nomatch <span class="ot">=</span> <span class="cn">NA</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>puta_qtls[<span class="sc">!</span><span class="fu">is.na</span>(genes)][<span class="fu">order</span>(q)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>puta_qtls[<span class="sc">!</span><span class="fu">is.na</span>(genes)][<span class="fu">order</span>(q)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                        pid                     genes  pchr    pstart      pend pstrand num_snp_tested best_nominal_dist               best_gid best_gchr best_gstart best_gend
