@@ -47,49 +47,60 @@ rule ExtractNoisyCounts:
                 i += 1
 
 
-rule PrepPhenoBed:
-    '''Prep script filters phenotypes and normalize it
-    '''
-    message: '### Prepare phenotype bed file for qtltools (rank normalized)'
-    input:
-        counts = rules.ExtractNoisyCounts.output.counts,
-        anno = config['annotation']['gencode_v38_genes']
-    output: 'results/pheno/noisy/{datasource}/{group}/pheno.chr1.bed.gz'
-    params:
-        Rscript = 'workflow/scripts/prepPhenoBed.R',
-        outprefix = 'results/pheno/noisy/{datasource}/{group}/pheno',
-        minclu = 10, # min mean cluster reads
-        minsam = 10, # min number of samples passing
-        minread = 3  # min number of reads per sample
-    shell:
+rule PrepPhenoTable:
+    input: rules.ExtractNoisyCounts.output.counts
+    output: 'results/pheno/noisy/{datasource}/{group}/leafcutter_perind.counts.noiseonly.gz.PCs'
+    params: 
+        py_script = 'workflow/submodules/leafcutter/scripts/prepare_phenotype_table.py',
+        nPCs = 5
+    conda: 'leafcutter'
+    shell: 
         '''
-        Rscript {params.Rscript} -I {input.counts} -A {input.anno} -O {params.outprefix} \
-            -C {params.minclu} -S {params.minsam} -N {params.minread}
-        
-        beds=({params.outprefix}.*.bed)
-        for b in ${{beds[@]}}; do
-            bgzip -f $b
-            tabix -p bed ${{b}}.gz
-        done
-        
+
+        python {params.py_script} -p {params.nPCs} {input}
         ls {output}
         '''
 
 
 
-
-rule PhenotypePCA:
-    message: '### Run PCA on phenotype with permutation'
-    input: rules.PrepPhenoBed.output
-    output: 'results/pheno/noisy/{datasource}/{group}/{chrom}.pca'
+rule MakePhenoBed:
+    message:'### Make QTLtools required phenotype bed file for {wildcards.datasource}:{wildcards.group}:{wildcards.chrom}'
+    input:
+        PCs = rules.PrepPhenoTable.output
+    output:
+        bed = 'results/pheno/noisy/{datasource}/{group}/method2/{chrom}.bed.gz'
     params:
-        rscript = 'workflow/scripts/PermuteAndPCA.R',
-        inputfile = 'results/pheno/noisy/{datasource}/{group}/pheno.{chrom}.bed.gz'
-    shell:
-        '''
-        ls {input}
-        Rscript {params.rscript} {params.inputfile} {output} 
-        '''
+        out_dir = 'results/pheno/noisy/{datasource}/{group}/method2',
+        pheno = 'results/pheno/noisy/{datasource}/{group}/leafcutter_perind.counts.noiseonly.gz.phen_{chrom}'
+    run:
+        outname = f'{output.bed}'.replace('.bed.gz', '')
+        with open(outname + '.bed', 'w') as fout:
+            with open(params.pheno) as f:
+                i = 0
+                for ln in f:
+                    lnsplit = ln.strip().split()
+                    datacols = lnsplit[4:]
+                
+                    if i == 0:
+                        idcols = ['#Chr', 'start', 'end', 'pid', 'gid', 'strand']
+                    else:
+                        chrom, start, end, pid = lnsplit[0:4]
+                        gid = pid
+                        strand = pid.split("_")[2]
+                        idcols = [chrom, start, end, pid, gid, strand]
+                    
+                    buf = '\t'.join(idcols + datacols) + '\n'
+                    fout.write(buf)
+                    
+                    i += 1
+        print(f'Wrote {i} lines ...')    
+        bgzip = f'cat <(head -1 {outname}.bed) <(sortBed -i {outname}.bed) | bgzip -c > {output.bed}'
+        print(f'run {bgzip} ...')
+        shell(bgzip)
+        tabix = f'tabix -p bed {output.bed}'
+        print(f'run {tabix} ...')
+        shell(tabix)
+        print('Done.')
 
 
 
@@ -164,9 +175,9 @@ rule GenotypePCA:
 rule MakeCovarianceMatrix:
     message: '### Make covariance matrix with fixed PCs'
     input:
-        PhenoPCs = rules.PhenotypePCA.output,
+        PhenoPCs = 'results/pheno/noisy/{datasource}/{group}/leafcutter_perind.counts.noiseonly.gz.PCs',
         GenoPCs = rules.GenotypePCA.output
-    output: 'results/pheno/noisy/{datasource}/{group}/{chrom}_CovMatrix.txt'
+    output: 'results/pheno/noisy/{datasource}/{group}/method2/{chrom}_CovMatrix.txt'
     params:
         Geno_PCs = 4,
         rscript = 'workflow/scripts/Make_CovMatrix.R'
@@ -180,9 +191,9 @@ rule MapQTL_Perm:
     message: 'Map QTL using permutation pass'
     input:
         vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
-        bed = 'results/pheno/noisy/{datasource}/{group}/pheno.{chrom}.bed.gz',
-        cov = 'results/pheno/noisy/{datasource}/{group}/{chrom}_CovMatrix.txt'
-    output: temp('results/qtl/noisy/{datasource}/{group}/cis_{window}/perm/{chrom}.txt')
+        bed = 'results/pheno/noisy/{datasource}/{group}/method2/{chrom}.bed.gz',
+        cov = 'results/pheno/noisy/{datasource}/{group}/method2/{chrom}_CovMatrix.txt'
+    output: temp('results/qtl/noisy/{datasource}/{group}/cis_{window}/perm/method2/{chrom}.txt')
     params:
         cis_window = '{window}'
     resources: cpu = 1, mem = 12000, time = 1000
@@ -199,8 +210,8 @@ rule MapQTL_Perm:
 
 rule AddQvalueToPermutationPass:
     message: '### Add qvalue to the output of QTLtools permutation pass'
-    input:  'results/qtl/noisy/{datasource}/{group}/cis_{window}/perm/{chrom}.txt'
-    output: 'results/qtl/noisy/{datasource}/{group}/cis_{window}/perm/{chrom}.addQval.txt.gz'
+    input:  'results/qtl/noisy/{datasource}/{group}/cis_{window}/perm/method2/{chrom}.txt'
+    output: 'results/qtl/noisy/{datasource}/{group}/cis_{window}/perm/method2/{chrom}.addQval.txt.gz'
     params:
         rscript = 'workflow/scripts/AddQvalueToQTLtoolsOutput.R'
     shell:
@@ -276,56 +287,5 @@ rule AddQvalueToPermutationPass:
     # thus for this practice run, only run EUR sanokes,
 
 
-# rule MakePhenoBed:
-#     message:'### Make QTLtools required phenotype bed file for {wildcards.datasource}:{wildcards.group}:{wildcards.chrom}'
-#     input:
-#         PCs = rules.PrepPhenoTable.output
-#     output:
-#         bed = 'results/pheno/noisy/{datasource}/{group}/{chrom}.bed.gz'
-#     params:
-#         out_dir = 'results/pheno/noisy/{datasource}/{group}/',
-#         pheno = 'results/pheno/noisy/{datasource}/{group}/leafcutter_perind.counts.noiseonly.gz.phen_{chrom}'
-#     run:
-#         outname = f'{output.bed}'.replace('.bed.gz', '')
-#         with open(outname + '.bed', 'w') as fout:
-#             with open(params.pheno) as f:
-#                 i = 0
-#                 for ln in f:
-#                     lnsplit = ln.strip().split()
-#                     datacols = lnsplit[4:]
-                
-#                     if i == 0:
-#                         idcols = ['#Chr', 'start', 'end', 'pid', 'gid', 'strand']
-#                     else:
-#                         chrom, start, end, pid = lnsplit[0:4]
-#                         gid = pid
-#                         strand = pid.split("_")[2]
-#                         idcols = [chrom, start, end, pid, gid, strand]
-                    
-#                     buf = '\t'.join(idcols + datacols) + '\n'
-#                     fout.write(buf)
-                    
-#                     i += 1
-#         print(f'Wrote {i} lines ...')    
-#         bgzip = f'cat <(head -1 {outname}.bed) <(sortBed -i {outname}.bed) | bgzip -c > {output.bed}'
-#         print(f'run {bgzip} ...')
-#         shell(bgzip)
-#         tabix = f'tabix -p bed {output.bed}'
-#         print(f'run {tabix} ...')
-#         shell(tabix)
-#         print('Done.')
-
-# rule PrepPhenoTable:
-#     input: rules.ExtractNoisyCounts.output.counts
-#     output: 'results/pheno/noisy/{datasource}/{group}/leafcutter_perind.counts.noiseonly.gz.PCs'
-#     params: 
-#         py_script = 'workflow/submodules/leafcutter/scripts/prepare_phenotype_table.py',
-#         nPCs = 5
-#     conda: 'leafcutter'
-#     shell: 
-#         '''
-#         python {params.py_script} -p {params.nPCs} {input}
-#         ls {output}
-#         '''
 
 

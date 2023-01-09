@@ -27,7 +27,6 @@ configfile: "config/config.yaml"
 
 wildcard_constraints:
     datasource = "Geuvadis|GTEx",
-    datasource2 = "Geuvadis|GTEx",
     population = "CEU|FIN|GBR|TSI|YRI|EUR",
     geuvadis_sid = "[A-Z]{2}[0-9]{5,6}",
     chrom = "chr[0-9]{1,2}",
@@ -49,7 +48,7 @@ localrules: all, SplitGTExSampleIDList
 
 rule all:
     input:
-        expand('results/pheno/{datasource}/{population}/ge/{geuvadis_sid}.counts.summary', \
-                datasource = ['Geuvadis'], population = ['EUR'], geuvadis_sid=GEUVDIS_SIDS)
+        # expand('results/pheno/{datasource}/{population}/ge/{geuvadis_sid}.counts.summary', \
+        #         datasource = ['Geuvadis'], population = ['EUR'], geuvadis_sid=GEUVDIS_SIDS)
 #         expand('resources/GTEx/juncs/split_juncs/{GTEx_SamID}.tsv.gz', GTEx_SamID=GTEX_SAMPLE_IDS)
 

@@ -1,6 +1,6 @@
 # most of these codes are from bjf79
 
-library(tidyverse)
+suppressMessages(library(tidyverse))
 
 if(interactive()) {
   print("Running in interactive mode")

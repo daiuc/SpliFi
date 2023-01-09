@@ -100,12 +100,12 @@ rule MakeIntronClustersGtex:
 # aggregate junction file by subject id
 rule AggregateJuncBySubjGtex:
     output: 
-        out_flag = temp(touch('results/pheno/groupJuncs/{datasource}/{tissue}/groupjunc.done')),
-        out_dir = temp(directory('results/pheno/groupJuncs/{datasource}/{tissue}/'))
+        out_flag = temp(touch('results/pheno/groupJuncs/GTEx/{tissue}/groupjunc.done')),
+        out_dir = temp(directory('results/pheno/groupJuncs/GTEx/{tissue}/'))
     params:
         junc_prefix = 'resources/GTEx/juncs/split_juncs/',
         junc_suffix = '.tsv.gz',
-        out_prefix  = 'results/pheno/groupJuncs/{datasource}/{tissue}/',
+        out_prefix  = 'results/pheno/groupJuncs/GTEx/{tissue}/',
         out_suffix  = '.tsv'
     run:
         from functools import reduce
@@ -147,13 +147,13 @@ rule AggregateJuncBySubjGtex:
 rule AnnotateNoisySplicingGtex:
     message:'### Annotate noisy splicing intron clusters in GTEx'
     input: 
-        junc_file_dir  = 'results/pheno/groupJuncs/{datasource}/{tissue}',
+        junc_file_dir  = 'results/pheno/groupJuncs/GTEx/{tissue}',
         intron_class    = config['intron_class'],
         intron_clusters = 'resources/GTEx/juncs/intron_clusters/GTEx_clusters'
     output:
-        perind_noise_counts = 'results/pheno/noisy/{datasource}/{tissue}/leafcutter_perind.counts.noise.gz'
+        perind_noise_counts = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_perind.counts.noise.gz'
     params:
-        run_dir    = 'results/pheno/noisy/{datasource}/{tissue}',
+        run_dir    = 'results/pheno/noisy/GTEx/{tissue}',
         out_prefix = 'leafcutter', # note do not include parent dir
         py_script  = 'workflow/scripts/leafcutter_cluster_regtools_noisy_CD.py'
     threads: 1

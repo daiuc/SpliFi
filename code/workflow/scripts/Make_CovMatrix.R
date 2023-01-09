@@ -1,6 +1,6 @@
 
-library(tidyverse)
-library(data.table)
+suppressMessages(library(tidyverse))
+suppressMessages(library(data.table))
 
 if(interactive()) {
   print("Running in interactive mode")
@@ -20,11 +20,18 @@ pheno = fread(pheno_pca)
 geno = fread(geno_pca)
 geno = head(geno, geno_N_PCs)
 
+
+cnames = names(pheno)
+cnames[[1]] = "SampleID"
+names(pheno) = cnames
+
 pheno_samples = names(pheno)
 pheno_samples = pheno_samples[2:length(pheno_samples)]
 
 geno_samples = names(geno)
 geno_samples = geno_samples[2:length(geno_samples)]
+
+
 
 if (length(setdiff(geno_samples, pheno_samples)) == 0 &
     length(setdiff(pheno_samples, geno_samples)) == 0) {

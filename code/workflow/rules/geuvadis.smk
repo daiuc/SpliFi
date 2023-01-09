@@ -8,8 +8,8 @@ rule MakeIntronClustersGeuvadis:
     '''
     message: '### Make intron clusters using any GTEx samples'
     output: 
-        pooled   = 'resources/{datasource}/juncs/intron_clusters/leafcutter_pooled_mkclu',
-        clusters = 'resources/{datasource}/juncs/intron_clusters/leafcutter_clusters'
+        pooled   = 'resources/Geuvadis/juncs/intron_clusters/leafcutter_pooled_mkclu',
+        clusters = 'resources/Geuvadis/juncs/intron_clusters/leafcutter_clusters'
     params:
         run_dir    = 'resources/Geuvadis/juncs/intron_clusters',
         out_prefix = 'leafcutter',
@@ -53,11 +53,11 @@ rule AggregateJuncBySubjGeuvadis:
     input:
         junc_files = getGeuvadisJuncs
     output:
-        done = temp(touch('results/pheno/aggJuncs/{datasource}/{population}/done')),
-        d = temp(directory('results/pheno/aggJuncs/{datasource}/{population}'))
+        done = temp(touch('results/pheno/aggJuncs/Geuvadis/{population}/done')),
+        d = temp(directory('results/pheno/aggJuncs/Geuvadis/{population}'))
     params:
         py_script = 'workflow/scripts/leafcutter_merge_multi_samples.py',
-        clusters = 'resources/{datasource}/juncs/intron_clusters/leafcutter_clusters',
+        clusters = 'resources/Geuvadis/juncs/intron_clusters/leafcutter_clusters',
         out_prefix = 'leafcutter',
         lookup = config['Dataset']['Geuvadis']['Metadata']
     shell:
@@ -73,13 +73,13 @@ rule AggregateJuncBySubjGeuvadis:
 rule AnnotateNoisySplicingGeuvadis:
     message:'### Annotate noisy splicing intron clusters in GTEx'
     input: 
-        junc_files = 'results/pheno/aggJuncs/{datasource}/{population}',
+        junc_files = 'results/pheno/aggJuncs/Geuvadis/{population}',
         intron_class    = config['intron_class'],
-        intron_clusters = 'resources/{datasource}/juncs/intron_clusters/leafcutter_clusters'
+        intron_clusters = 'resources/Geuvadis/juncs/intron_clusters/leafcutter_clusters'
     output:
-        perind_noise_counts = 'results/pheno/noisy/{datasource}/{population}/leafcutter_perind.counts.noise.gz'
+        perind_noise_counts = 'results/pheno/noisy/Geuvadis/{population}/leafcutter_perind.counts.noise.gz'
     params:
-        run_dir    = 'results/pheno/noisy/{datasource}/{population}',
+        run_dir    = 'results/pheno/noisy/Geuvadis/{population}',
         out_prefix = 'leafcutter', # note do not include parent dir
         py_script  = 'workflow/scripts/leafcutter_cluster_regtools_noisy_CD.py'
     threads: 1
@@ -107,7 +107,7 @@ rule AnnotateNoisySplicingGeuvadis:
 #         4.  save file paths in a file
 #     '''
 #     message: '### Make a list of junction input file'
-#     output: 'results/pheno/{datasource}/juncs/junc-file-list.txt'
+#     output: 'results/pheno/Geuvadis/juncs/junc-file-list.txt'
 #     params:
 #         junc_dir = '/project2/yangili1/ankeetashah/noisysQTL/geuvadis/geuvadis_juncs/'
 #     run:

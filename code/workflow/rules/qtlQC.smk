@@ -2,8 +2,8 @@
 
 rule RandomizePhenoBed:
     message: 'qtl QC - randomize phenotype bed file'
-    input: 'results/pheno/noisy/{datasource2}/{group}/pheno.{chrom}.bed.gz'
-    output: 'results/qtlQC/noisy/{datasource2}/{group}/pheno.{chrom}.bed.gz'
+    input: 'results/pheno/noisy/{datasource}/{group}/pheno.{chrom}.bed.gz'
+    output: 'results/qtlQC/noisy/{datasource}/{group}/pheno.{chrom}.bed.gz'
     threads: 1
     resources: cpu = 1, mem_mb = 15000, time = 2100
     run:
@@ -37,7 +37,7 @@ rule RandomizePhenoBed:
 rule RandomPhenotypePCA:
     message: '### Run PCA on randomized phenotype bed'
     input: rules.RandomizePhenoBed.output
-    output: 'results/qtlQC/noisy/{datasource2}/{group}/{chrom}.pca'
+    output: 'results/qtlQC/noisy/{datasource}/{group}/{chrom}.pca'
     params:
         rscript = 'workflow/scripts/PermuteAndPCA.R',
     shell:
@@ -51,7 +51,7 @@ rule RandomCovarianceMatrix:
     input:
         PhenoPCs = rules.RandomPhenotypePCA.output,
         GenoPCs = rules.GenotypePCA.output
-    output: 'results/qtlQC/noisy/{datasource2}/{group}/{chrom}_CovMatrix.txt'
+    output: 'results/qtlQC/noisy/{datasource}/{group}/{chrom}_CovMatrix.txt'
     params:
         Geno_PCs = 4,
         rscript = 'workflow/scripts/Make_CovMatrix.R'
@@ -64,10 +64,10 @@ rule RandomCovarianceMatrix:
 rule RandomMapQTL_Perm:
     message: 'Map QTL using permutation pass'
     input:
-        vcf = 'results/geno/{datasource2}/{group}/{chrom}.vcf.gz',
-        bed = 'results/qtlQC/noisy/{datasource2}/{group}/pheno.{chrom}.bed.gz',
-        cov = 'results/qtlQC/noisy/{datasource2}/{group}/{chrom}_CovMatrix.txt'
-    output: temp('results/qtlQC/perm/{datasource2}/{group}/cis_{window}/{chrom}.txt')
+        vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
+        bed = 'results/qtlQC/noisy/{datasource}/{group}/pheno.{chrom}.bed.gz',
+        cov = 'results/qtlQC/noisy/{datasource}/{group}/{chrom}_CovMatrix.txt'
+    output: temp('results/qtlQC/perm/{datasource}/{group}/cis_{window}/{chrom}.txt')
     params:
         cis_window = '{window}'
     resources: cpu = 1, mem = 12000, time = 1000
@@ -85,7 +85,7 @@ rule RandomMapQTL_Perm:
 rule RandomAddQvalueToPermutationPass:
     message: '### Add qvalue to the output of QTLtools permutation pass'
     input:  rules.RandomMapQTL_Perm.output
-    output: 'results/qtlQC/perm/{datasource2}/{group}/cis_{window}/{chrom}.addQval.txt.gz'
+    output: 'results/qtlQC/perm/{datasource}/{group}/cis_{window}/{chrom}.addQval.txt.gz'
     params:
         rscript = 'workflow/scripts/AddQvalueToQTLtoolsOutput.R'
     shell:

@@ -13,8 +13,8 @@ if (interactive()){
 FileIn <- args[1]
 FileOut <- args[2]
 
-library(tidyverse)
-library(qvalue)
+suppressMessages(library(tidyverse))
+suppressMessages(library(qvalue))
 
 cnames = c("phenotype_id", "phenotype_chr", "phenotype_start", "phenotype_end",
            "phenotype_strand", "num_variants", "best_nom_dist", "best_genotype_id",
