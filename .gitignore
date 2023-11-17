@@ -11,7 +11,6 @@ _site/**
 /.quarto/
 .vscode/
 archieved_analyses/
-**/*gz
 **test*
 **/*test*/**
 **tmp*

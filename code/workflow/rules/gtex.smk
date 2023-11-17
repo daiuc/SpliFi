@@ -5,32 +5,8 @@ NOTE:
       wildcard, there must be a step to replace `-` back to space.
 
 
-Some tissue names in GTEx:
-Fallopian-Tube
-Cervix-Uteri
-Bladder
-Kidney
-Uterus
-Vagina
-Salivary-Gland
-Small-Intestine
-Ovary
-Bone-Marrow
-Liver
-Spleen
-Prostate
-Adrenal-Gland
-Pituitary
-Pancreas
-Stomach
-Testis
-Breast
-Nerve
-Thyroid
-Colon
-Lung
-Muscle
-Heart
+See details about GTEx tissues and tissue subcategories here:
+https://daiuc.github.io/SpliFi/analysis/2023-11-17-GTEx-tissues-summary.pub.html
 
 
 

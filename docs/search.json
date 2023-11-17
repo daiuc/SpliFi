@@ -39,13 +39,20 @@
     "href": "index.html",
     "title": "Project Splicing Fidelity",
     "section": "",
-    "text": "GTEx subjects, samples by tissue summary\n\n\n\n\n\n\n\nGTEx\n\n\nsummary\n\n\n\n\n\n\n\n\n\n\n\nNov 17, 2023\n\n\nChao Dai\n\n\n\n\n\n\n  \n\n\n\n\nGTEx unproductive splicing reads percentage\n\n\n\n\n\n\n\nGTEx\n\n\n\n\n\n\n\n\n\n\n\nNov 9, 2023\n\n\nChao Dai\n\n\n\n\n\n\nNo matching items"
+    "text": "GTEx subjects, samples by tissue summary\n\n\n\n\n\n\n\nGTEx\n\n\nsummary\n\n\n\n\n\n\n\n\n\n\n\nNov 17, 2023\n\n\nChao Dai\n\n\n\n\n\n\n  \n\n\n\n\nGTEx unproductive splicing reads\n\n\n\n\n\n\n\nGTEx\n\n\n\n\n\n\n\n\n\n\n\nNov 9, 2023\n\n\nChao Dai\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "analysis/2023-11-09-GTEx-unproductive-reads-boxplot.pub.html",
     "href": "analysis/2023-11-09-GTEx-unproductive-reads-boxplot.pub.html",
-    "title": "GTEx unproductive splicing reads percentage",
+    "title": "GTEx unproductive splicing reads",
     "section": "",
-    "text": "saveRDS(introns, “2023-11-09-GTEx-introns.rds”)\n\ngeuvadis"
+    "text": "saveRDS(introns, “2023-11-09-GTEx-introns.rds”)"
+  },
+  {
+    "objectID": "analysis/2023-11-09-GTEx-unproductive-reads-boxplot.pub.html#fraction-of-unprodcutive-reads-by-tissue",
+    "href": "analysis/2023-11-09-GTEx-unproductive-reads-boxplot.pub.html#fraction-of-unprodcutive-reads-by-tissue",
+    "title": "GTEx unproductive splicing reads",
+    "section": "Fraction of unprodcutive reads by tissue",
+    "text": "Fraction of unprodcutive reads by tissue\nUsing Geuvadis EUR for LCLs.\n\n\n\n\n\nFigure 1: Fraction of unproductive reads by tissue"
   }
 ]
