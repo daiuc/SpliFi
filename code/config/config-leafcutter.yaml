@@ -1,0 +1,35 @@
+# Snakemake workflow configurations
+
+Dataset:
+  Geuvadis:
+    Metadata: resources/geuvadis-sample-run-pop-lookup.tsv # geuvadis meta data (all samples)
+    Linked_SampleIDs: resources/geuvadis-1kgp-common-sample-id.txt # geuvadis sample IDs that have genotype in 1KGP
+    Linked_1to1_SampleIDs: resources/geuvadis-1kgp-common-1to1only-sample-id.txt # linkable sample IDs that only have 1 ERR ID
+  GTEx:
+    Metadata: resources/GTEx-SampleID-Tissue-Lookup.tsv
+    Junc_meta: resources/GTEx/juncs/sampid-smts-smtsd-subjid.tsv # all sample IDs from junction file, augmented with tissue info and individual ids
+    
+
+
+junction_list: 
+  test: resources/leafcutter_junc_files_list.txt
+  Geuvadis: resources/Geuvadis_juncs.txt
+
+intron_class:
+  - resources/basic_annotated_introns.txt.gz
+  # - resources/IntronAnnotationsFromYang_ProductiveOnly.tsv.gz
+  # - resources/intron_class_lplus1_rminus1.txt.gz
+
+annotation:
+  gencode: /project2/yangili1/cdai/genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv
+  gencode_v26_genes: /project2/yangili1/cdai/genome_index/hs38/gencode.v26.primary_assembly.annotation.genes.bed.gz
+  gencode_v38_genes: /project2/yangili1/cdai/genome_index/hs38/gencode_gene_v38_anno.bed
+  GTEx:
+    VCF_v7_HG38: /project2/yangili1/cdai/genome_index/hs38/GTEx_v7/GTEx_Analysis_2017-06-05_v8_WGS_VCF_files_GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_838Indiv_Analysis_Freeze.SHAPEIT2_phased.vcf.gz
+  basic_introns: /project2/yangili1/cdai/SpliFi/code/resources/IntronAnnotationsFromYang.tsv.gz # from Ben
+
+
+alignments:
+  LCL: 
+    bam: /project2/yangili1/ankeetashah/hg38_LCL #/project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam
+    bigwig: /project2/yangili1/ankeetashah/hg38_LCL # /project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam.bw

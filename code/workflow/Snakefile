@@ -1,0 +1,86 @@
+'''
+NOTE: 
+    -   For Geuvadis, currently running on only 1-to-1 samples.
+    When running on full Geuvadis dataset, make sure to modify
+    accordingly in these rules:
+        1.  `Geuvadis_Linked_SampleIDs` in `common.smk`
+        2.  `prep_genotype` in `qtl.smk`
+
+'''
+
+import gzip
+import os
+import glob
+
+
+__author__ = "Chao Dai"
+__email__ = "chaodai@uchicago.edu"
+
+
+import pandas as pd
+
+
+configfile: "config/config.yaml"
+
+
+# Limit to autosomes
+CHROMS = ['chr'+str(i) for i in range(1,23)]
+
+
+
+# Get Geuvadis metadata lookup table, key cols are Population ID, Sample ID, Run ID
+Geuvadis_Metadata = pd.read_csv(config['Dataset']['Geuvadis']['Metadata'], sep='\t')
+Geuvadis_Metadata.set_index(['Pop_id', 'Sample', 'run_id'], drop=False, inplace=True)
+
+# GTEx metadata for all samples present in the junction file
+Gtex_Metadata = pd.read_csv(config['Dataset']['GTEx']['Junc_meta'], sep='\t')
+Gtex_Metadata.set_index(['SAMPID', 'SMTS', 'SMTSD', 'SUBJID'], drop=False, inplace=True)
+
+
+# Get Geuvadis samples that have genotype in 1KGP
+# For now, use only samples with 1-to-1 Sample-to-ERR
+# For production, use the full linked samples
+Geuvadis_Linked_SampleIDs = []
+with open(config['Dataset']['Geuvadis']['Linked_1to1_SampleIDs']) as f:
+    Geuvadis_Linked_SampleIDs = [s.strip() for s in f.readlines()]
+
+def getERR(sample_id, lookup_df):
+    ERR = lookup_df.query('Sample == @sample_id').run_id
+    return list(set(ERR))
+
+Sample_ERR_Dict = dict(zip(Geuvadis_Linked_SampleIDs, 
+    [getERR(x, Geuvadis_Metadata) for x in Geuvadis_Linked_SampleIDs]))
+
+
+
+wildcard_constraints:
+    datasource = "Geuvadis|GTEx",
+    population = "CEU|FIN|GBR|TSI|YRI|EUR",
+    group = "[^\/]+", # rule out e.g. `Bladder/by_intron`
+    geuvadis_sid = "[A-Z]{2}[0-9]{5,6}",
+    chrom = "chr[0-9]{1,2}",
+    window = "[0-9]+"
+
+
+
+include: 'rules/geuvadis.smk'
+include: 'rules/gtex.smk'
+include: 'rules/qtl.smk'
+include: 'rules/rna.smk'
+include: 'rules/qtlQC.smk'
+include: "rules/other.smk"
+
+
+
+# with open('results/pheno/Geuvadis/EUR/noise_pheno/samplelist_pheno.txt') as F:
+#     GEUVDIS_SIDS = [x.strip() for x in F.readlines()]
+
+localrules: all, SplitGTExSampleIDList
+
+
+rule all:
+    input:
+        # expand('results/pheno/{datasource}/{population}/ge/{geuvadis_sid}.counts.summary', \
+        #         datasource = ['Geuvadis'], population = ['EUR'], geuvadis_sid=GEUVDIS_SIDS)
+#         expand('resources/GTEx/juncs/split_juncs/{GTEx_SamID}.tsv.gz', GTEx_SamID=GTEX_SAMPLE_IDS)
+
