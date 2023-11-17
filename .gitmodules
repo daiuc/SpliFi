@@ -1,0 +1,12 @@
+[submodule "code/workflow/submodules/leafcutter"]
+	path = code/workflow/submodules/leafcutter
+	url = https://github.com/davidaknowles/leafcutter.git
+[submodule "code/workflow/submodules/ggsashimi"]
+	path = code/workflow/submodules/ggsashimi
+	url = git@github.com:guigolab/ggsashimi.git
+[submodule "code/workflow/submodules/pyGenomeTracks"]
+	path = code/workflow/submodules/pyGenomeTracks
+	url = git@github.com:Zepeng-Mu/pyGenomeTracks.git
+[submodule "code/workflow/submodules/leafcutter2"]
+	path = code/workflow/submodules/leafcutter2
+	url = git@github.com:daiuc/leafcutter2.git

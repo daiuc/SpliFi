@@ -1,0 +1,41 @@
+project:
+  type: "website"
+  title: "Leafcutter 2"
+  output-dir: docs
+  render:
+    - "*.qmd"
+    - "analysis/*.pub.ipynb"
+    - "analysis/*.pub.qmd"
+    - "!archieved_analyses"
+    - "!code/"
+    - "!data/"
+    - "!output/"
+    - "!docs/"
+    - "!assets/"
+    - "!shiny-apps/"
+website:
+  title: "Splicing Fidelity"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: slides/index.qmd
+        text: Slides
+      - href: https://cdai.notion.site/Notes-0e18d7ec33cb44fc975cb9e139aa784b
+        text: Notion
+      - about.qmd
+    background: "dark"
+    search: true
+  # open-graph: true
+  # twitter-card:
+  #   title: twitter
+  #   site: "@chaodai"
+  # comments:
+  #   hypothesis:
+  #     theme: classic
+  #     openSidebar: false
+format:
+  html:
+    theme: sandstone
+    css: styles.css
+    toc: true

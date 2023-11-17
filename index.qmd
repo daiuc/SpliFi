@@ -1,0 +1,18 @@
+---
+title: "Project Splicing Fidelity"
+listing:
+  contents: 
+    - posts
+    - analysis/*.pub.qmd
+    - analysis/*.pub.ipynb
+  sort: "date desc"
+  type: default
+  page-size: 40
+  categories: true
+  sort-ui: false
+  filter-ui: false
+page-layout: full
+execute:
+  freeze: auto # re-render only when source changes
+---
+
