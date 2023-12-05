@@ -19,4 +19,5 @@ swap-pane
 **/swap-pane
 analysis/*rds
 analysis/*gz
+data
 plots
