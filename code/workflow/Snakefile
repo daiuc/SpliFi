@@ -1,39 +1,39 @@
 '''
-NOTE: 
-    -   For Geuvadis, currently running on only 1-to-1 samples.
-    When running on full Geuvadis dataset, make sure to modify
-    accordingly in these rules:
-        1.  `Geuvadis_Linked_SampleIDs` in `common.smk`
-        2.  `prep_genotype` in `qtl.smk`
+Use leafcutter2 to analyze splicing QTLs
+
+Main datasets:
+    1.  Geuvadis
+    2.  GTEx
+
+Notes:
+    1. When running on full Geuvadis dataset, make sure to modify accordingly in
+       these rules:
+        - `Geuvadis_Linked_SampleIDs` in `common.smk`
+        - `prep_genotype` in `qtl.smk`
 
 '''
-
-import gzip
-import os
-import glob
-
 
 __author__ = "Chao Dai"
 __email__ = "chaodai@uchicago.edu"
 
-
 import pandas as pd
-
 
 configfile: "config/config.yaml"
 
-
-# Limit to autosomes
-CHROMS = ['chr'+str(i) for i in range(1,23)]
-
+AUTOSOMES = ['chr'+str(i) for i in range(1,23)]
+CHROMS = AUTOSOMES + ['chrX', 'chrY']
 
 
-# Get Geuvadis metadata lookup table, key cols are Population ID, Sample ID, Run ID
+# remove white space and fix parentethies in tissue name
+fixChr = str.maketrans({" ": None, "(": "_", ")": "_"})
+
+# Geuvadis metadata lookup table, key cols are Population ID, Sample ID, Run ID
 Geuvadis_Metadata = pd.read_csv(config['Dataset']['Geuvadis']['Metadata'], sep='\t')
 Geuvadis_Metadata.set_index(['Pop_id', 'Sample', 'run_id'], drop=False, inplace=True)
 
 # GTEx metadata for all samples present in the junction file
 Gtex_Metadata = pd.read_csv(config['Dataset']['GTEx']['Junc_meta'], sep='\t')
+Gtex_Metadata[['SMTS', 'SMTSD']] = Gtex_Metadata[['SMTS', 'SMTSD']].apply(lambda x: x.str.translate(fixChr))
 Gtex_Metadata.set_index(['SAMPID', 'SMTS', 'SMTSD', 'SUBJID'], drop=False, inplace=True)
 
 
@@ -48,39 +48,69 @@ def getERR(sample_id, lookup_df):
     ERR = lookup_df.query('Sample == @sample_id').run_id
     return list(set(ERR))
 
-Sample_ERR_Dict = dict(zip(Geuvadis_Linked_SampleIDs, 
-    [getERR(x, Geuvadis_Metadata) for x in Geuvadis_Linked_SampleIDs]))
+# Dict of Geuvadis sample ID to ERR ID
+Sample_ERR_Dict = dict(zip(Geuvadis_Linked_SampleIDs, [getERR(x, Geuvadis_Metadata) for x in Geuvadis_Linked_SampleIDs]))
 
 
 
 wildcard_constraints:
     datasource = "Geuvadis|GTEx",
     population = "CEU|FIN|GBR|TSI|YRI|EUR",
-    group = "[^\/]+", # rule out e.g. `Bladder/by_intron`
     geuvadis_sid = "[A-Z]{2}[0-9]{5,6}",
     chrom = "chr[0-9]{1,2}",
-    window = "[0-9]+"
+    window = "[0-9]+",
+    phenType = "combineNoise|separateNoise",
+    # group = "[^\/]+", # rule out e.g. `Bladder/by_intron`
 
-
-
-include: 'rules/geuvadis.smk'
 include: 'rules/gtex.smk'
+include: 'rules/geuvadis.smk'
 include: 'rules/qtl.smk'
-include: 'rules/rna.smk'
-include: 'rules/qtlQC.smk'
-include: "rules/other.smk"
+# include: 'rules/rna.smk'
+# include: 'rules/qtlQC.smk'
+# include: "rules/other.smk"
 
 
 
-# with open('results/pheno/Geuvadis/EUR/noise_pheno/samplelist_pheno.txt') as F:
-#     GEUVDIS_SIDS = [x.strip() for x in F.readlines()]
+
+
+# Tissues with multiple sub tissues types, names are sub-tissue type names
+# include Kidney-Cortex
+GtexMultiSubTissues = 'Adipose-Subcutaneous,Adipose-Visceral(Omentum),WholeBlood,Cells-EBV-transformedlymphocytes,Artery-Tibial,Artery-Aorta,Artery-Coronary,Brain-Cortex,Brain-Caudate(basalganglia),Brain-Nucleusaccumbens(basalganglia),Brain-Cerebellum,Brain-CerebellarHemisphere,Brain-FrontalCortex(BA9),Brain-Putamen(basalganglia),Brain-Hypothalamus,Brain-Hippocampus,Brain-Anteriorcingulatecortex(BA24),Brain-Spinalcord(cervicalc-1),Brain-Amygdala,Brain-Substantianigra,Colon-Transverse,Colon-Sigmoid,Esophagus-Mucosa,Esophagus-Muscularis,Esophagus-GastroesophagealJunction,Heart-LeftVentricle,Heart-AtrialAppendage,Kidney-Cortex,Skin-SunExposed(Lowerleg),Skin-NotSunExposed(Suprapubic),Cells-Culturedfibroblasts'
+# not include Kidney-Cortex
+# GtexMultiSubTissues = 'Adipose-Subcutaneous,Adipose-Visceral(Omentum),WholeBlood,Cells-EBV-transformedlymphocytes,Artery-Tibial,Artery-Aorta,Artery-Coronary,Brain-Cortex,Brain-Caudate(basalganglia),Brain-Nucleusaccumbens(basalganglia),Brain-Cerebellum,Brain-CerebellarHemisphere,Brain-FrontalCortex(BA9),Brain-Putamen(basalganglia),Brain-Hypothalamus,Brain-Hippocampus,Brain-Anteriorcingulatecortex(BA24),Brain-Spinalcord(cervicalc-1),Brain-Amygdala,Brain-Substantianigra,Colon-Transverse,Colon-Sigmoid,Esophagus-Mucosa,Esophagus-Muscularis,Esophagus-GastroesophagealJunction,Heart-LeftVentricle,Heart-AtrialAppendage,Skin-SunExposed(Lowerleg),Skin-NotSunExposed(Suprapubic),Cells-Culturedfibroblasts'
+# Tissues with only 1 sub tissue type, names are main tissue type names
+# GtexSingleSubTissues = 'Adipose-Subcutaneous,Adipose-Visceral(Omentum),Artery-Aorta,Artery-Coronary,Artery-Tibial,Brain-Amygdala,Brain-Anteriorcingulatecortex(BA24),Brain-Caudate(basalganglia),Brain-CerebellarHemisphere,Brain-Cerebellum,Brain-Cortex,Brain-FrontalCortex(BA9),Brain-Hippocampus,Brain-Hypothalamus,Brain-Nucleusaccumbens(basalganglia),Brain-Putamen(basalganglia),Brain-Spinalcord(cervicalc-1),Brain-Substantianigra,Cells-Culturedfibroblasts,Cells-EBV-transformedlymphocytes,Colon-Sigmoid,Colon-Transverse,Esophagus-GastroesophagealJunction,Esophagus-Mucosa,Esophagus-Muscularis,Heart-AtrialAppendage,Heart-LeftVentricle,Skin-NotSunExposed(Suprapubic),Skin-SunExposed(Lowerleg),WholeBlood,Bladder'
+GtexSingleSubTissues = 'Muscle-Skeletal,Thyroid,Nerve-Tibial,Lung,Breast-MammaryTissue,Testis,Stomach,Pancreas,Pituitary,AdrenalGland,Prostate,Spleen,Liver,SmallIntestine-TerminalIleum,Ovary,MinorSalivaryGland,Vagina,Uterus,Bladder'
+GtexOutputSubTissues = GtexSingleSubTissues + ',' + GtexMultiSubTissues
+GtexOutputSubTissues = GtexOutputSubTissues.translate(fixChr)
+
+
+#-------------------------------------------------------------------------------
 
 localrules: all, SplitGTExSampleIDList
 
-
 rule all:
     input:
-        # expand('results/pheno/{datasource}/{population}/ge/{geuvadis_sid}.counts.summary', \
-        #         datasource = ['Geuvadis'], population = ['EUR'], geuvadis_sid=GEUVDIS_SIDS)
-#         expand('resources/GTEx/juncs/split_juncs/{GTEx_SamID}.tsv.gz', GTEx_SamID=GTEX_SAMPLE_IDS)
+        # Geuvadis EUR
+        # run leafcutter 2 without constitutive junctions
+        expand('results/pheno/noisy/Geuvadis/{POP}/leafcutter_perind.counts.noise.gz', POP=['EUR']),
+        # run leafcutter 2 with constitutive junctions
+        expand('results/pheno/noisy/Geuvadis/{POP}/wConst_perind.constcounts.noise.gz', POP=['EUR']),
+        # add q value to qtltools result
+        expand('results/qtl/noisy/Geuvadis/{POP}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
+                POP=['EUR'], PTYPE=['separateNoise'], WSIZE=[100000], CHR=AUTOSOMES),
+        # 
+        # 49 GTEx tissues
+        # run leafcutter 2 without constitutive junctions
+        expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        # run leafcutter 2 with constitutive junctions
+        expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise.gz',
+                TISSUE=GtexOutputSubTissues.split(',')),
+        # add q value to qtltools result
+        expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
+                TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
+                WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
+
+
+
 

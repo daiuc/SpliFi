@@ -1,8 +1,7 @@
 '''
 NOTE:
-    - the `tissue` wildcards have `-` replacing white spaces. While the `SMTS`
-      and the `SMTSD` fields has white space, that's why in rules using `tissue`
-      wildcard, there must be a step to replace `-` back to space.
+    - `SMTS` and the `SMTSD` fields in the metadata has white spaces. White spaces
+      removed in dataframe. When using tissue wildcards, just remove white spaces.
 
 
 See details about GTEx tissues and tissue subcategories here:
@@ -11,7 +10,6 @@ https://daiuc.github.io/SpliFi/analysis/2023-11-17-GTEx-tissues-summary.pub.html
 
 
 '''
-
 
 
 
@@ -94,6 +92,8 @@ rule SplitGTExJuncs:
 
 
 # aggregate junction file by subject id
+# when running with sub-tissue types, there is no combining, since each tissue type
+# only has 1 tissue per individual (subject id)
 rule AggregateJuncBySubjGtex:
     '''
     Aggregate junction files by subject id. Because in the GTEx dataset,
@@ -105,64 +105,36 @@ rule AggregateJuncBySubjGtex:
         out_flag = temp(touch('resources/GTEx/juncs/groupped_juncs/{tissue}/uncompressed/groupjunc.done')),
         out_dir = temp(directory('resources/GTEx/juncs/groupped_juncs/{tissue}/uncompressed'))
     params:
-        junc_prefix = 'resources/GTEx/juncs/split_juncs/',
-        junc_suffix = '.tsv.gz',
-        out_prefix  = 'resources/GTEx/juncs/groupped_juncs/{tissue}/',
-        out_suffix  = '.tsv'
-    run:
-        from functools import reduce
-
-        tissue = wildcards.tissue.replace("_", " ")
-        if tissue in list(Gtex_Metadata.SMTS):
-            print(f'Use SMTS (main tissue category) to select tissue type: {tissue}')
-            df = Gtex_Metadata.query('SMTS in @tissue').reset_index(drop=True).drop_duplicates()
-        elif tissue in list(Gtex_Metadata.SMTSD):
-            print(f'Use SMTSD (sub tissue category) to select tissue type: {tissue}')
-            df = Gtex_Metadata.query('SMTSD in @tissue').reset_index(drop=True).drop_duplicates()
-        else:
-            print("Error. Check the tissue type you entered!")
-            exit(1)
-        samps = {} # {subjid: [sampid, sampid, ...]}
-        for k,v in df.groupby('SUBJID'):
-            samps[k] = list(v.SAMPID)
-
-        print(f'Make junction files for Tissue type: {tissue}')
-        print(f'Total {len(samps.keys())} individuals, {len([x for l in list(samps.values()) for x in l])} samples ...\n')
-
-        for k, v in samps.items():
-            junc_files = [params.junc_prefix + x + params.junc_suffix for x in v] # junc files
-            out_file = output['out_dir'] + '/' + k + params.out_suffix
-            cts = [] # list of list for counts
-            for j in junc_files:
-                with gzip.open(j) as f:
-                    lines = [ln.decode().strip().split() for ln in f.readlines()]
-                    ct = [int(x[4]) for x in lines]
-                    cts.append(ct)
-            cts = reduce(lambda x,y: [a+b for a,b in zip(x,y)], cts) # sum reads by SUBJID if having multiple SAMPID
-            buf = ['\t'.join([lines[i][0], lines[i][1], lines[i][2], 
-                              lines[i][3], str(cts[i]), lines[i][5]]
-                            ) + '\n' for i in range(len(lines))]
-            with open(out_file, 'w') as outf:
-                outf.writelines(buf)
-                # print(f'Wring {k} ... Done.')
+        inputDir = 'resources/GTEx/juncs/split_juncs',
+        metadata = config['Dataset']['GTEx']['Junc_meta'],
+        pyscript = 'workflow/scripts/aggJuncs.py'
+    log: 'logs/AggregateJunBySubjGtex/{tissue}.log'
+    shell:
+        '''
+        python {params.pyscript} --metadata {params.metadata} \
+            --inDir {params.inputDir} --tissue "{wildcards.tissue}" \
+            --outDir {output.out_dir} &> {log}
+        
+        '''
                 
 
 rule CompressGrouppedJuncs:
     input: rules.AggregateJuncBySubjGtex.output.out_dir
     output: 
-        flag = touch('resources/GTEx/juncs/groupped_juncs/{tissue}/compressed/done'),
-        folder = directory('resources/GTEx/juncs/groupped_juncs/{tissue}/compressed')
-    resources: cpu=8, time=120, mem_mb=15000
+        flag = temp(touch('resources/GTEx/juncs/groupped_juncs/{tissue}/compressed/done')),
+        out_dir = temp(directory('resources/GTEx/juncs/groupped_juncs/{tissue}/compressed'))
+    resources: cpu=8, time=1200, mem_mb=25000
     threads: 8
-    group: "fix-juncs"
+    log: 'logs/CompressGrouppedJuncs/{tissue}.log'
     shell:
         '''
-        module load parallel
+        # module load parallel
 
         # Find all .tsv files in the input folder and use parallel to gzip them
         find "{input}" -type f -name "*.tsv" -print0 | \
-            parallel -0 -j {threads} "gzip -c {{}} > {output.folder}/{{/.}}.tsv.gz"
-
+            parallel -0 -j {threads} "gzip -c {{}} > {output.out_dir}/{{/.}}.tsv.gz"
+        
+        ls 
 
         '''
 
@@ -174,20 +146,23 @@ rule ConvertCoordinates:
     annotation file. This rule converts the coordinates in the junction files
     to the annotation file coordinates - aka BED like coordinates.
     '''
-    input: 'resources/GTEx/juncs/groupped_juncs/{tissue}/compressed/done'
+    input: 
+        flag = rules.CompressGrouppedJuncs.output.flag,
+        in_Dir = rules.CompressGrouppedJuncs.output.out_dir
     output: 
         flag = touch('resources/GTEx/juncs/groupped_juncs/{tissue}/converted/done'),
-        folder = directory('resources/GTEx/juncs/groupped_juncs/{tissue}/converted')
+        out_dir = directory('resources/GTEx/juncs/groupped_juncs/{tissue}/converted')
     params:
         input_dir = 'resources/GTEx/juncs/groupped_juncs/{tissue}/compressed'
-    resources: cpu=8, time=120, mem_mb=15000
+    resources: cpu=8, time=1200, mem_mb=25000
     threads: 8
-    group: "fix-juncs"
+    log: 'logs/ConvertCoordinates/{tissue}.log'
     shell:
         '''
         # Use awk to subtract the second column by 1
-        module load parallel
-        echo converting junction coordinates to BED-like coordinates ...
+        # module load parallel
+
+        echo converting junction coordinates to BED-like coordinates ... > {log}
         
         subtractStart() {{
             in_f=$1
@@ -196,13 +171,13 @@ rule ConvertCoordinates:
                 awk -v OFS='\t' '{{print $1, $2-1, $3, $4, $5, $6}}' | \
                 gzip -c > $ou_f
             
-            echo "Done converting $in_f -> $ou_f"
+            echo "Done converting $in_f -> $ou_f" >> {log}
         }}
 
         export -f subtractStart
 
-        find {params.input_dir} -type f -name "*.gz" -print0 | \
-            parallel -0 -j {threads} "subtractStart {{}} {output.folder}/{{/.}}.gz"
+        find {input.in_Dir} -type f -name "*.gz" -print0 | \
+            parallel -0 -j {threads} "subtractStart {{}} {output.out_dir}/{{/.}}.gz"
 
         '''
     
@@ -215,46 +190,52 @@ rule ConvertCoordinates:
 
 # optional rule used to speed up the workflow, intron clusters may run once
 # and reuse as needed.
-rule MakeIntronClustersGtex:
+rule ClusterIntronsGtex:
     message: '### Make intron clusters using any GTEx samples'
+    input:
+        junc_files_flag = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted/done',
     output: 
-        pooled   = 'resources/GTEx/juncs/intron_clusters/{tissue}/leafcutter_pooled',
-        clusters = 'resources/GTEx/juncs/intron_clusters/{tissue}/leafcutter_refined_noisy',
-        lowusage = 'resources/GTEx/juncs/intron_clusters/{tissue}/leafcutter_lowusage_introns', # intermediate
-        refined = 'resources/GTEx/juncs/intron_clusters/{tissue}/leafcutter_refined' # intermediate
+        pooled   = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_pooled',
+        clusters = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_refined_noisy',
+        lowusage = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_lowusage_introns', # intermediate
+        refined  = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_refined' # intermediate
     params:
-        run_dir    = 'resources/GTEx/juncs/intron_clusters/{tissue}',
+        run_dir    = 'results/pheno/noisy/GTEx/{tissue}',
         out_prefix = 'leafcutter',
         junc_files = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted',
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter_make_clusters.py'
+    log: 'logs/ClusterIntronsGtex/{tissue}.log'
     shell:
         '''
         python {params.py_script} \
             -r {params.run_dir} \
             -o {params.out_prefix} \
-            -j <(realpath {params.junc_files}/*.tsv.gz)
+            -j <(realpath {params.junc_files}/*.tsv.gz) &> {log}
         
-        l -lah {output.pooled} {output.clusters} {output.lowusage} {output.refined}
+        ls -lah {output.pooled} {output.clusters} {output.lowusage} {output.refined} &>> {log}
         
         '''
 
 
-rule AnnotateNoisySplicingGtex:
-    message:'### Annotate noisy splicing intron clusters in GTEx'
+rule Leafcutter2Gtex:
+    message:'### Run leafcutter2 on GTEx samples'
     input: 
         junc_files_flag = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted/done',
         junc_files = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted',
-        intron_clusters = 'resources/GTEx/juncs/intron_clusters/{tissue}/leafcutter_refined_noisy'
+        intron_clusters = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_refined_noisy',
     output:
         perind_noise_counts = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_perind.counts.noise.gz',
         perind_noise_by_intron = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_perind.counts.noise_by_intron.gz'
     params:
+        py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
         run_dir    = 'results/pheno/noisy/GTEx/{tissue}',
         out_prefix = 'leafcutter', # note do not include parent dir
         intron_class = ','.join(config['intron_class']),
-        py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py'
+        pre_clustered = '-c results/pheno/noisy/GTEx/{tissue}/leafcutter_refined_noisy', 
+        other_params = '-k' # not keeping constitutive introns
     threads: 1
     resources: cpu=1, time=2100, mem_mb=25000
+    log: 'logs/Leafcutter2Gtex/{tissue}.log'
     shell:
         '''
         python {params.py_script} \
@@ -262,7 +243,27 @@ rule AnnotateNoisySplicingGtex:
             -r {params.run_dir} \
             -o {params.out_prefix} \
             -N {params.intron_class} \
-            -c {input.intron_clusters} \
-            -k 
-        ls {output.perind_noise_counts} {output.perind_noise_by_intron}
+            {params.pre_clustered} {params.other_params} &> {log}
+
+        ls {output.perind_noise_counts} {output.perind_noise_by_intron} &>> {log}
+
         '''
+
+
+use rule Leafcutter2Gtex as Leafcutter2Gtex_wConst with:
+    message: '### run leafcutter2 on GTEx samples with constitutive introns'
+    input: 
+        junc_files_flag = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted/done',
+        junc_files = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted',
+    output:
+        perind_noise_counts = 'results/pheno/noisy/GTEx/{tissue}/wConst_perind.constcounts.noise.gz',
+        perind_noise_by_intron = 'results/pheno/noisy/GTEx/{tissue}/wConst_perind.constcounts.noise_by_intron.gz'
+    params:
+        py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
+        intron_class = ','.join(config['intron_class']),
+        run_dir    = 'results/pheno/noisy/GTEx/{tissue}',
+        pre_clustered = '',
+        out_prefix = 'wConst',
+        other_params = '-k --includeconst' # include constitutive introns
+    log: 'logs/Leafcutter2Gtex_wConst/{tissue}.log'
+
