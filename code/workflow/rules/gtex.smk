@@ -181,6 +181,31 @@ rule ConvertCoordinates:
 
         '''
     
+rule RenameJuncFilesGtex:
+    message: '### Rename GTEx junction files to include tissue name and SUBJID'
+    input: rules.ConvertCoordinates.output.flag
+    output: touch('resources/GTEx/juncs/all49tissues/{tissue}.done')
+    params:
+        source_dir = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted',
+        dest_prefix = 'resources/GTEx/juncs/all49tissues/{tissue}'
+    log: 'logs/RenameJuncFilesGtex/{tissue}.log'
+    shell:
+        '''
+        source_files=({params.source_dir}/*.tsv.gz)
+        for f in ${{source_files[@]}}; do
+            subjID=$(basename -s .tsv.gz $f)
+            dest_file={params.dest_prefix}.${{subjID}}.tsv.gz
+
+            cp $f $dest_file && zcat $dest_file | wc -l &>> {log} &
+
+            if (( $(jobs | wc -l) > 20 )); then
+                echo "wait for previous jobs to finish" &>> {log}
+                wait
+            fi
+            
+        done
+        echo "All done $(date)" &>> {log}
+        '''
 
 
 
@@ -224,13 +249,13 @@ rule Leafcutter2Gtex:
         junc_files = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted',
         intron_clusters = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_refined_noisy',
     output:
-        perind_noise_counts = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_perind.counts.noise.gz',
         perind_noise_by_intron = 'results/pheno/noisy/GTEx/{tissue}/leafcutter_perind.counts.noise_by_intron.gz'
     params:
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
         run_dir    = 'results/pheno/noisy/GTEx/{tissue}',
         out_prefix = 'leafcutter', # note do not include parent dir
-        intron_class = ','.join(config['intron_class']),
+        gtf = config['annotation']['gtf']['v43'],
+        genome = config['genome38'],
         pre_clustered = '-c results/pheno/noisy/GTEx/{tissue}/leafcutter_refined_noisy', 
         other_params = '-k' # not keeping constitutive introns
     threads: 1
@@ -242,10 +267,11 @@ rule Leafcutter2Gtex:
             -j <(realpath {input.junc_files}/*.tsv.gz) \
             -r {params.run_dir} \
             -o {params.out_prefix} \
-            -N {params.intron_class} \
+            -A {params.gtf} \
+            -G {params.genome} \
             {params.pre_clustered} {params.other_params} &> {log}
 
-        ls {output.perind_noise_counts} {output.perind_noise_by_intron} &>> {log}
+        ls {output.perind_noise_by_intron} &>> {log}
 
         '''
 
@@ -256,14 +282,87 @@ use rule Leafcutter2Gtex as Leafcutter2Gtex_wConst with:
         junc_files_flag = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted/done',
         junc_files = 'resources/GTEx/juncs/groupped_juncs/{tissue}/converted',
     output:
-        perind_noise_counts = 'results/pheno/noisy/GTEx/{tissue}/wConst_perind.constcounts.noise.gz',
         perind_noise_by_intron = 'results/pheno/noisy/GTEx/{tissue}/wConst_perind.constcounts.noise_by_intron.gz'
     params:
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
-        intron_class = ','.join(config['intron_class']),
         run_dir    = 'results/pheno/noisy/GTEx/{tissue}',
-        pre_clustered = '',
+        pre_clustered = '-c results/ds/GTEx/all49tissues_refined_noisy',
         out_prefix = 'wConst',
+        gtf = config['annotation']['gtf']['v43'],
+        genome = config['genome38'],
         other_params = '-k --includeconst' # include constitutive introns
     log: 'logs/Leafcutter2Gtex_wConst/{tissue}.log'
+
+
+
+
+
+# ----------------------------------------------------------------------------------------
+#           Cluster introns using all GTEx tissues at once
+#         Then use the clusters to run leafcutter2 on specific tissues
+#         This enables differential splicing analysis across tissues
+# ----------------------------------------------------------------------------------------
+
+
+# optional rule used to speed up the workflow, intron clusters may run once
+# and reuse as needed.
+rule ClusterIntronsGtexAllTissues:
+    message: '### Make intron clusters using all (49) GTEx tissues'
+    output: 
+        pooled   = 'results/ds/GTEx/all49tissues_pooled',
+        clusters = 'results/ds/GTEx/all49tissues_refined_noisy',
+        lowusage = 'results/ds/GTEx/all49tissues_lowusage_introns', # intermediate
+        refined  = 'results/ds/GTEx/all49tissues_refined' # intermediate
+    params:
+        run_dir    = 'results/ds/GTEx',
+        out_prefix = 'all49tissues',
+        junc_files = 'resources/GTEx/juncs/all49tissues',
+        py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter_make_clusters.py'
+    log: 'logs/ClusterIntronsGtexAllTissues/all49tissues.log'
+    resources: cpu=1, time=2100, mem_mb=35000
+    shell:
+        '''
+        python {params.py_script} \
+            -r {params.run_dir} \
+            -o {params.out_prefix} \
+            -j <(ls {params.junc_files}/*.tsv.gz) &> {log}
+        
+        ls -lah {output.pooled} {output.clusters} {output.lowusage} {output.refined} &>> {log}
+        
+        '''
+
+
+rule LeafcutterForDSGtex:
+    message: '### Run leafcutter2 on GTEx samples for differential splicing analysis'
+    input:
+        pre_clusters = 'results/ds/GTEx/all49tissues_refined',
+        tissue1_flag = 'resources/GTEx/juncs/all49tissues/{ds_tissue_1}.done',
+        tissue2_flag = 'resources/GTEx/juncs/all49tissues/{ds_tissue_2}.done',
+    output:
+        ds_counts = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind.constcounts.noise_by_intron.gz'
+    params:
+        run_dir = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}',
+        out_prefix = 'ds',
+        tissue1_juncs = 'resources/GTEx/juncs/all49tissues/{ds_tissue_1}',
+        tissue2_juncs = 'resources/GTEx/juncs/all49tissues/{ds_tissue_2}',
+        pre_clustered = '-c results/ds/GTEx/all49tissues_refined_noisy',
+        gtf = config['annotation']['gtf']['v43'],
+        genome = config['genome38'],
+        other_params = '-k --includeconst', # include constitutive introns
+        py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
+    log: 'logs/LeafcutterForDSGtex/{ds_tissue_1}_v_{ds_tissue_2}.log'
+    resources: cpu = 1, time = 2100, mem_mb = 25000
+    shell:
+        '''
+        python {params.py_script} \
+            -j <(ls {params.tissue1_juncs}*tsv.gz {params.tissue2_juncs}*tsv.gz) \
+            -r {params.run_dir} \
+            -o {params.out_prefix} \
+            -A {params.gtf} \
+            -G {params.genome} \
+            {params.pre_clustered} {params.other_params} &> {log}
+
+        ls {output.ds_counts} &>> {log}
+        '''
+
 

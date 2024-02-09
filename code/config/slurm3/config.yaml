@@ -1,0 +1,24 @@
+jobs: 75
+cores: 80
+cluster: "mkdir -p slurm_logs && 
+    sbatch --partition {resources.partition} 
+        --account {resources.account} -t {resources.time} 
+        -c {resources.cpu} 
+        --mem {resources.mem_mb} 
+        -e slurm_logs/{rule}%j.e -o slurm_logs/{rule}%j.o 
+        --job-name {rule}  "
+default-resources: 
+    - time=500
+    - mem_mb=15000
+    - cpu=1
+    - partition=caslake
+    - account='pi-jstaley'
+    - tmpdir="/scratch/midway2/chaodai/TMP"
+keep-going: True
+printshellcmds: True
+reason: True
+rerun-incomplete: True
+use-conda: True
+use-envmodules: True
+## additional cluster args: --mail-type FAIL --mail-user chaodai@uchicago.edu
+##  --export=ALL,SHELL=/bin/bash

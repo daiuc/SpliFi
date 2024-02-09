@@ -25,7 +25,11 @@ annotation:
   gencode: /project2/yangili1/cdai/genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv
   gencode_v26_genes: /project2/yangili1/cdai/genome_index/hs38/gencode.v26.primary_assembly.annotation.genes.bed.gz
   gencode_v38_genes: /project2/yangili1/cdai/genome_index/hs38/gencode_gene_v38_anno.bed
+  gtf:
+    v43: /project2/yangili1/cdai/annotations/hg38/gencode.v43.primary_assembly.annotation.gtf.gz
   # basic_introns: /project2/yangili1/cdai/SpliFi/code/resources/IntronAnnotationsFromYang.tsv.gz # from Ben
+
+genome38: /project2/yangili1/cdai/genome_index/hs38/GRCh38.primary_assembly.genome.fa
 
 VCF:
   GTEx:

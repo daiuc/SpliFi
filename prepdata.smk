@@ -28,6 +28,8 @@ chosen_tissues = [x.translate(fixChr) for x in chosen_tissues]
 
 
 
+localrules:
+    GetEqtlDataGeuvadis,
 
 
 rule all:
@@ -36,8 +38,8 @@ rule all:
         expand('data/ExtractFractions/GTEx/{tissue}.numerators_constcounts.noise_by_intron.rds',
                tissue=chosen_tissues),
         # categorize sQTLs into u-sQTLs and p-sQTLs, results in tsv file
-        expand('data/CategorizeSplicingQTLs/GTEx/{tissue}.tsv',
-               tissue=chosen_tissues),
+        # expand('data/CategorizeSplicingQTLs/GTEx/{tissue}.tsv',
+        #        tissue=chosen_tissues),
 
 
 rule ExtractNumFromFracGTEx:
@@ -68,11 +70,30 @@ rule CategorizeSplicingQTLsGTEx:
         Rscript {params.script} <(ls {params.qtl_files}) {params.fdr} {output}
         '''
 
+rule GetEqtlDataGeuvadis:
+    message: 'get eqtl data for Geuvadis' # This is from Ben. Notice there's a difference here, I selected 360 EUR individuals, but Ben's include both EUR and YRI (449 individuals)
+    output:
+        flag = touch('data/EQTLs/Geuvadis/done'),
+        nominal = 'data/EQTLs/Geuvadis/steady_eqtl_nominal_frBen.txt.gz', # nominal file for coloc from Ben
+        nominal_tbi = 'data/EQTLs/Geuvadis/steady_eqtl_nominal_frBen.txt.gz.tbi'
+    params:
+        nominal = '/project2/yangili1/bjf79/ChromatinSplicingQTLs/code/QTLs/QTLTools/Expression.Splicing/NominalPassForColoc.txt.tabix.gz'
+    shell:
+        '''
+        mkdir -p $(dirname {output.flag})
+        cp {params.nominal} {output.nominal}
+        cp {params.nominal}.tbi {output.nominal_tbi}
+
+        echo "copied files to current directory: " > {output.flag}
+        echo "cp {params.nominal} {output.nominal}" >> {output.flag}
+        echo "cp {params.nominal}.tbi {output.nominal_tbi}" >> {output.flag}
+        '''
+
 use rule CategorizeSplicingQTLsGTEx as CategorizeSplicingQTLsGeuvadis with:
     output: 'data/CategorizeSplicingQTLs/Geuvadis/{population}.tsv'
     params:
         script = 'scripts/categorizeSqtls.R',
         qtl_files = 'code/results/qtl/noisy/Geuvadis/{population}/separateNoise/cis_100000/perm/chr*.addQval.txt.gz',
-        fdr = 0.1,
+        fdr = 0.1
         
 

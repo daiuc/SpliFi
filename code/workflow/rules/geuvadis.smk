@@ -40,13 +40,13 @@ rule Leafcutter2Geuvadis:
         junc_files = 'resources/Geuvadis/{population}/juncs',
         intron_clusters = 'results/pheno/noisy/Geuvadis/{population}/leafcutter_refined_noisy',
     output:
-        perind_noise_counts = 'results/pheno/noisy/Geuvadis/{population}/leafcutter_perind.counts.noise.gz',
         perind_noise_by_intron = 'results/pheno/noisy/Geuvadis/{population}/leafcutter_perind.counts.noise_by_intron.gz'
     params:
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
         run_dir    = 'results/pheno/noisy/Geuvadis/{population}',
         out_prefix = 'leafcutter', # note do not include parent dir
-        intron_class = ','.join(config['intron_class']),
+        gtf = config['annotation']['gtf']['v43'],
+        genome = config['genome38'],
         pre_clustered = '-c results/pheno/noisy/Geuvadis/{population}/leafcutter_refined_noisy', 
         other_params = '-k' # not keeping constitutive introns
     threads: 1
@@ -58,8 +58,11 @@ rule Leafcutter2Geuvadis:
             -j <(realpath {input.junc_files}/*.junc) \
             -r {params.run_dir} \
             -o {params.out_prefix} \
-            -N {params.intron_class} \
+            -A {params.gtf} \
+            -G {params.genome} \
             {params.pre_clustered} {params.other_params} &> {log}
+        
+        ls {output.perind_noise_by_intron} &>> {log}
         '''
 
 
@@ -69,40 +72,40 @@ use rule Leafcutter2Geuvadis as Leafcutter2Geuvadis_wConst with:
     input: 
         junc_files = 'resources/Geuvadis/{population}/juncs'
     output:
-        perind_noise_counts = 'results/pheno/noisy/Geuvadis/{population}/wConst_perind.constcounts.noise.gz',
         perind_noise_by_intron = 'results/pheno/noisy/Geuvadis/{population}/wConst_perind.constcounts.noise_by_intron.gz'
     params:
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
-        intron_class = ','.join(config['intron_class']),
         run_dir    = 'results/pheno/noisy/Geuvadis/{population}',
         pre_clustered = '',
         out_prefix = 'wConst',
+        gtf = config['annotation']['gtf']['v43'],
+        genome = config['genome38'],
         other_params = '-k --includeconst' # include constitutive introns
     log: 'logs/Leafutter2Geuvadis_wConst/{population}.log'
 
 
 
-rule AnnotateNoisySplicingGeuvadis_const:
-    input:
-        junc_files = 'resources/Geuvadis/{population}/juncs'
-    output:
-        perind_noise_counts = 'results/pheno/noisy/Geuvadis/{population}/allIntron/allIntron_perind.constcounts.noise.gz'
-    params:
-        run_dir    = 'results/pheno/noisy/Geuvadis/{population}/allIntron',
-        out_prefix = 'allIntron', # file name prefix, not directory,
-        intron_class = ','.join(config['intron_class']),
-        py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py'
-    threads: 1
-    resources: cpu=1, time=2100, mem_mb=25000
-    shell:
-        '''
-        python {params.py_script} \
-            -j <(realpath {input.junc_files}/*.junc) \
-            -r {params.run_dir} \
-            -o {params.out_prefix} \
-            -N {params.intron_class} \
-            -k --includeconst
-        '''
+# rule AnnotateNoisySplicingGeuvadis_const:
+#     input:
+#         junc_files = 'resources/Geuvadis/{population}/juncs'
+#     output:
+#         perind_noise_counts = 'results/pheno/noisy/Geuvadis/{population}/allIntron/allIntron_perind.constcounts.noise.gz'
+#     params:
+#         run_dir    = 'results/pheno/noisy/Geuvadis/{population}/allIntron',
+#         out_prefix = 'allIntron', # file name prefix, not directory,
+#         intron_class = ','.join(config['intron_class']),
+#         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py'
+#     threads: 1
+#     resources: cpu=1, time=2100, mem_mb=25000
+#     shell:
+#         '''
+#         python {params.py_script} \
+#             -j <(realpath {input.junc_files}/*.junc) \
+#             -r {params.run_dir} \
+#             -o {params.out_prefix} \
+#             -N {params.intron_class} \
+#             -k --includeconst
+#         '''
 
 
 
