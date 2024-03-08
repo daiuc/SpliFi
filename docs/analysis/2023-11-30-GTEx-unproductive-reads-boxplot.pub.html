@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Chao Dai">
-<meta name="dcterms.date" content="2023-11-09">
+<meta name="dcterms.date" content="2024-01-11">
 
 <title>Splicing Fidelity - GTEx unproductive splicing reads</title>
 <style>
@@ -133,7 +133,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 9, 2023</p>
+        <p class="date">January 11, 2024</p>
       </div>
     </div>
     
@@ -153,7 +153,22 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<div class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="24">
+<p>Processed these GTEx tissues:</p>
+<div class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="8">
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of tissues: 49
+Tissues: Adipose-Subcutaneous, Adipose-Visceral_Omentum_, AdrenalGland, Artery-Aorta, Artery-Coronary, Artery-Tibial,
+Brain-Amygdala, Brain-Anteriorcingulatecortex_BA24_, Brain-Caudate_basalganglia_, Brain-CerebellarHemisphere,
+Brain-Cerebellum, Brain-Cortex, Brain-FrontalCortex_BA9_, Brain-Hippocampus, Brain-Hypothalamus,
+Brain-Nucleusaccumbens_basalganglia_, Brain-Putamen_basalganglia_, Brain-Spinalcord_cervicalc-1_, Brain-Substantianigra,
+Breast-MammaryTissue, Cells-Culturedfibroblasts, Cells-EBV-transformedlymphocytes, Colon-Sigmoid, Colon-Transverse,
+Esophagus-GastroesophagealJunction, Esophagus-Mucosa, Esophagus-Muscularis, Heart-AtrialAppendage, Heart-LeftVentricle,
+Kidney-Cortex, Liver, Lung, MinorSalivaryGland, Muscle-Skeletal, Nerve-Tibial, Ovary, Pancreas, Pituitary, Prostate,
+Skin-NotSunExposed_Suprapubic_, Skin-SunExposed_Lowerleg_, SmallIntestine-TerminalIleum, Spleen, Stomach, Testis,
+Thyroid, Uterus, Vagina, WholeBlood</code></pre>
+</div>
+</div>
+<div class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
 <div class="cell-output cell-output-display">
 <div id="fig-unprodratio-by-tissue" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
@@ -163,7 +178,7 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<div class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}" data-execution_count="26">
+<div class="cell" data-vscode="{&quot;languageId&quot;:&quot;r&quot;}">
 <div class="cell-output cell-output-display">
 <div id="fig-nsample-by-tissue" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">

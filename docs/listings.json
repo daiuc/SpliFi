@@ -2,10 +2,11 @@
   {
     "listing": "/index.html",
     "items": [
+      "/analysis/2024-02-05-GTEx-diffsplice.pub.html",
+      "/analysis/2023-11-30-GTEx-unproductive-reads-boxplot.pub.html",
+      "/analysis/2024-02-05-GTEx-unproductive-reads-boxplot.pub.html",
       "/analysis/2023-12-05-sQTL-numbers.pub.html",
-      "/analysis/2023-11-17-GTEx-tissues-summary.pub.html",
-      "/analysis/2023-11-09-GTEx-unproductive-reads-boxplot.pub.html",
-      "/analysis/2023-11-30-GTEx-unproductive-reads-boxplot.pub.html"
+      "/analysis/2023-11-17-GTEx-tissues-summary.pub.html"
     ]
   }
 ]

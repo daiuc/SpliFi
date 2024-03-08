@@ -1,0 +1,180 @@
+---
+title: test differential splicing script
+date: 2024-2-12
+author: Chao Dai
+code-fold: true
+execute:
+  warning: false
+  message: false
+  echo: false
+  include: false
+categories:
+  - GTEx
+  - Differential splicing
+jupyter: ir
+---
+
+```{r}
+#| vscode: {languageId: r}
+# use R to change path to ~/cdai/SpliFi/analysis if current working path is not
+
+setwd("~/cdai/SpliFi/analysis")
+```
+
+```{r}
+#| vscode: {languageId: r}
+suppressMessages(library(tidyverse))
+suppressMessages(library(glue))
+suppressMessages(library(data.table))
+suppressMessages(library(cowplot))
+```
+
+```{r}
+#| vscode: {languageId: r}
+theme_set(theme_cowplot())
+suppressMessages(library(patchwork))
+```
+
+```{r}
+#| vscode: {languageId: r}
+library(furrr)
+plan(multisession, workers = 6)
+```
+
+```{r}
+#| vscode: {languageId: r}
+library(ggrepel)
+```
+
+```{r}
+#| vscode: {languageId: r}
+options(repr.plot.width = 8, repr.plot.height=10, repr.plot.res = 180)
+```
+
+# Introduction
+
+This is used to test whether the differential splicing script 
+`/project2/yangili1/cdai/SpliFi/code/workflow/submodules/leafcutter/scripts/leafcutter_ds.R`
+is working correctly.
+
+To test, I chose 200 samples from Brain-Cerebellum from GTEx, and arbitrarily assigned the first 100 to group 1 and the second 100 to group 2. I then ran the script to test for differential splicing between the two groups.
+
+
+Detailed snakemake rules here: 
+```
+rule adhoc_test_ds_step1: # testing differential splicing with neg control
+    input: 
+        ds_numers_lf1 = 'results/ds/GTEx/Brain-Cerebellum_v_Liver/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+    output:
+        neg_control_numers = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
+        neg_control_groups = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
+    run:
+        import gzip
+        outf1 = gzip.open(output.neg_control_numers, 'wt')
+        outf2 = open(output.neg_control_groups, 'w')
+        with gzip.open(input.ds_numers_lf1, 'rt') as f:
+            i = 0
+            for ln in f:
+                if i == 0:
+                    header = ln.split()
+                    cols = ([x.replace('Brain-Cerebellum', 'BC-group1') for x in header[0:100]] +
+                            [x.replace('Brain-Cerebellum', 'BC-group2') for x in header[100:200]])
+                    groups = ['BC-group1' for x in header[0:100]] + ['BC-group2' for x in header[100:200]]
+                    for c,g in zip(cols, groups):
+                        outf2.write(f'{c} {g}\n')
+                    outf1.write(' '.join(cols) + '\n')
+                if i > 0:
+                    outln = ln.split()[:201]
+                    outf1.write(' '.join(outln) + '\n')
+                i += 1
+
+        outf1.close()
+        outf2.close()
+
+
+use rule RunLeafcutterDiffSplicingGtex as adhoc_test_ds_step2 with:
+    input:
+        ds_numers_lf1 = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
+        ds_sample_group = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
+    output:
+        flag = touch('results/ds/GTEx/ds_test/BC_v_Liver/ds.done')
+        # produces two files:
+        # 1. {outprefix}_effect_sizes.txt
+        # 2. {outprefix}_manual_ds_cluster_significance.txt
+    params:
+        Rscript = 'workflow/submodules/leafcutter/scripts/leafcutter_ds.R', 
+        outprefix = 'results/ds/GTEx/ds_test/BC_v_Liver/ds', # note you need to include path!
+        MIN_SAMPLES_PER_INTRON = 5,
+        MIN_SAMPLES_PER_GROUP = 3,
+        MIN_COVERAGE = 5
+    log: 'results/ds/GTEx/ds_test/BC_v_Liver/log'
+
+```
+
+
+# Results
+
+
+## Conclusion
+1567 introns (4%) passed FDR<0.05 threshold.
+
+
+Load result in 
+- `results/ds/GTEx/ds_test/BC_v_Liver`
+
+```{r}
+#| vscode: {languageId: r}
+dir('../code/results/ds/GTEx/ds_test/BC_v_Liver')
+```
+
+```{r}
+#| vscode: {languageId: r}
+sig.files <- list(
+    'test1' = '../code/results/ds/GTEx/ds_test/BC_v_Liver/ds_cluster_significance.txt'
+)
+effect.files <- list(
+    'test1' = '../code/results/ds/GTEx/ds_test/BC_v_Liver/ds_effect_sizes.txt'
+)
+```
+
+```{r}
+#| vscode: {languageId: r}
+sigs <- map(sig.files, fread)
+effects <- map(effect.files, fread)
+```
+
+```{r}
+#| vscode: {languageId: r}
+sigs[[1]][1:5]
+```
+
+```{r}
+#| vscode: {languageId: r}
+imap_dfr(sigs, ~.x[, .(.N, group = .y), by= .(passFDR15perc = `p.adjust` < .15)]) %>% 
+    .[, .(N, P = round(N/sum(N), 2), passFDR15perc), by = group]
+```
+
+```{r}
+#| vscode: {languageId: r}
+options(repr.plot.width = 5, repr.plot.height=4, repr.plot.res = 180)
+```
+
+```{r}
+#| vscode: {languageId: r}
+library(gg.gap)
+```
+
+```{r}
+#| vscode: {languageId: r}
+p = imap_dfr(sigs, ~.x[, .(.N, group = .y), by= .(passFDR15perc = `p.adjust` < .15)]) %>% 
+    .[, .(N, P = round(N/sum(N), 2), passFDR15perc), by = group] %>% 
+    ggplot() + geom_col(aes(x = group, y = N, fill = passFDR15perc), position = "dodge") +
+        labs(x = NULL)
+```
+
+```{r}
+#| vscode: {languageId: r}
+p
+```
+
+
