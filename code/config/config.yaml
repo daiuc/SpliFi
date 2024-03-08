@@ -43,3 +43,5 @@ alignments:
   LCL: 
     bam: /project2/yangili1/ankeetashah/hg38_LCL #/project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam
     bigwig: /project2/yangili1/ankeetashah/hg38_LCL # /project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam.bw
+
+HG38_CHROM_SIZES: /project2/yangili1/cdai/annotations/hg38/hg38.chrom.sizes

@@ -15,9 +15,9 @@ processDT <- function(dt) {
     datacols <- names(dt)[-c(1)]
     dt <- dt[, -c('chrom')][, map(.SD, ~splitFrac(.x))]
     dt$chrom <- chroms
-    dt$intron_type = str_extract(dt$chrom, '[FN]')
+    dt$intron_type = str_sub(dt$chrom, -2, -1)
     dt$clu = str_extract(dt$chrom, 'clu_\\d+')
-    dt[, clu_type := paste(unique(intron_type), collapse = ","), by = clu]
+    dt[, clu_type := paste(sort(unique(intron_type)), collapse = ","), by = clu]
     cols <- c('chrom', 'clu', 'clu_type', 'intron_type', datacols)
 
     return(dt[, ..cols])

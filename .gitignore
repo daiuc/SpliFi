@@ -20,6 +20,10 @@ swap-pane
 **/swap-pane
 analysis/*rds
 analysis/*gz
+analysis/*_cache/
+analysis/*_files/
 data
 plots
 .snakemake/*
+docs
+_freeze

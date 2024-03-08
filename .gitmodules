@@ -10,3 +10,6 @@
 [submodule "code/workflow/submodules/leafcutter2"]
 	path = code/workflow/submodules/leafcutter2
 	url = git@github.com:daiuc/leafcutter2.git
+[submodule "code/workflow/submodules/quickSashimi"]
+	path = code/workflow/submodules/quickSashimi
+	url = git@github.com:Zepeng-Mu/quickSashimi.git

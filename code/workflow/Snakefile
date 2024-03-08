@@ -53,6 +53,8 @@ Sample_ERR_Dict = dict(zip(Geuvadis_Linked_SampleIDs, [getERR(x, Geuvadis_Metada
 
 
 
+
+
 wildcard_constraints:
     datasource = "Geuvadis|GTEx",
     population = "CEU|FIN|GBR|TSI|YRI|EUR",
@@ -61,6 +63,23 @@ wildcard_constraints:
     window = "[0-9]+",
     phenType = "combineNoise|separateNoise",
     # group = "[^\/]+", # rule out e.g. `Bladder/by_intron`
+
+
+# pull GTEX BedGraph files
+GTEX_BEDGRAPH_TISSUES = {
+        'Brain-Anteriorcingulatecortex_BA24_': 'Brain_Anterior_cingulate_cortex_BA24',
+        'Brain-Cortex': 'Brain_Cortex',
+        'Brain-FrontalCortex_BA9_': 'Brain_Frontal_Cortex_BA9',
+        'Brain-Putamen_basalganglia_': 'Brain_Putamen_basal_ganglia',
+        'Heart-AtrialAppendage': 'Heart_Atrial_Appendage',
+        'Liver': 'Liver',
+        'Lung': 'Lung',
+        'Muscle-Skeletal': 'Muscle_Skeletal',
+        'Skin-NotSunExposed_Suprapubic_': 'Skin_Not_Sun_Exposed_Suprapubic',
+        'WholeBlood': 'Whole_Blood'
+    }
+
+
 
 include: 'rules/gtex.smk'
 include: 'rules/geuvadis.smk'
@@ -85,6 +104,9 @@ GtexOutputSubTissues = GtexSingleSubTissues + ',' + GtexMultiSubTissues
 GtexOutputSubTissues = GtexOutputSubTissues.translate(fixChr)
 
 
+
+
+
 #-------------------------------------------------------------------------------
 
 localrules: all, SplitGTExSampleIDList, RenameJuncFilesGtex
@@ -104,14 +126,18 @@ rule all:
         # rename junction files to enable differential splicing
         expand('resources/GTEx/juncs/all49tissues/{tissue}.done', tissue=GtexOutputSubTissues.split(',')),
         # run leafcutter 2 without constitutive junctions
-        # expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise_by_intron.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise_by_intron.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # run leafcutter 2 with constitutive junctions
-        # expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
-                # TISSUE=GtexOutputSubTissues.split(',')),
+        expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
+                TISSUE=GtexOutputSubTissues.split(',')),
         # add q value to qtltools result
         # expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
         #         TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
         #         WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
+        # extract gene expression from GTEx tpm file
+        expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        # pull GTEX BedGraph files and conver to bigwig
+        expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
 
 
 

@@ -272,6 +272,7 @@ rule Leafcutter2Gtex:
             {params.pre_clustered} {params.other_params} &> {log}
 
         ls {output.perind_noise_by_intron} &>> {log}
+        
 
         '''
 
@@ -339,7 +340,10 @@ rule LeafcutterForDSGtex:
         tissue1_flag = 'resources/GTEx/juncs/all49tissues/{ds_tissue_1}.done',
         tissue2_flag = 'resources/GTEx/juncs/all49tissues/{ds_tissue_2}.done',
     output:
-        ds_counts = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind.constcounts.noise_by_intron.gz'
+        ds_numers = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind_numers.counts.noise_by_intron.gz',
+        # ds_counts_lf1 is necessary for leafcutter_ds.R script
+        ds_numers_lf1 = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+        ds_sample_group = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_sample_group.txt'
     params:
         run_dir = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}',
         out_prefix = 'ds',
@@ -348,12 +352,14 @@ rule LeafcutterForDSGtex:
         pre_clustered = '-c results/ds/GTEx/all49tissues_refined_noisy',
         gtf = config['annotation']['gtf']['v43'],
         genome = config['genome38'],
-        other_params = '-k --includeconst', # include constitutive introns
+        other_params = '-k ', # not keeping constitutive introns
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
+        py_script2 = 'workflow/scripts/makeSampleGroupFileForDifferentialSplicing.py'
     log: 'logs/LeafcutterForDSGtex/{ds_tissue_1}_v_{ds_tissue_2}.log'
     resources: cpu = 1, time = 2100, mem_mb = 25000
     shell:
         '''
+        # run leafcutter2 for differential analysis
         python {params.py_script} \
             -j <(ls {params.tissue1_juncs}*tsv.gz {params.tissue2_juncs}*tsv.gz) \
             -r {params.run_dir} \
@@ -362,7 +368,181 @@ rule LeafcutterForDSGtex:
             -G {params.genome} \
             {params.pre_clustered} {params.other_params} &> {log}
 
-        ls {output.ds_counts} &>> {log}
+        # make sample group file for differential splicing analysis
+        python {params.py_script2} -i {output.ds_numers} -o {output.ds_numers_lf1} -s {output.ds_sample_group} &>> {log}
+
+
+
+        '''
+
+
+rule RunLeafcutterDiffSplicingGtex:
+    input:
+        ds_numers_lf1 = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+        ds_sample_group = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_sample_group.txt'
+    output:
+        flag = touch('results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/done')
+        # produces two files:
+        # 1. {outprefix}_effect_sizes.txt
+        # 2. {outprefix}_manual_ds_cluster_significance.txt
+    params:
+        Rscript = 'workflow/submodules/leafcutter/scripts/leafcutter_ds.R', 
+        outprefix = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds', # note you need to include path!
+        MIN_SAMPLES_PER_INTRON = 5,
+        MIN_SAMPLES_PER_GROUP = 3,
+        MIN_COVERAGE = 5
+    resources: cpu = 4, mem_mb = 30000, time = 2100
+    threads: 4
+    conda: 'leafcutter1'
+    log: 'logs/RunLeafcutterDiffSplicingGtex/{ds_tissue_1}_v_{ds_tissue_2}.log'
+    shell:
+        '''
+        {params.Rscript} --num_threads {threads} \
+            --output_prefix {params.outprefix} \
+            --min_samples_per_intron={params.MIN_SAMPLES_PER_INTRON} \
+            --min_samples_per_group={params.MIN_SAMPLES_PER_GROUP} \
+            --min_coverage={params.MIN_COVERAGE} \
+            {input.ds_numers_lf1} {input.ds_sample_group} &> {log}
+
+
+        '''
+
+# NOTE to make leafcutter's leafcutter_ds.R script work, 
+# must modify the _perind_numers.counts.noise_by_intron.gz file
+# First row should not have the 'chrom' first column
+# first columns can only be like `chr1:827775:829002:clu_1_+` because 
+# the R function only expect to split by ":" into 4 columns.
+
+
+
+# ----------------------------------------------------------------------------------------
+# ad hoc
+
+rule adhoc_test_ds_step1: # testing differential splicing with neg control
+    input: 
+        ds_numers_lf1 = 'results/ds/GTEx/Brain-Cerebellum_v_Liver/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+    output:
+        neg_control_numers = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
+        neg_control_groups = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
+    run:
+        import gzip
+        outf1 = gzip.open(output.neg_control_numers, 'wt')
+        outf2 = open(output.neg_control_groups, 'w')
+        with gzip.open(input.ds_numers_lf1, 'rt') as f:
+            i = 0
+            for ln in f:
+                if i == 0:
+                    header = ln.split()
+                    cols = ([x.replace('Brain-Cerebellum', 'BC-group1') for x in header[0:100]] +
+                            [x.replace('Brain-Cerebellum', 'BC-group2') for x in header[100:200]])
+                    groups = ['BC-group1' for x in header[0:100]] + ['BC-group2' for x in header[100:200]]
+                    for c,g in zip(cols, groups):
+                        outf2.write(f'{c} {g}\n')
+                    outf1.write(' '.join(cols) + '\n')
+                if i > 0:
+                    outln = ln.split()[:201]
+                    outf1.write(' '.join(outln) + '\n')
+                i += 1
+
+        outf1.close()
+        outf2.close()
+
+
+use rule RunLeafcutterDiffSplicingGtex as adhoc_test_ds_step2 with:
+    input:
+        ds_numers_lf1 = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
+        ds_sample_group = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
+    output:
+        flag = touch('results/ds/GTEx/ds_test/BC_v_Liver/ds.done')
+        # produces two files:
+        # 1. {outprefix}_effect_sizes.txt
+        # 2. {outprefix}_manual_ds_cluster_significance.txt
+    params:
+        Rscript = 'workflow/submodules/leafcutter/scripts/leafcutter_ds.R', 
+        outprefix = 'results/ds/GTEx/ds_test/BC_v_Liver/ds', # note you need to include path!
+        MIN_SAMPLES_PER_INTRON = 5,
+        MIN_SAMPLES_PER_GROUP = 3,
+        MIN_COVERAGE = 5
+    log: 'results/ds/GTEx/ds_test/BC_v_Liver/log'
+
+
+
+## -----------------------------------------------------------------------------
+##   GTEx expression data
+## -----------------------------------------------------------------------------
+
+rule ExtractGTExGeneExpression:
+    input: 'resources/GTEx/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz'
+    output: 'resources/GTEx/expression/{tissue}_gene_tpm.tsv.gz'
+    params: 
+        py_script = 'workflow/scripts/extract_gtex_gene_expression.py',
+        junc_meta = config['Dataset']['GTEx']['Junc_meta']
+    log: 'logs/ExtractGTExGeneExpression/{tissue}.log'
+    shell:
+        '''
+        python {params.py_script} \
+            -I {input} \
+            -M {params.junc_meta} \
+            -O {output} \
+            -T {wildcards.tissue} &> {log}
+
+        echo "Number of lines in output file: $(zcat {output} | wc -l)" &>> {log}
+        '''
+
+
+
+## -----------------------------------------------------------------------------
+##   plot sashimi
+## -----------------------------------------------------------------------------
+
+def get_bedgraph_input(wildcards):
+    import glob
+
+    bedgraph_dir = '/project2/yangili1/GTEx_v8/bedGraph'
+    tissueTrans = GTEX_BEDGRAPH_TISSUES.get(wildcards.tissue)
+    bedFiles = glob.glob(f'{bedgraph_dir}/{tissueTrans}/*.bed.gz') # abs paths
+
+    return bedFiles
+
+rule BedgraphToBW:
+    '''
+    Note the wc for tissue here is the original tissue name, not transformed
+    '''
+    input: get_bedgraph_input
+    output: touch('resources/GTEx/BigWig/{tissue}/done')
+    params:
+        outPrefix = 'resources/GTEx/BigWig/{tissue}',
+        chromSizes = 'resources/hg38_w_chrEBV.chrom.sizes'
+    threads: 8
+    resources: cpu=8, mem_mb=25000, time=1200
+    shell:
+        '''
+        bedFiles="{input}"
+
+        numJobs=0
+        maxJobs={threads}
+
+        for f in ${{bedFiles[@]}}; do
+            tmpf={params.outPrefix}/$(basename "$f" .bed.gz).tmp.bed
+            outf={params.outPrefix}/$(basename $f .bed.gz).bw
+
+            if [[ $numJobs -le $maxJobs ]]; then
+                echo bedGraphToBigWig $f ...
+                bgzip -f -d -c $f > $tmpf && bedGraphToBigWig $tmpf {params.chromSizes} $outf && rm $tmpf &
+                numJobs=$((numJobs + 1))
+            else
+                wait
+                numJobs=$((numJobs - 1))
+                
+                echo bedGraphToBigWig $f ...
+                bgzip -f -d -c $f > $tmpf && bedGraphToBigWig $tmpf {params.chromSizes} $outf && rm $tmpf &
+                numJobs=$((numJobs + 1))
+            fi
+        done
+
+        wait
+        echo "All done!"
+
         '''
 
 
