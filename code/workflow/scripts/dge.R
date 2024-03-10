@@ -9,10 +9,10 @@ if (length(args) < 3) {
 raw_counts_file <- args[1]
 column_data_file <- args[2]
 outprefix <- args[3]
-min_reads <- ifelse(length(args) > 3, as.numeric(args[3]), 10)
-min_samples <- ifelse(length(args) > 4, as.numeric(args[4]), 5)
-min_fdr <- ifelse(length(args) > 5, as.numeric(args[5]), 0.1)
-min_log2fc <- ifelse(length(args) > 6, as.numeric(args[6]), 1)
+min_reads <- ifelse(length(args) > 3, as.numeric(args[4]), 10)
+min_samples <- ifelse(length(args) > 4, as.numeric(args[5]), 5)
+min_fdr <- ifelse(length(args) > 5, as.numeric(args[6]), 0.1)
+min_log2fc <- ifelse(length(args) > 6, as.numeric(args[7]), 1)
 
 
 suppressMessages(library(data.table))
