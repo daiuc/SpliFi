@@ -136,6 +136,7 @@ rule all:
         #         WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
         # extract gene expression from GTEx tpm file
         expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # pull GTEX BedGraph files and conver to bigwig
         expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
 

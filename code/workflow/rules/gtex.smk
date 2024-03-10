@@ -472,21 +472,34 @@ use rule RunLeafcutterDiffSplicingGtex as adhoc_test_ds_step2 with:
 ## -----------------------------------------------------------------------------
 
 rule ExtractGTExGeneExpression:
-    input: 'resources/GTEx/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz'
-    output: 'resources/GTEx/expression/{tissue}_gene_tpm.tsv.gz'
+    input: 
+      tpm = 'resources/GTEx/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz',
+      cnt = 'resources/GTEx/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_reads.gct.gz'
+    output: 
+      tpm = 'resources/GTEx/expression/{tissue}_gene_tpm.tsv.gz',
+      cnt = 'resources/GTEx/expression/{tissue}_gene_reads.tsv.gz',
     params: 
         py_script = 'workflow/scripts/extract_gtex_gene_expression.py',
         junc_meta = config['Dataset']['GTEx']['Junc_meta']
     log: 'logs/ExtractGTExGeneExpression/{tissue}.log'
     shell:
         '''
+        echo extracting tpm from {input.tpm} ...&> {log}
         python {params.py_script} \
-            -I {input} \
+            -I {input.tpm} \
             -M {params.junc_meta} \
-            -O {output} \
-            -T {wildcards.tissue} &> {log}
+            -O {output.tpm} \
+            -T {wildcards.tissue} &>> {log}
 
-        echo "Number of lines in output file: $(zcat {output} | wc -l)" &>> {log}
+        echo extracting raw counts from {input.cnt} ...
+        python {params.py_script} \
+            -I {input.cnt} \
+            -M {params.junc_meta} \
+            -O {output.cnt} \
+            -T {wildcards.tissue} &>> {log}
+
+        echo "Number of lines in {output.tpm} : $(zcat {output.tpm} | wc -l)" &>> {log}
+        echo "Number of lines in {output.cnt} : $(zcat {output.cnt} | wc -l)" &>> {log}
         '''
 
 
