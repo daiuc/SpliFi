@@ -3,9 +3,6 @@ project:
   title: "Leafcutter 2"
   output-dir: docs
   render:
-    - "*.qmd"
-    - "analysis/*.pub.ipynb"
-    - "analysis/*.pub.qmd"
     - "!archieved_analyses"
     - "!code/"
     - "!data/"
@@ -13,6 +10,11 @@ project:
     - "!docs/"
     - "!assets/"
     - "!shiny-apps/"
+    - "index.qmd"
+    - "about.qmd"
+    #- "*.qmd"
+    #- "analysis/*.pub.ipynb"
+    #- "analysis/*.pub.qmd"
 website:
   title: "Splicing Fidelity"
   navbar:
@@ -21,8 +23,6 @@ website:
         text: Home
       - href: slides/index.qmd
         text: Slides
-      - href: https://cdai.notion.site/Notes-0e18d7ec33cb44fc975cb9e139aa784b
-        text: Notion
       - about.qmd
     background: "dark"
     search: true
