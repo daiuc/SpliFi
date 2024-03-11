@@ -45,3 +45,8 @@ alignments:
     bigwig: /project2/yangili1/ankeetashah/hg38_LCL # /project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam.bw
 
 HG38_CHROM_SIZES: /project2/yangili1/cdai/annotations/hg38/hg38.chrom.sizes
+
+
+contrasts: # contrasts for pairwise differential analysis in GTEx for DGE and DS
+  GTEx: 'config/ds_dge_tissue_contrast_levels.txt'
+

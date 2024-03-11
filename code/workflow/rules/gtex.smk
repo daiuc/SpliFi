@@ -336,32 +336,33 @@ rule ClusterIntronsGtexAllTissues:
 rule LeafcutterForDSGtex:
     message: '### Run leafcutter2 on GTEx samples for differential splicing analysis'
     input:
-        pre_clusters = 'results/ds/GTEx/all49tissues_refined',
+        pre_clusters = 'results/ds/GTEx/all49tissues_refined_noisy',
         tissue1_flag = 'resources/GTEx/juncs/all49tissues/{ds_tissue_1}.done',
         tissue2_flag = 'resources/GTEx/juncs/all49tissues/{ds_tissue_2}.done',
     output:
-        ds_numers = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind_numers.counts.noise_by_intron.gz',
+        ds_numers = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_perind_numers.counts.noise_by_intron.gz',
         # ds_counts_lf1 is necessary for leafcutter_ds.R script
-        ds_numers_lf1 = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind_numers.counts.noise_by_intron.lf1.gz',
-        ds_sample_group = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_sample_group.txt'
+        ds_numers_lf1 = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+        ds_sample_group = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_sample_group.txt'
     params:
-        run_dir = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}',
+        run_dir = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}',
         out_prefix = 'ds',
         tissue1_juncs = 'resources/GTEx/juncs/all49tissues/{ds_tissue_1}',
         tissue2_juncs = 'resources/GTEx/juncs/all49tissues/{ds_tissue_2}',
+        NSamples = 50, # select this number of samples per tissue type
         pre_clustered = '-c results/ds/GTEx/all49tissues_refined_noisy',
         gtf = config['annotation']['gtf']['v43'],
         genome = config['genome38'],
         other_params = '-k ', # not keeping constitutive introns
         py_script  = 'workflow/submodules/leafcutter2/scripts/leafcutter2_regtools.py',
         py_script2 = 'workflow/scripts/makeSampleGroupFileForDifferentialSplicing.py'
-    log: 'logs/LeafcutterForDSGtex/{ds_tissue_1}_v_{ds_tissue_2}.log'
+    log: 'logs/LeafcutterForDSGtex/{ds_tissue_2}_v_{ds_tissue_1}.log'
     resources: cpu = 1, time = 2100, mem_mb = 25000
     shell:
         '''
         # run leafcutter2 for differential analysis
         python {params.py_script} \
-            -j <(ls {params.tissue1_juncs}*tsv.gz {params.tissue2_juncs}*tsv.gz) \
+            -j <(cat <(ls {params.tissue1_juncs}*tsv.gz | head -{params.NSamples}) <(ls {params.tissue2_juncs}*tsv.gz | head -{params.NSamples})) \
             -r {params.run_dir} \
             -o {params.out_prefix} \
             -A {params.gtf} \
@@ -371,30 +372,28 @@ rule LeafcutterForDSGtex:
         # make sample group file for differential splicing analysis
         python {params.py_script2} -i {output.ds_numers} -o {output.ds_numers_lf1} -s {output.ds_sample_group} &>> {log}
 
-
-
         '''
 
 
 rule RunLeafcutterDiffSplicingGtex:
     input:
-        ds_numers_lf1 = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_perind_numers.counts.noise_by_intron.lf1.gz',
-        ds_sample_group = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds_sample_group.txt'
+        ds_numers_lf1 = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+        ds_sample_group = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_sample_group.txt'
     output:
-        flag = touch('results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/done')
+        flag = touch('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done')
         # produces two files:
         # 1. {outprefix}_effect_sizes.txt
         # 2. {outprefix}_manual_ds_cluster_significance.txt
     params:
         Rscript = 'workflow/submodules/leafcutter/scripts/leafcutter_ds.R', 
-        outprefix = 'results/ds/GTEx/{ds_tissue_1}_v_{ds_tissue_2}/ds', # note you need to include path!
+        outprefix = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds', # note you need to include path!
         MIN_SAMPLES_PER_INTRON = 5,
         MIN_SAMPLES_PER_GROUP = 3,
         MIN_COVERAGE = 5
     resources: cpu = 4, mem_mb = 30000, time = 2100
     threads: 4
     conda: 'leafcutter1'
-    log: 'logs/RunLeafcutterDiffSplicingGtex/{ds_tissue_1}_v_{ds_tissue_2}.log'
+    log: 'logs/RunLeafcutterDiffSplicingGtex/{ds_tissue_2}_v_{ds_tissue_1}.log'
     shell:
         '''
         {params.Rscript} --num_threads {threads} \
@@ -536,7 +535,7 @@ rule DgeGtex:
     min_samples = 10,
     min_fdr = 0.1,
     min_log2fc = 1,
-  #log: 'logs/DgeGtex/{dge_tissue2}_v_{dge_tissue1}.log'
+  log: 'logs/DgeGtex/{dge_tissue2}_v_{dge_tissue1}.log'
   shell:
     '''
     Rscript {params.R_script} \

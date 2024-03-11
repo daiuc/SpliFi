@@ -104,7 +104,9 @@ GtexOutputSubTissues = GtexSingleSubTissues + ',' + GtexMultiSubTissues
 GtexOutputSubTissues = GtexOutputSubTissues.translate(fixChr)
 
 
-
+# tissue pairs for differential analysis
+with open(config['contrasts']['GTEx'], 'r') as f:
+    CONTRASTS = f.read().splitlines()
 
 
 #-------------------------------------------------------------------------------
@@ -137,6 +139,15 @@ rule all:
         # extract gene expression from GTEx tpm file
         expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
         expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        #
+        # Run differential gene expression on selected tissue pairs
+        expand('results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_dge_genes.tsv', 
+               dge_tissue2=[x.split('_v_')[0] for x in CONTRASTS],
+               dge_tissue1=[x.split('_v_')[1] for x in CONTRASTS]),
+        # Run differential splicing on selected tissue pairs
+        expand('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done', 
+               ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
+               ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
         # pull GTEX BedGraph files and conver to bigwig
         expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
 
