@@ -533,19 +533,15 @@ rule DgeGtex:
     outprefix = 'results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}',
     min_reads = 10,
     min_samples = 10,
-    min_fdr = 0.1,
-    min_log2fc = 1,
   log: 'logs/DgeGtex/{dge_tissue2}_v_{dge_tissue1}.log'
   shell:
     '''
     Rscript {params.R_script} \
             {input.cnt} {input.coldata} {params.outprefix} \
-            {params.min_reads} {params.min_samples} {params.min_fdr} {params.min_log2fc} &> {log}
+            {params.min_reads} {params.min_samples}  &> {log}
     ls {output.dge} &>> {log}
 
     '''
-
-
 
 
 
