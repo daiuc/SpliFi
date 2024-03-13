@@ -26,6 +26,9 @@ chosen_tissues = (
 
 chosen_tissues = [x.translate(fixChr) for x in chosen_tissues]
 
+# tissue pairs for differential analysis
+with open('code/config/ds_dge_tissue_contrast_levels.txt') as f:
+    CONTRASTS = f.read().splitlines()
 
 
 localrules:
@@ -35,11 +38,13 @@ localrules:
 rule all:
     input: 
         # extract numerators from leafcutter2 with const run's results
-        expand('data/ExtractFractions/GTEx/{tissue}.numerators_constcounts.noise_by_intron.rds',
-               tissue=chosen_tissues),
+        #expand('data/ExtractFractions/GTEx/{tissue}.numerators_constcounts.noise_by_intron.rds',
+        #       tissue=chosen_tissues),
         # categorize sQTLs into u-sQTLs and p-sQTLs, results in tsv file
         # expand('data/CategorizeSplicingQTLs/GTEx/{tissue}.tsv',
         #        tissue=chosen_tissues),
+        # get all dge and ds results and save to rds files
+        expand('data/ds_v_dge/{a_v_b}_data.rds', a_v_b=CONTRASTS),
 
 
 rule ExtractNumFromFracGTEx:
@@ -96,4 +101,17 @@ use rule CategorizeSplicingQTLsGTEx as CategorizeSplicingQTLsGeuvadis with:
         qtl_files = 'code/results/qtl/noisy/Geuvadis/{population}/separateNoise/cis_100000/perm/chr*.addQval.txt.gz',
         fdr = 0.1
         
-
+rule Ds_Dge_Results:
+  output: 'data/ds_v_dge/{a_v_b}_data.rds'
+  params:
+    R_script = 'scripts/prepDGE_DS_AnalysesData.R',
+    contrast = lambda w: w.a_v_b,
+    gtf = '../annotations/hg38/gencode.v26.GRCh38.genes.csv',
+    dsPrefix = 'code/results/ds/GTEx/',
+    dgePrefix = 'code/results/dge/GTEx/',
+    outPrefix = 'data/ds_v_dge/'
+  shell:
+    '''
+    Rscript {params.R_script} {params.contrast} {params.gtf} {params.dsPrefix} {params.dgePrefix} {params.outPrefix}
+    ls {output}
+    '''
