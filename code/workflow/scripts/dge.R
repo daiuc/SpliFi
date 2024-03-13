@@ -4,15 +4,13 @@
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) < 3) {
-    stop("Usage: Rscript dge.R <raw_counts_file> <column_data_file> <outprefix> [min_reads (default: 10)] [min_samples: (default: 5)] [min_fdr (default: 0.1)] [min_log2fc (default: 1)]")
+    stop("Usage: Rscript dge.R <raw_counts_file> <column_data_file> <outprefix> [min_reads (default: 10)] [min_samples: (default: 5)]")
 }
 raw_counts_file <- args[1]
 column_data_file <- args[2]
 outprefix <- args[3]
 min_reads <- ifelse(length(args) > 3, as.numeric(args[4]), 10)
 min_samples <- ifelse(length(args) > 4, as.numeric(args[5]), 5)
-min_fdr <- ifelse(length(args) > 5, as.numeric(args[6]), 0.1)
-min_log2fc <- ifelse(length(args) > 6, as.numeric(args[7]), 1)
 
 
 suppressMessages(library(data.table))
@@ -28,9 +26,7 @@ print(glue("input arguments:
     raw_counts_file: {raw_counts_file}
     column_data_file: {column_data_file}
     min_reads: {min_reads}
-    min_samples: {min_samples}
-    min_fdr: {min_fdr}
-    min_log2fc: {min_log2fc} (min abs log2 fold change)"))
+    min_samples: {min_samples}"))
 
 print(glue("output files: 
     Result table: {out_df_file}
@@ -74,17 +70,15 @@ print(glue("after pre-filtering, {nrow(dds)} genes remain"))
 # run DESeq2
 dds <- DESeq(dds)
 res <- results(dds)
-
-# select genes passing min_fdr and min_log2fc
-keep2 <- which(res$padj < min_fdr & (abs(res$log2FoldChange) > min_log2fc))
-res.keep <- res[keep2, ]
-res.keep <- res.keep[order(-abs(res.keep$log2FoldChange), res.keep$pvalue), ]
+res <- res[order(-abs(res$log2FoldChange), res$pvalue), ]
 
 # write results to file (tsv)
-print(glue("writing {nrow(res.keep)} genes to {out_df_file}. Column descriptions in {out_description_file}"))
-write.table(res.keep, out_df_file, sep = "\t", row.names = FALSE)
+print(glue("writing {nrow(res)} genes to {out_df_file}. Column descriptions in {out_description_file}"))
+res.dt <- as.data.table(res, keep.rownames = 'gene_id')
+fwrite(res.dt, out_df_file, sep = "\t")
+
 
 # write description to file
-write_lines(res.keep@elementMetadata@listData, out_description_file)
+write_lines(res@elementMetadata@listData, out_description_file)
 
 
