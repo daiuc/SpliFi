@@ -11,6 +11,7 @@ https://daiuc.github.io/SpliFi/analysis/2023-11-17-GTEx-tissues-summary.pub.html
 
 '''
 
+N_DIFFER = 80 # number of samples to choose for differnetial splicing and expression analysis
 
 
 rule MungeGTExJuncs:
@@ -349,7 +350,7 @@ rule LeafcutterForDSGtex:
         out_prefix = 'ds',
         tissue1_juncs = 'resources/GTEx/juncs/all49tissues/{ds_tissue_1}',
         tissue2_juncs = 'resources/GTEx/juncs/all49tissues/{ds_tissue_2}',
-        NSamples = 50, # select this number of samples per tissue type
+        NSamples = N_DIFFER, # select this number of samples per tissue type
         pre_clustered = '-c results/ds/GTEx/all49tissues_refined_noisy',
         gtf = config['annotation']['gtf']['v43'],
         genome = config['genome38'],
@@ -512,7 +513,7 @@ rule PrepareGTExDGE:
         coldata = 'results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_coldata.tsv',
     params:
         R_script = 'workflow/scripts/prepare_GTEx_dge.R',
-        n_samples = 50, # number of samples to use for each tissue
+        n_samples = N_DIFFER, # number of samples to use for each tissue
         outdir = 'results/dge/GTEx'
     log: 'logs/PrepareGTExDGE/{dge_tissue2}_v_{dge_tissue1}.log'
     shell:
