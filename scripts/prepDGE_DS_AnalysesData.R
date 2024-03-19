@@ -105,10 +105,10 @@ an.intron <- as.data.table(an.intron)[
     by = .(seqnames, start, end, strand, intron, cluster, itype, ctype)
   ][maxrk == 1, -c("maxrk")]
 
-# merge with ds.beta
+# merge with ds.beta to bring in ds effect size (intron level)
 an.intron <- inner_join(an.intron[, -c("seqnames", "start", "end", "strand")], ds.beta, by = c("intron"))
 
-# merge with ds.pval
+# merge with ds.pval to bring in ds p-value (cluster level)
 an.intron <- inner_join(an.intron, ds.pval, by = c("cluster"))
 
 

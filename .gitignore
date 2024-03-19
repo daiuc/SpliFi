@@ -18,14 +18,13 @@ archieved_analyses/
 **/.ipynb_checkpoints
 swap-pane
 **/swap-pane
-analysis/
 analysis/*rds
 analysis/*gz
 analysis/*_cache/
 analysis/*_files/
-docs/
+analysis/*pdf
+analysis/*html
 data
 plots
 .snakemake/*
-_freeze
 backup*/

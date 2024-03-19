@@ -115,3 +115,18 @@ rule Ds_Dge_Results:
     Rscript {params.R_script} {params.contrast} {params.gtf} {params.dsPrefix} {params.dgePrefix} {params.outPrefix}
     ls {output}
     '''
+
+rule plot_DS_v_DGE:
+  message: 
+    '''
+    run snakemake like so: 
+      snakemake --draft-notebook TARGET --notebook-listen IP:PORT
+    then edit notebook in jupyter lab. Snakemake preemble will set up 
+    proper path and bring in input, output, params, etc. objects
+    '''
+  input: 
+    rds_pat = expand('data/ds_v_dge/{avb}_data.rds', avb=CONTRASTS)
+  output: 'plots/2024-03-08-plot_DS_v_DGE.pdf'
+  notebook: 'scripts/2024-03-08-GTEx-DS-DGE-comps.r.ipynb'
+
+

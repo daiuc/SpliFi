@@ -12,9 +12,10 @@ project:
     - "!shiny-apps/"
     - "index.qmd"
     - "about.qmd"
+    - "slides/index.qmd"
+    - "analysis/*.pub.qmd"
     #- "*.qmd"
     #- "analysis/*.pub.ipynb"
-    #- "analysis/*.pub.qmd"
 website:
   title: "Splicing Fidelity"
   navbar:
