@@ -17,6 +17,7 @@ __author__ = "Chao Dai"
 __email__ = "chaodai@uchicago.edu"
 
 import pandas as pd
+import glob
 
 configfile: "config/config.yaml"
 
@@ -126,30 +127,30 @@ rule all:
         # 
         # 49 GTEx tissues
         # rename junction files to enable differential splicing
-        expand('resources/GTEx/juncs/all49tissues/{tissue}.done', tissue=GtexOutputSubTissues.split(',')),
+        # expand('resources/GTEx/juncs/all49tissues/{tissue}.done', tissue=GtexOutputSubTissues.split(',')),
         # run leafcutter 2 without constitutive junctions
-        expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise_by_intron.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        # expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise_by_intron.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # run leafcutter 2 with constitutive junctions
-        expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
-                TISSUE=GtexOutputSubTissues.split(',')),
+        # expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
+                # TISSUE=GtexOutputSubTissues.split(',')),
         # add q value to qtltools result
         # expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
         #         TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
         #         WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
         # extract gene expression from GTEx tpm file
-        expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
-        expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        # expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        # expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
         #
         # Run differential gene expression on selected tissue pairs
-        expand('results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_dge_genes.tsv', zip,
-               dge_tissue2=[x.split('_v_')[0] for x in CONTRASTS],
-               dge_tissue1=[x.split('_v_')[1] for x in CONTRASTS]),
+        # expand('results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_dge_genes.tsv', zip,
+        #        dge_tissue2=[x.split('_v_')[0] for x in CONTRASTS],
+        #        dge_tissue1=[x.split('_v_')[1] for x in CONTRASTS]),
         # Run differential splicing on selected tissue pairs
-        expand('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done', zip,
-               ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
-               ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
+        # expand('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done', zip,
+        #        ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
+        #        ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
         # pull GTEX BedGraph files and conver to bigwig
-        expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
+        # expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
 
 
 

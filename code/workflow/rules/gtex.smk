@@ -503,6 +503,9 @@ rule ExtractGTExGeneExpression:
         '''
 
 # prepare GTEX dge data
+# NOTE: need to rerun this step and below because right now samples
+# are not matched with ds samples! 
+# Should use the ds_sample_group.txt file to get matching samples for each tissue
 rule PrepareGTExDGE:
     input: 
         cnt1 = 'resources/GTEx/expression/{dge_tissue1}_gene_reads.tsv.gz',
@@ -600,6 +603,112 @@ rule BedgraphToBW:
         wait
         echo "All done!"
 
+        '''
+
+
+#-----------------------------------------------------------------------------------------
+#   plot sashimi for differential splicing
+#-----------------------------------------------------------------------------------------
+
+rule getIntronsForSashimi:
+    input:
+        rds = '/project2/yangili1/cdai/SpliFi/data/ds_v_dge/{ds_tissue_2}_v_{ds_tissue_1}_data.rds' # separate smk rules to make rds files 
+    output: 'plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}/introns.txt'
+    params:
+        py_script = 'workflow/scripts/getIntrons.R',
+        contrast = '{ds_tissue_2}_v_{ds_tissue_1}',
+        minDeltaPsi = 0.2,
+        FDR = 0.001,
+        minL2FC = 0.58,
+    log: 'logs/getIntronsForSashimi/{ds_tissue_2}_v_{ds_tissue_1}.log'
+    shell:
+        '''
+        Rscript {params.py_script} {input.rds} {params.contrast} {output} {params.minDeltaPsi} {params.FDR} {params.minL2FC} &> {log}
+        '''
+
+
+def getPlotIntrons(wildcards):
+    with open(f'plots/sashimi/ds/{wildcards.ds_tissue_2}_v_{wildcards.ds_tissue_1}/introns.txt') as f:
+        introns = [x.strip() for x in f.readlines()]
+    return introns
+
+rule PrepSashimiDsGtex:
+    message: '### Prepare sashimi plots for differential splicing'
+    input: 
+        ds_sample_group = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_sample_group.txt',
+        ds_effect_sizes = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_effect_sizes.txt',
+        ds_intron_count = 'results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/ds_perind_numers.counts.noise_by_intron.gz',
+        introns = 'plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}/introns.txt',
+    output:
+        flag = touch('plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}/prep.done')
+        # flag = touch('plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}/{plotIntron}.prep.done')
+    params:
+        contrast = '{ds_tissue_2}_v_{ds_tissue_1}',
+        outDir = 'plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}',
+        bwPrefix = 'resources/GTEx/BigWig',
+        plotIntrons = getPlotIntrons,
+        iniTemplate = 'config/template-sashimi-diffsplice.ini',
+        shellTemplate = 'config/template-plot-sashimi-cmd.sh',
+        pyscript = 'workflow/scripts/prepSashimi.py',
+    threads: 4
+    resources: cpu=1, mem_mb=25000, time=1200
+    group: 'PrepSashimiDsGtex'
+    log: 'logs/PrepSashimiDsGtex/{ds_tissue_2}_v_{ds_tissue_1}.log'
+    shell:
+        '''
+        #module load parallel
+
+        introns="{params.plotIntrons}"
+
+        cmd="python {params.pyscript}" 
+        cmd+=" --contrast {params.contrast} "
+        cmd+=" --outDir {params.outDir} "
+        cmd+=" --bwPrefix {params.bwPrefix} "
+        cmd+=" --dsSampleGroupFile {input.ds_sample_group} "
+        cmd+=" --dsEffectFile {input.ds_effect_sizes} "
+        cmd+=" --intronCountsFile {input.ds_intron_count} "
+        cmd+=" --plotIntron {{}} "
+        cmd+=" --iniTemplate {params.iniTemplate} "
+        cmd+=" --plotShellTemplate {params.shellTemplate} "
+                                 
+        parallel -j {threads} "$cmd" ::: $introns &> {log}
+
+        '''
+
+def getPLotSashimiDsGtexParams(wildcards):
+    w = wildcards
+    folder = f'plots/sashimi/ds/{w.ds_tissue_2}_v_{w.ds_tissue_1}'
+    clu = w.plotIntron.split(':')[-1]
+
+    try:
+        shellFiles = [os.path.basename(x) for x in glob.glob(f'{folder}/*.sh')]
+        shell = [x for x in shellFiles if clu in x][0]
+    except:
+        shell = None
+
+    return f'{shell}'
+
+rule PlotSashimiDsGtex:
+    input: 'plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}/prep.done'
+    output: touch('plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}/plot.done')
+    params:
+        folder = 'plots/sashimi/ds/{ds_tissue_2}_v_{ds_tissue_1}',
+        # shell = getPLotSashimiDsGtexParams
+    conda: 'pygenometracks'
+    group: 'PrepSashimiDsGtex'
+    threads: 4
+    log: 'logs/PlotSashimiDsGtex/{ds_tissue_2}_v_{ds_tissue_1}.log'
+    shell: 
+        '''
+        # module load parallel
+
+        log=$(realpath {log})
+        echo "plot sashimi plots" > $log
+        cd {params.folder}
+        shellFiles=$(ls *.sh)
+        parallel -j {threads} "sh {{}}" ::: $shellFiles &>> $log
+
+        #run in login node after: pdfunite *.pdf all_plots.pdf
         '''
 
 

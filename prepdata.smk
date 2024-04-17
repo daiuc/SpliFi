@@ -116,14 +116,22 @@ rule Ds_Dge_Results:
     ls {output}
     '''
 
+
+
+
+
+#WARN: Interactive rules!
+#---------------------------------------------------------------
+#WARN: Rerunning with snakeamke will overwrite ipynb!!!
+# They are intended for creating jupyter notebooks, and using 
+# the generated notebooks to interactively create plots and stuff.
+#---------------------------------------------------------------                      
+
 rule plot_DS_v_DGE:
-  message: 
-    '''
-    run snakemake like so: 
-      snakemake --draft-notebook TARGET --notebook-listen IP:PORT
-    then edit notebook in jupyter lab. Snakemake preemble will set up 
-    proper path and bring in input, output, params, etc. objects
-    '''
+#    run snakemake like so: 
+#      snakemake --draft-notebook TARGET
+#    then edit notebook in jupyter lab. Snakemake preemble will set up 
+#    proper path and bring in input, output, params, etc.
   input: 
     rds_pat = expand('data/ds_v_dge/{avb}_data.rds', avb=CONTRASTS)
   output: 'plots/2024-03-08-plot_DS_v_DGE.pdf'

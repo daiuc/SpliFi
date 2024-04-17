@@ -22,7 +22,6 @@ analysis/*rds
 analysis/*gz
 analysis/*_cache/
 analysis/*_files/
-analysis/*pdf
 analysis/*html
 data
 plots
