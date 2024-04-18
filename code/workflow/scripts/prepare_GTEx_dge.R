@@ -5,13 +5,20 @@
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) < 4) {
-    stop("Usage: Rscript prepare_GTEx_dge.R <tissue1_count_file> <tissue2_count_file> <number_of_samples> <outprefix>")
+    stop("Usage: Rscript prepare_GTEx_dge.R <tissue1_count_file> <tissue2_count_file> <ds_sample_file> <outprefix>")
 }
 
 tissue1_count_file <- args[1]
 tissue2_count_file <- args[2]
-number_of_samples <- as.numeric(args[3])
+ds_sample_file <- args[3]
 outprefix <- args[4]
+
+if (interactive()) {
+    tissue2_count_file <- 'resources/GTEx/expression/Brain-Cortex_gene_reads.tsv.gz'
+    tissue1_count_file <- 'resources/GTEx/expression/Muscle-Skeletal_gene_reads.tsv.gz'
+    ds_sample_file <- 'results/ds/GTEx/Brain-Cortex_v_Muscle-Skeletal/ds_sample_group.txt'
+    outprefix <- 'test'
+}
 
 suppressMessages(library(data.table))
 suppressMessages(library(tidyverse))
@@ -20,7 +27,7 @@ suppressMessages(library(glue))
 print(glue("input arguments: 
     tissue1_count_file: {tissue1_count_file}
     tissue2_count_file: {tissue2_count_file}
-    number_of_samples: {number_of_samples}
+    sample_file_from_DS: {ds_sample_file}
     outprefix: {outprefix}"))
 
 t1_counts <- fread(tissue1_count_file, header = TRUE, sep = "\t")
@@ -35,18 +42,21 @@ tissue2 <- str_split(tissue2_count_file, "/") %>%
     tail(1) %>%
     str_remove("_gene_reads.tsv.gz")
 
+ds_samples <- fread(ds_sample_file, header = FALSE, sep = " ", col.names = c('sample_id', 'group'))
+ds_samples$ind_id <-  str_extract(ds_samples$sample_id, "GTEX-[\\d\\w]+")
 
-print(glue("Randomly select {number_of_samples} samples from {tissue1} and {tissue2}"))
-
-# stop if number_of_samples is greater than ncol - 2 for either t1_counts or t2_counts
-if (number_of_samples > (ncol(t1_counts) - 2) | number_of_samples > (ncol(t2_counts) - 2)) {
-    stop(glue("Exiting, trying to subset more samples than available in either {tissue1} or {tissue2}!\n"))
+# check group/tissue names are the same
+if (length(intersect(c(tissue1, tissue2), ds_samples$group)) != 2) {
+    stop(glue("Exiting, tissue names in {ds_sample_file} do not match the input files!\n"))
 }
 
-t1_data_cols <- colnames(t1_counts)[3:ncol(t1_counts)]
-t1_selected_cols <- sample(t1_data_cols, number_of_samples)
-t2_data_cols <- colnames(t2_counts)[3:ncol(t2_counts)]
-t2_selected_cols <- sample(t2_data_cols, number_of_samples)
+t1_data_cols <- data.table(cols = colnames(t1_counts)[3:ncol(t1_counts)])
+t1_data_cols[, ind_id := str_extract(cols, "GTEX-[\\d\\w]+")]
+t1_selected_cols <- inner_join(t1_data_cols, ds_samples[group == tissue1], by = 'ind_id')$cols
+
+t2_data_cols <- data.table(cols = colnames(t2_counts)[3:ncol(t2_counts)])
+t2_data_cols[, ind_id := str_extract(cols, "GTEX-[\\d\\w]+")]
+t2_selected_cols <- inner_join(t2_data_cols, ds_samples[group == tissue2], by = 'ind_id')$cols
 
 print(glue("Selected columns for {tissue1}: {paste(t1_selected_cols, collapse = ', ')}"))
 print("\n\n")
@@ -61,8 +71,7 @@ combined_counts <- cbind(t1_selected_counts, t2_selected_counts[, -c('Name', 'De
 # col data
 coldata <- data.table(
     sample_id = c(t1_selected_cols, t2_selected_cols),
-    tissue = c(rep(tissue1, number_of_samples), rep(tissue2, number_of_samples))
-)
+    tissue = c(rep(tissue1, length(t1_selected_cols)), rep(tissue2, length(t2_selected_cols))))
 
 out_count_file <- glue("{outprefix}/{tissue2}_v_{tissue1}_counts.tsv")
 out_coldata_file <- glue("{outprefix}/{tissue2}_v_{tissue1}_coldata.tsv")

@@ -510,18 +510,18 @@ rule PrepareGTExDGE:
     input: 
         cnt1 = 'resources/GTEx/expression/{dge_tissue1}_gene_reads.tsv.gz',
         cnt2 = 'resources/GTEx/expression/{dge_tissue2}_gene_reads.tsv.gz',
+        ds_samples = 'results/ds/GTEx/{dge_tissue2}_v_{dge_tissue1}/ds_sample_group.txt'
     output: 
         #NOTE: tissue2 is intended to be numerator, and tissue 1 denominator, in subsequent dge step
         cnt = 'results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_counts.tsv',
         coldata = 'results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_coldata.tsv',
     params:
         R_script = 'workflow/scripts/prepare_GTEx_dge.R',
-        n_samples = N_DIFFER, # number of samples to use for each tissue
         outdir = 'results/dge/GTEx'
     log: 'logs/PrepareGTExDGE/{dge_tissue2}_v_{dge_tissue1}.log'
     shell:
         '''
-        Rscript {params.R_script} {input.cnt1} {input.cnt2} {params.n_samples} {params.outdir} &> {log}
+        Rscript {params.R_script} {input.cnt1} {input.cnt2} {input.ds_samples} {params.outdir} &> {log}
         ls {output.cnt} {output.coldata} &>> {log}
         '''
 
