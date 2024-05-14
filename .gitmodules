@@ -13,3 +13,6 @@
 [submodule "code/workflow/submodules/quickSashimi"]
 	path = code/workflow/submodules/quickSashimi
 	url = git@github.com:Zepeng-Mu/quickSashimi.git
+[submodule "code/workflow/submodules/igv.js"]
+	path = code/workflow/submodules/igv.js
+	url = https://github.com/igvteam/igv.js.git

@@ -50,3 +50,16 @@ HG38_CHROM_SIZES: /project2/yangili1/cdai/annotations/hg38/hg38.chrom.sizes
 contrasts: # contrasts for pairwise differential analysis in GTEx for DGE and DS
   GTEx: 'config/ds_dge_tissue_contrast_levels.txt'
 
+
+crossspecies:
+  gtf:
+    Human: /project2/yangili1/cdai/annotations/hg19/Homo_sapiens.GRCh37.75.gtf.gz
+    Mouse: /project2/yangili1/cdai/annotations/GRCm38/Mus_musculus.GRCm38.77.gtf.gz
+    Rat: /project2/yangili1/cdai/annotations/RGSC5.0/Rattus_norvegicus.Rnor_5.0.77.gtf.gz
+    Macaque: /project2/yangili1/cdai/annotations/mmul1.0/Macaca_mulatta.MMUL_1.77.gtf.gz
+  genome:
+    Human: /project2/yangili1/cdai/annotations/hg19/hg19.fa.gz
+    Mouse: /project2/yangili1/cdai/annotations/GRCm38/mm10.fa.gz
+    Rat: /project2/yangili1/cdai/annotations/RGSC5.0/rn5.fa.gz
+    Macaque: /project2/yangili1/cdai/annotations/mmul1.0/Macaca_mulatta.MMUL_1.dna_rm.fa.gz
+
