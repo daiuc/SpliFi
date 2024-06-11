@@ -22,29 +22,29 @@ intron_class:
   # - resources/intron_class_lplus1_rminus1.txt.gz
 
 annotation:
-  gencode: /project2/yangili1/cdai/genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv
-  gencode_v26_genes: /project2/yangili1/cdai/genome_index/hs38/gencode.v26.primary_assembly.annotation.genes.bed.gz
-  gencode_v38_genes: /project2/yangili1/cdai/genome_index/hs38/gencode_gene_v38_anno.bed
+  gencode: /project/yangili1/cdai/genome_index/hs38/gencode.v38.primary_assembly.annotation.dataframe.csv
+  gencode_v26_genes: /project/yangili1/cdai/genome_index/hs38/gencode.v26.primary_assembly.annotation.genes.bed.gz
+  gencode_v38_genes: /project/yangili1/cdai/genome_index/hs38/gencode_gene_v38_anno.bed
   gtf:
-    v43: /project2/yangili1/cdai/annotations/hg38/gencode.v43.primary_assembly.annotation.gtf.gz
-  # basic_introns: /project2/yangili1/cdai/SpliFi/code/resources/IntronAnnotationsFromYang.tsv.gz # from Ben
+    v43: /project/yangili1/cdai/annotations/hg38/gencode.v43.primary_assembly.annotation.gtf.gz
+  # basic_introns: /project/yangili1/cdai/SpliFi/code/resources/IntronAnnotationsFromYang.tsv.gz # from Ben
 
-genome38: /project2/yangili1/cdai/genome_index/hs38/GRCh38.primary_assembly.genome.fa
+genome38: /project/yangili1/cdai/genome_index/hs38/GRCh38.primary_assembly.genome.fa
 
 VCF:
   GTEx:
-    HG38_v7: /project2/yangili1/cdai/genome_index/hs38/GTEx_v7/GTEx_Analysis_2017-06-05_v8_WGS_VCF_files_GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_838Indiv_Analysis_Freeze.SHAPEIT2_phased.vcf.gz
-    HG38_v7_indivs: /project2/yangili1/cdai/genome_index/hs38/GTEx_v7/GTEx_Analysis_2017-06-05_v8_WGS_VCF_Indiv_ids.txt
+    HG38_v7: /project/yangili1/cdai/genome_index/hs38/GTEx_v7/GTEx_Analysis_2017-06-05_v8_WGS_VCF_files_GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_838Indiv_Analysis_Freeze.SHAPEIT2_phased.vcf.gz
+    HG38_v7_indivs: /project/yangili1/cdai/genome_index/hs38/GTEx_v7/GTEx_Analysis_2017-06-05_v8_WGS_VCF_Indiv_ids.txt
   Geuvadis:
-    HG38_1kg_b38: /project2/yangili1/cdai/SNP/1kg_b38 # this is a folder
-    HG38_1kg_b38_indivs: /project2/yangili1/cdai/SNP/1kg_b38/CCDG_14151_B01_GRM_WGS_2020-08-05_individual-ids.txt
+    HG38_1kg_b38: /project/yangili1/cdai/SNP/1kg_b38 # this is a folder
+    HG38_1kg_b38_indivs: /project/yangili1/cdai/SNP/1kg_b38/CCDG_14151_B01_GRM_WGS_2020-08-05_individual-ids.txt
 
 alignments:
   LCL: 
     bam: /project2/yangili1/ankeetashah/hg38_LCL #/project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam
     bigwig: /project2/yangili1/ankeetashah/hg38_LCL # /project2/yangili1/ankeetashah/hg38_LCL/NA20807.bam.bw
 
-HG38_CHROM_SIZES: /project2/yangili1/cdai/annotations/hg38/hg38.chrom.sizes
+HG38_CHROM_SIZES: /project/yangili1/cdai/annotations/hg38/hg38.chrom.sizes
 
 
 contrasts: # contrasts for pairwise differential analysis in GTEx for DGE and DS
@@ -53,13 +53,13 @@ contrasts: # contrasts for pairwise differential analysis in GTEx for DGE and DS
 
 crossspecies:
   gtf:
-    Human: /project2/yangili1/cdai/annotations/hg19/Homo_sapiens.GRCh37.75.gtf.gz
-    Mouse: /project2/yangili1/cdai/annotations/GRCm38/Mus_musculus.GRCm38.77.gtf.gz
-    Rat: /project2/yangili1/cdai/annotations/RGSC5.0/Rattus_norvegicus.Rnor_5.0.77.gtf.gz
-    Macaque: /project2/yangili1/cdai/annotations/mmul1.0/Macaca_mulatta.MMUL_1.77.gtf.gz
+    Human: /project/yangili1/cdai/annotations/hg19/Homo_sapiens.GRCh37.75.gtf.gz
+    Mouse: /project/yangili1/cdai/annotations/GRCm38/Mus_musculus.GRCm38.77.gtf.gz
+    Rat: /project/yangili1/cdai/annotations/RGSC5.0/Rattus_norvegicus.Rnor_5.0.77.gtf.gz
+    Macaque: /project/yangili1/cdai/annotations/mmul1.0/Macaca_mulatta.MMUL_1.77.gtf.gz
   genome:
-    Human: /project2/yangili1/cdai/annotations/hg19/hg19.fa.gz
-    Mouse: /project2/yangili1/cdai/annotations/GRCm38/mm10.fa.gz
-    Rat: /project2/yangili1/cdai/annotations/RGSC5.0/rn5.fa.gz
-    Macaque: /project2/yangili1/cdai/annotations/mmul1.0/Macaca_mulatta.MMUL_1.dna_rm.fa.gz
+    Human: /project/yangili1/cdai/annotations/hg19/hg19.fa.gz
+    Mouse: /project/yangili1/cdai/annotations/GRCm38/mm10.fa.gz
+    Rat: /project/yangili1/cdai/annotations/RGSC5.0/rn5.fa.gz
+    Macaque: /project/yangili1/cdai/annotations/mmul1.0/Macaca_mulatta.MMUL_1.dna_rm.fa.gz
 

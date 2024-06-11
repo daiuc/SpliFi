@@ -134,9 +134,9 @@ rule all:
         # expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
                 # TISSUE=GtexOutputSubTissues.split(',')),
         # add q value to qtltools result
-        # expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
-        #         TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
-        #         WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
+        expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
+                TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
+                WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
         # extract gene expression from GTEx tpm file
         # expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
