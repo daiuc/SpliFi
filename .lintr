@@ -1,0 +1,2 @@
+linters: linters_with_defaults( trailing_whitespace_linter = NULL, assignment_linter = NULL, line_length_linter = NULL, indentation_linter = NULL,trailing_blank_lines_linter = NULL, object_name_linter = NULL, object_length_linter = NULL, quotes_linter = NULL )
+encoding: "UTF-8"

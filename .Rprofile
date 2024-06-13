@@ -1,4 +1,9 @@
-cat(paste0("current dir: ", getwd(), "\n"))
+if (interactive() & Sys.getenv("RSTUDIO") == "") {
+  cat("Running interactive mode.\n")
+  library(colorout)
+}
+
+cat(paste0("current working dir: ", getwd(), "\n"))
 
 #' @description open/create a qmd or Rmd file and switch to the document directory
 myopen <- function(file) {

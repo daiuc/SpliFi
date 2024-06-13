@@ -53,15 +53,6 @@ rule PreparePhenoBed:
 
         '''
 
-# use rule PreparePhenoBedNoise as PreparePhenoBedNoiseByintron with:
-#     input: 'results/pheno/noisy/GTEx/{group}/leafcutter_perind.counts.noise.gz'
-#     output: 
-#         flag = touch('results/pheno/noisy/GTEx/{group}/{phenType}/done'),
-#         samples = 'results/pheno/noisy/GTEx/{group}/{phenType}/leafcutter_names.txt'
-#     params:
-#         pyscript = 'workflow/scripts/preparePheno.py',
-#         outPrefix = 'results/pheno/noisy/GTEx/{group}/{phenType}/leafcutter',
-#     log: 'logs/PreparePhenoBedNoise_GTEx_{group}.log'
 
 
 def getExtractGenotypeInput(wildcards):
@@ -106,6 +97,7 @@ rule ExtractGenotypeVCF:
     log: 'logs/ExtractGenotypeVCF_{datasource}_{group}_{chrom}.log'
     threads: 4
     resources: time=2000, mem_mb=15000, cpu=4
+    group: 'geno'
     shell:
         '''
         bcftools view \
@@ -126,8 +118,10 @@ rule GenotypePCA:
     params:
         out_prefix = 'results/geno/{datasource}/{group}/{chrom}'
     log: 'logs/GenotypePCA_{datasource}_{group}_{chrom}.log'
+    group: 'geno'
     shell:
         '''
+            module unload gsl && module load gsl/2.5
             QTLtools pca \
             --seed 123 \
             --maf 0.05 \
@@ -142,20 +136,52 @@ rule MakeCovarianceMatrix:
     message: '### Make covariance matrix with fixed PCs'
     input:
         samples = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter_names.txt',  # for changes
-        GenoPCs = 'results/geno/{datasource}/{group}/{chrom}.pca'
+        GenoPCs = 'results/geno/{datasource}/{group}/{chrom}.pca',
     output: 'results/pheno/noisy/{datasource}/{group}/{phenType}/{chrom}_CovMatrix.txt'
     params:
         n_phenoPCs = 11, # index starts from header row
         n_genoPCs = 5, # index starts from header row
-        rscript = 'workflow/scripts/Make_CovMatrix.R',
         PhenoPCs = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.PCs',
     log: 'logs/MakeCovarianceMatrix_{datasource}_{group}_{phenType}_{chrom}.log'
-    shell:
-        '''
-        cat <(awk 'NR <= {params.n_phenoPCs}' {params.PhenoPCs}) \
-            <(awk 'NR > 1 && NR <= {params.n_genoPCs}' {input.GenoPCs}) \
-            1> {output} 2> {log}
-        '''
+    run:
+        fout = open(output[0], 'w')
+        with open(input.samples) as f:
+            samples = f.readlines()
+            samples = [x.strip() for x in samples]
+            fout.write('\t'.join(['id'] + samples) + '\n')
+
+        with open(input.GenoPCs) as f: # append genotype PCs
+            genoHeader = f.readline().strip().split()
+            print("Getting genotype PCs...")
+            if not all(a == b for a,b in zip(samples, genoHeader[1:])):
+                print(f"Samples in genotype do not match!\nsamples:{samples}\nGenotype:{genoHeader[1:]}")
+                exit("Samples genotype do not match! Exiting...")
+            i = 1
+            for ln in f.readlines():
+                if i > params.n_genoPCs:
+                    break
+                ln = ln.strip().split()
+                ln[0] = f'genoPC:{ln[0]}'
+                fout.write('\t'.join(ln) + '\n')
+                i += 1
+
+        with open(params.PhenoPCs) as f: # append phenotype PCs
+            print("Getting phenotype PCs...")
+            phenoHeader = f.readline().strip().split()
+            if not all(a == b for a,b in zip(samples, phenoHeader[1:])):
+                exit("Samples in phenotype do not match! Exiting...")
+            i = 1
+            for ln in f.readlines():
+                if i > params.n_phenoPCs:
+                    break
+                ln = ln.strip().split()
+                ln[0] = f'phenoPC:{ln[0]}'
+                fout.write('\t'.join(ln) + '\n')
+                i += 1
+
+        print(f"Done.\nWrote to covariance matrix file: {output[0]}")
+        fout.close()
+
 
 
 rule MapQTL_Perm:
@@ -175,6 +201,7 @@ rule MapQTL_Perm:
     resources: cpu = 1, mem = 12000, time = 1000
     shell:
         '''
+        module unload gsl && module load gsl/2.5
         QTLtools cis \
             --seed 123 \
             --vcf {input.vcf} --bed {params.pheno} --cov {input.cov}  --out {output} \
@@ -217,7 +244,42 @@ rule AddQvalueToPermutationPass:
 #     # - 19. pval_empirical (by direct permutation method)
 #     # - 20. pval_adjusted (adjusted p-value, note, this has not been genome-wide multiple-tested on phenotypes)
 
+rule MapQTL_Nom:
+    message: 'Map QTL using nominal pass'
+    input: 
+        phenoPrep = 'results/pheno/noisy/{datasource}/{group}/{phenType}/done',
+        vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
+        cov = 'results/pheno/noisy/{datasource}/{group}/{phenType}/{chrom}_CovMatrix.txt',
+    output: temp('results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.txt')
+    log: 'logs/MapQTL_Nom_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
+    params:
+        cis_window = '{window}',
+        pheno = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.qqnorm_{chrom}.gz',
+    resources: cpu = 1, mem = 12000, time = 1000
+    shell:
+        '''
+        module unload gsl && module load gsl/2.5
+        QTLtools cis \
+            --seed 123 \
+            --nominal 1 \
+            --vcf {input.vcf} --bed {params.pheno} --cov {input.cov}  --out {output} \
+            --window {params.cis_window} &> {log}
+        '''
 
+rule TabixNominal:
+    message: 'Tabix the nominal pass output'
+    input: 'results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.txt'
+    output: 'results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.txt.gz'
+    log: 'logs/TabixNominal_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
+    shell:
+        '''
+        (awk 'BEGIN {{OFS="\t"}}; 
+                    {{for (i=1; i<=NF; i++) printf "%s%s", $i, (i<NF ? OFS : ORS)}}
+             ' {input} | \
+            sort -k9 -k10 -V | \
+            bgzip -c > {output}) 2> {log}
+        (tabix -s 9 -b 10 -e 11 {output}) &> {log}
+        '''
 
 
 # #------------------------------------------------------------------#
