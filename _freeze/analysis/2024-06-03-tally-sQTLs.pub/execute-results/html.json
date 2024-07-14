@@ -1,0 +1,14 @@
+{
+  "hash": "58087dbf98b078241c4d04a68de9549e",
+  "result": {
+    "markdown": "---\ntitle: \"For figure 1 - unproductive splicing - intron features\"\ndate: 2024-06-01\nexecute: \n  echo: true\n  warning: false\n  include: true\n---\n\n\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-2_eaa340aa5abac033de48ae236edc1bd1'}\n\n```{.r .cell-code}\nlibrary(systemfonts)\nmatch_fonts(\"FiraCode Nerd Font\")\n```\n:::\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-3_5fbfd42f2762923ac393a7db39a95d1a'}\n\n:::\n\n\n\n\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-6_7ba3e6f47faddb98c9a492b5d3386670'}\n\n```{.r .cell-code}\n#| include: false\n#| echo: false\n#| eval: false\n\n# turn hgd off\nhgd_close()\n```\n:::\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-7_6522f07cfbbace173c389c2582979c16'}\n\n```{.python .cell-code}\nx = [1, 2, 3]\nprint(x)\n```\n:::\n\n\n\n# Intron cluster level analysis\n\n\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/get counts_0a0453e37e82cd8560212a9246f9c4ee'}\n\n```{.r .cell-code}\nproj_path <- \"/project/yangili1/cdai/SpliFi\"\ncounts.f <- \"code/results/pheno/noisy/Geuvadis/EUR/leafcutter_perind_numers.counts.noise_by_intron.gz\"\ncounts.f <- glue(\"{proj_path}/{counts.f}\")\n\ncounts <- fread(counts.f)\n```\n:::\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-9_fd54e5af451b09ea9e3fb6f83bed10c2'}\n\n```{.r .cell-code}\ncounts[1:5,1:5] \n\ndim(counts)\n```\n:::\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-10_55bbc44ab1bd53ec46c2b77c4d4192b8'}\n\n```{.r .cell-code}\ncounts[, .(HG00096)] %>% \n  ggplot(aes(x = HG00096)) + \n  geom_histogram(bins = 100)\n```\n:::\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-11_20007bbf3df0ca5ff32f02044535f1de'}\n\n:::\n\n::: {.cell hash='2024-06-03-tally-sQTLs.pub_cache/html/unnamed-chunk-12_0ec731d97dfdeb6f3d20e59d36d0d062'}\n\n```{.r .cell-code}\nview_xl\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

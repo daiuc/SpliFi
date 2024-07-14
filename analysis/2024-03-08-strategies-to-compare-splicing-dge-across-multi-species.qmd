@@ -1,0 +1,94 @@
+---
+title: 'Comparison across species'
+date: 2024-03-08
+categories: 
+  - 'dge'
+  - 'unprouctive splicing'
+  - 'comparative analysis'
+  - 'multi species'
+execute:
+  cache: true
+  freeze: auto
+  include: false
+## jupyter: ir
+---
+
+# Strategies to compare differential unproductive splicing and gene expression across species
+
+The goal is to compare differential unproductive splicing and gene expression across species. 
+
+# Multi-tissue multi-species RNA-seq data
+
+- RNA-seq time series of the dev of seven major organs
+  - Human: 4 - 20 weeks post conception, normal karyotype, postnatal samples include infant to teenagers
+    - [human](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6814)
+  - Mouse: various time points both pre and post natal
+    - [mouse](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6798)
+  - Rat: various time points both pre and post natal
+    - [rat](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6811)
+  - Rhesus macaque: from fetal to postnatal, postnatal timepoints matched to human
+    - [Rhesus macaque](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6813)
+- Available files are sorted bam files, organized by sample and tissue (in file name).
+
+##  Questions / analyses
+
+
+1. Pair-wise comparison in gene expression and unproductive splicing of the same tissue across species.
+
+what are the differences? Are there any conserved genes in terms of gene expression and unproductive splicing?
+For example, a gene that is differentially expressed between muscle and brain across species.
+And concurrently, find that there is a higher level of unproductive splicing in brain in all species.
+
+
+# Methods
+
+## Gene expression data processing
+
+- Starting point: sorted bam files, sorted by sample and species, downloaded from EBI ArrayExpress.
+- Use `featureCounts` to count reads mapping to genes.
+- Subset count table to genes that have orthologs in all 4 species.
+- Subsequent analysis: 
+  - Differential gene expression analysis across species on orthologous genes.
+
+KEY STEP:
+- Get a list of orthologous genes across the 4 species.
+- Filter by one-to-one orthologs.
+- Biomart is a good tool to get orthologous genes across species.
+
+
+## Splicing data processing
+
+- Starting point: same as gene expression data.
+- use `regtools` to extract splicing junctions.
+- use leafcutter2 to quantify splicing by intron/cluster.
+- assign each intron to a gene (of the given species).
+- Subset to genes that have orthologs in all 4 species.
+- Subsequent analysis:
+  - Differential splicing analysis across species on orthologous genes.
+  - unproductive ratio analysis
+
+
+## Comparison across species
+
+1. conservation: find genes that are have consistently higher unprod splicing in one tissue across species,
+and concurrently have lower expression. 
+2. evolution: find genes that have evolved differently from 1 specie over others (like human vs. others, 
+or human vs. rodents) in terms of unproductive splicing, and concucurrently relfected in its expression.
+
+
+```{{r}}
+library(biomaRt)
+human <- useMart("ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+mouse <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", mirror = "useast")
+
+getLDS(
+  attributes = c("ensembl_gene_id", "external_gene_name"),
+  filters = "ensembl_gene_id",
+  values = c("ENSMUSG00000021111"),
+  mart = mouse,
+  attributesL = c("hgnc_symbol", "ensembl_gene_id"),
+  martL = human
+)
+```
+
+

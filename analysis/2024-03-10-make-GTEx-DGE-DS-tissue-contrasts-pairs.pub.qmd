@@ -1,0 +1,136 @@
+---
+title: Construct DSE and DGE contrasts
+data: 2024-03-10
+execute:
+  eval: true
+engine: knitr
+
+---
+
+
+Introductions
+
+
+
+This notebook creates the contrasts for the differential expression analysis and differential splicing analysis.
+
+Contrasts are saved to code/config. 
+
+How to read contrasts?
+
+e.g. `Liver_v_WholeBlood` means DGE and DS fold change will be computed as Liver / WholeBlood.
+
+All Brain tissues, and a set of other tissues such as Liver, Lung, Muscle-Skeletal, WholeBlood, Heart-AtrialAppendage, Skin-NotSunExposed_Suprapubic are used for the contrasts. 
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(DT)
+```
+
+
+
+Totally these many tissue types: 
+
+```{r}
+#| include: true
+tissues <- dir('../code/results/pheno/noisy/GTEx')
+tissues <- tissues[!str_detect(tissues, 'Bladder')]
+str(tissues)
+print(tissues)
+```
+
+
+```{r}
+# create unique pairs of tissues, regardless of order
+tissue_pairs <- combn(tissues, 2, simplify = TRUE) |> t() |> as.data.table() 
+
+```
+
+
+
+```{r}
+#| include: true
+str(tissue_pairs)
+dim(tissue_pairs)
+```
+
+
+
+```{r}
+# making sure that we are only getting unique combinations
+tissue_pairs[V1 == 'Liver' | V2 == 'Liver'
+][V1 == 'Muscle-Skeletal' | V2 == 'Muscle-Skeletal', ]
+```
+
+```{r}
+
+tissue_pairs[V1 == 'Colon-Sigmoid' | V2 == 'Colon-Sigmoid'
+]
+```
+
+
+Do not compare in between brain tissues, and remove a few other tissues. 
+
+Here are the final set of tissues to run DS and DGE on:
+
+```{r}
+
+brain_tissues <- tissues[str_detect(tissues, 'Brain')]
+non_brain_tissues <- tissues[!str_detect(tissues, 'Brain')]
+exclude_tissues<-c(
+  'Skin-SunExposed_Lowerleg_',
+  'Esophagus-GastroesophagealJunction',
+  'Esophagus-Muscularis',
+  'Artery-Tibial',
+  'Artery-Aorta',
+  'Heart-AtrialAppendage',
+  'Colon-Sigmoid',
+  'Adipose-Subcutaneous',
+  'Nerve-Tibial'
+)
+other_tissues<- setdiff(non_brain_tissues, exclude_tissues)
+print(brain_tissues)
+print(exclude_tissues)
+print(other_tissues)
+```
+
+
+```{r}
+#| include: true
+
+print(c(brain_tissues, other_tissues))
+str(c(brain_tissues, other_tissues))
+```
+
+```{r}
+dge_tissue_pairs <- tissue_pairs[
+  V1 %in% c(brain_tissues, other_tissues) & V2 %in% c(brain_tissues, other_tissues)
+]
+```
+
+```{r}
+dge_tissue_pairs
+dge_tissue_pairs[, contrasts := paste0(V1, '_v_', V2)]
+```
+
+```{r}
+# remove brain vs. brain
+dge_tissue_pairs <- dge_tissue_pairs[!str_detect(contrasts, 'Brain.+_v_Brain.+')]
+```
+
+
+These are the contrasts used:
+```{r}
+#| include: true
+str(dge_tissue_pairs[, contrasts])
+```
+
+# write to file:
+```{r}
+#| eval: false
+dge_tissue_pairs$contrasts |>
+  write_lines('../code/config/ds_dge_tissue_contrast_levels.txt')
+```
+
+

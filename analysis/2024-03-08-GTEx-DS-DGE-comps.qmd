@@ -1,0 +1,162 @@
+---
+title: Compare DGE and DS
+date: 2024-3-08
+author: Chao Dai
+code-fold: true
+execute:
+  warning: false
+  message: false
+  echo: true
+  include: true
+categories:
+  - GTEx
+  - Differential splicing
+  - Differential expression
+jupyter: ir
+---
+
+
+```{r}
+suppressMessages(library(tidyverse))
+suppressMessages(library(data.table))
+suppressMessages(library(glue))
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:06:40.698105Z', iopub.status.busy: '2024-03-13T15:06:40.696703Z', iopub.status.idle: '2024-03-13T15:06:40.708526Z', shell.execute_reply: '2024-03-13T15:06:40.706813Z'}
+#| vscode: {languageId: r}
+options(repr.plot.width=5, repr.plot.height=5, repr.plot.res=180)
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:06:41.391851Z', iopub.status.busy: '2024-03-13T15:06:41.390527Z', iopub.status.idle: '2024-03-13T15:06:41.416352Z', shell.execute_reply: '2024-03-13T15:06:41.414669Z'}
+#| vscode: {languageId: r}
+suppressMessages(library(cowplot))
+theme_set(theme_cowplot(font_size = 14))
+```
+
+# Introduction
+
+preprocessed files are under `data/ds_v_dge`
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:08:10.001932Z', iopub.status.busy: '2024-03-13T15:08:09.966471Z', iopub.status.idle: '2024-03-13T15:08:10.012647Z', shell.execute_reply: '2024-03-13T15:08:10.010925Z'}
+#| vscode: {languageId: r}
+contrast <- 'Liver_v_Lung'
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:12:38.011371Z', iopub.status.busy: '2024-03-13T15:12:38.009824Z', iopub.status.idle: '2024-03-13T15:12:38.265846Z', shell.execute_reply: '2024-03-13T15:12:38.264072Z'}
+#| vscode: {languageId: r}
+data <- readRDS(glue('../data/ds_v_dge/{contrast}_data.rds'))
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:12:39.152837Z', iopub.status.busy: '2024-03-13T15:12:39.150627Z', iopub.status.idle: '2024-03-13T15:12:39.174156Z', shell.execute_reply: '2024-03-13T15:12:39.171585Z'}
+#| vscode: {languageId: r}
+ds <- data$ds
+dge <- data$dge
+dge_dsc <- data$dge_dsc
+rm(data)
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:12:45.400975Z', iopub.status.busy: '2024-03-13T15:12:45.398826Z', iopub.status.idle: '2024-03-13T15:12:45.437500Z', shell.execute_reply: '2024-03-13T15:12:45.434996Z'}
+#| vscode: {languageId: r}
+ds[1:2,]
+dge_dsc
+dge[1:2,]
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:18:00.318272Z', iopub.status.busy: '2024-03-13T15:18:00.316992Z', iopub.status.idle: '2024-03-13T15:18:00.327834Z', shell.execute_reply: '2024-03-13T15:18:00.326380Z'}
+#| vscode: {languageId: r}
+# get tissue order from contrast, note is tissue2 v tissue 1
+tissues <- str_split(contrast, "_v_") %>% unlist
+# for ds, col9 is numerator, col8 is denom
+confirm_level_ds <- all(names(ds)[c(9,8)] == tissues)
+# confirm dge contrast
+confirm_level_dge <- str_detect(dge_dsc[2], glue("{tissues[1]} vs {tissues[2]}"))
+```
+
+```{r}
+#| execution: {iopub.execute_input: '2024-03-13T15:17:20.201226Z', iopub.status.busy: '2024-03-13T15:17:20.199986Z', iopub.status.idle: '2024-03-13T15:17:20.212508Z', shell.execute_reply: '2024-03-13T15:17:20.211085Z'}
+#| vscode: {languageId: r}
+if (confirm_level_dge & confirm_level_ds) {
+  message("Confirmed tissue order")
+} else {
+  stop("Tissue order not confirmed")
+}
+```
+
+## plot distribution of unprodcutive splicing
+
+```{r}
+#| vscode: {languageId: r}
+FDR = 0.1
+```
+
+```{r}
+#| vscode: {languageId: r}
+ds[`p.adjust` < FDR & ctype %in% c('PR', 'PR,UP')
+  ][,.(intron, deltapsi, itype)] %>% unique %>% 
+  ggplot() + stat_ecdf(aes(x=abs(deltapsi), color=itype)) +
+    scale_color_brewer(type = "qual", palette = 2, direction = -1, label = c(PR="Productive", UP="Unproductive"), name = NULL) +
+    labs(title = glue("{contrast}")) +
+    scale_x_sqrt(name = bquote('|ΔΨ|')) +
+    theme_bw()
+```
+
+## Plot deltaPSI vs. log2FC of gene expression
+
+```{r}
+#| vscode: {languageId: r}
+ds[1:5]
+ds[deltapsi > .1 & `p.adjust` < FDR, .N]
+```
+
+```{r}
+#| vscode: {languageId: r}
+dge[padj < FDR & abs(log2FoldChange) > 1][1:5]
+dge[padj < FDR & abs(log2FoldChange) > 1, .N]
+```
+
+```{r}
+#| vscode: {languageId: r}
+joined_dt <- inner_join(
+  x = ds[abs(deltapsi) > .1 & `p.adjust` < FDR & ctype %in% c('PR', 'PR,UP'), 
+        .(gene_id, gene_name, intron, itype, ctype, deltapsi)],
+  y = dge[padj < FDR & abs(log2FoldChange) > 1, .(gene_id, log2FoldChange)],
+  by = 'gene_id'
+  )
+
+joined_dt[1:5]
+joined_dt[, .(Ngene = uniqueN(gene_id), Nintron = uniqueN(intron))]
+```
+
+```{r}
+#| vscode: {languageId: r}
+joined_dt %>% 
+ggplot() +
+geom_point(aes(log2FoldChange, deltapsi), size = .5, color = 'grey50', alpha = .5) +
+       geom_smooth(aes(log2FoldChange, deltapsi), method = "lm", formula = y~x, se = FALSE) +
+       labs(title = glue("{contrast}")) +
+       theme_bw() +
+       facet_wrap(~itype, scales = "free")
+```
+
+
+```{r}
+
+mpg %>% head
+```
+```{r}
+mpg %>% 
+  ggplot(aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  facet_wrap(~class, scales = "free")
+```
+
+```{r}
+```

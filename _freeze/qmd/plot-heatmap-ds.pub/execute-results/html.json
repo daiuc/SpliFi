@@ -1,0 +1,14 @@
+{
+  "hash": "b69c63225bef541c38011e61a43aab18",
+  "result": {
+    "markdown": "---\ntitle: plot heatmap of unproductive splicing across tissues\nengine: knitr\nexecute:\n  freeze: true\n  cache: true\n  warning: false\n  include: true\n\n---\n\n::: {.cell hash='plot-heatmap-ds.pub_cache/html/unnamed-chunk-1_58866441604bb3320ac115dae849bd3b'}\n\n```{.r .cell-code}\nsuppressMessages(library(tidyverse))\nsuppressMessages(library(data.table))\nsuppressMessages(library(glue))\n\nsuppressMessages(library(cowplot))\ntheme_set(theme_cowplot(font_size = 14))\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

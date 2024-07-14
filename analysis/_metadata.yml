@@ -1,0 +1,26 @@
+# options specified here will apply to all posts in this folder
+
+# freeze computational output
+# (see https://quarto.org/docs/projects/code-execution.html#freeze)
+freeze: auto
+
+# Enable banner style title blocks
+title-block-banner: true
+
+code-fold: true
+
+toc: true
+toc-depth: 3
+execute:
+  warning: false
+  message: false
+  error: false
+  echo: false
+  eval: false
+  include: false # set default not include any output.
+  # NOTE: cache invalidation triggered by changes inchunk source code. 
+  # use --cache-refresh to render either inidividual file or whole project to refresh
+  cache: true
+  # Never re-render during project render. set to auto to re-render when sources changes
+  freeze: true
+

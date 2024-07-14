@@ -85,6 +85,7 @@ GTEX_BEDGRAPH_TISSUES = {
 include: 'rules/gtex.smk'
 include: 'rules/geuvadis.smk'
 include: 'rules/qtl.smk'
+include: 'rules/eqtl.smk'
 # include: 'rules/rna.smk'
 # include: 'rules/qtlQC.smk'
 # include: "rules/other.smk"
@@ -133,10 +134,16 @@ rule all:
         # run leafcutter 2 with constitutive junctions
         # expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
                 # TISSUE=GtexOutputSubTissues.split(',')),
+        # prepare phenotype on leafcutter output (ready for qtl calling)
+        # expand('results/pheno/noisy/GTEx/{TISSUE}/separateNoise/done',
+        #         TISSUE=GtexOutputSubTissues.split(',')),
+        # make covariance matrix for qtltools
+        # expand('results/pheno/noisy/GTEx/{TISSUE}/separateNoise/{CHR}_CovMatrix.txt',
+        #         TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
         # add q value to qtltools result
-        expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
-                TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
-                WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
+        # expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
+        #         TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
+        #         WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
         # extract gene expression from GTEx tpm file
         # expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
@@ -151,7 +158,13 @@ rule all:
         #        ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
         # pull GTEX BedGraph files and conver to bigwig
         # expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
+        # run nominal pass of eQTL on GTEx with top sQTL associated SNPs
+        expand('results/eqtl/GTEx/{TISSUE}/nom/{CHR}.txt.gz',
+                TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # run nominal pass of eQTL on GTEX with all SNPs in VCF
+        expand('results/eqtl/GTEx/{TISSUE}/nom-all-snps/{CHR}.txt.gz',
+                TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
 
 
 
-
+    #output: 'results/eqtl/{datasource}/{group}/nom-all-snps/{chrom}.txt.gz'

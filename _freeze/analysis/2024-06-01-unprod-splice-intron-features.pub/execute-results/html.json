@@ -1,0 +1,14 @@
+{
+  "hash": "58087dbf98b078241c4d04a68de9549e",
+  "result": {
+    "markdown": "---\ntitle: \"For figure 1 - unproductive splicing - intron features\"\ndate: 2024-06-01\nexecute: \n  echo: true\n  warning: false\n  include: true\n---\n\n\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-2_e049e99bad3a2ae3768b88a35c1a3d11'}\n\n```{.r .cell-code}\nlibrary(systemfonts)\nmatch_fonts(\"FiraCode Nerd Font\")\n```\n:::\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-3_0ea10514573fa843057e086b4d168a62'}\n\n:::\n\n\n\n\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-6_a1a22243c41f6da77ccc0907e1866e2b'}\n\n```{.r .cell-code}\n#| include: false\n#| echo: false\n#| eval: false\n\n# turn hgd off\nhgd_close()\n```\n:::\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-7_e7d8649196370e51a306f18626b581bf'}\n\n```{.python .cell-code}\nx = [1, 2, 3]\nprint(x)\n```\n:::\n\n\n\n# Intron cluster level analysis\n\n\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/get counts_3b045f835c8d448741ba76f21f8c5d17'}\n\n```{.r .cell-code}\nproj_path <- \"/project/yangili1/cdai/SpliFi\"\ncounts.f <- \"code/results/pheno/noisy/Geuvadis/EUR/leafcutter_perind_numers.counts.noise_by_intron.gz\"\ncounts.f <- glue(\"{proj_path}/{counts.f}\")\n\ncounts <- fread(counts.f)\n```\n:::\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-9_38c051a673295eea0bdbed15cae6ce1b'}\n\n```{.r .cell-code}\ncounts[1:5,1:5] \n\ndim(counts)\n```\n:::\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-10_c342a7dcfafbb5c6451f68038fc9a9ea'}\n\n```{.r .cell-code}\ncounts[, .(HG00096)] %>% \n  ggplot(aes(x = HG00096)) + \n  geom_histogram(bins = 100)\n```\n:::\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-11_4a517c7d63a83ba7833ce3b348296db3'}\n\n:::\n\n::: {.cell hash='2024-06-01-unprod-splice-intron-features.pub_cache/html/unnamed-chunk-12_582205ca4444ed68ce276d20276e310f'}\n\n```{.r .cell-code}\nview_xl\n```\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
