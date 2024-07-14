@@ -51,6 +51,7 @@ rule PreparePhenoBed:
 
         ls -l {output.samples} &>> {log}
 
+
         '''
 
 
@@ -142,6 +143,7 @@ rule MakeCovarianceMatrix:
         n_phenoPCs = 11, # index starts from header row
         n_genoPCs = 5, # index starts from header row
         PhenoPCs = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.PCs',
+        fake = "fake",
     log: 'logs/MakeCovarianceMatrix_{datasource}_{group}_{phenType}_{chrom}.log'
     run:
         fout = open(output[0], 'w')
@@ -244,16 +246,43 @@ rule AddQvalueToPermutationPass:
 #     # - 19. pval_empirical (by direct permutation method)
 #     # - 20. pval_adjusted (adjusted p-value, note, this has not been genome-wide multiple-tested on phenotypes)
 
-rule MapQTL_Nom:
-    message: 'Map QTL using nominal pass'
+
+rule ExtractSNPsForNominal:
+    message: '### Extract top SNPs of sQTL for nominal pass'
+    input: 
+        perm = 'results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/perm/{chrom}.addQval.txt.gz',
+        vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz'
+    output: 
+        bed = 'results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.TopVariants.bed',
+        vcf = 'results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.TopVariants.vcf.gz'
+    log: 'logs/ExtractSNPsForNominal_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
+    shell:
+        '''
+        (zcat {input.perm} | \
+            awk 'BEGIN {{OFS="\t"}};
+                 NR>1 {{print $9, $10 - 1, $11}}
+                ' | \
+            sort -k2 -k3 | uniq) 1> {output.bed} 2> {log}
+
+        bcftools view \
+            -R {output.bed} \
+            -Oz -o {output.vcf} \
+            {input.vcf} &>> {log}
+        
+        bcftools index --tbi {output.vcf} &>> {log}
+
+        '''
+
+rule NominalQTL:
+    message: '### Map QTL using nominal pass'
     input: 
         phenoPrep = 'results/pheno/noisy/{datasource}/{group}/{phenType}/done',
-        vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
+        vcf = 'results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.TopVariants.vcf.gz',
         cov = 'results/pheno/noisy/{datasource}/{group}/{phenType}/{chrom}_CovMatrix.txt',
     output: temp('results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.txt')
-    log: 'logs/MapQTL_Nom_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
+    log: 'logs/NominalQTL_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
     params:
-        cis_window = '{window}',
+        cis_window = lambda w: int(w.window) + 10000, # add 10kb to the window
         pheno = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.qqnorm_{chrom}.gz',
     resources: cpu = 1, mem = 12000, time = 1000
     shell:
@@ -280,6 +309,31 @@ rule TabixNominal:
             bgzip -c > {output}) 2> {log}
         (tabix -s 9 -b 10 -e 11 {output}) &> {log}
         '''
+
+
+
+# rule MapQTL_Nom:
+#     message: 'Map QTL using nominal pass'
+#     input: 
+#         phenoPrep = 'results/pheno/noisy/{datasource}/{group}/{phenType}/done',
+#         vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
+#         cov = 'results/pheno/noisy/{datasource}/{group}/{phenType}/{chrom}_CovMatrix.txt',
+#     output: temp('results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.txt')
+#     log: 'logs/MapQTL_Nom_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
+#     params:
+#         cis_window = '{window}',
+#         pheno = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.qqnorm_{chrom}.gz',
+#     resources: cpu = 1, mem = 12000, time = 1000
+#     shell:
+#         '''
+#         module unload gsl && module load gsl/2.5
+#         QTLtools cis \
+#             --seed 123 \
+#             --nominal 1 \
+#             --vcf {input.vcf} --bed {params.pheno} --cov {input.cov}  --out {output} \
+#             --window {params.cis_window} &> {log}
+#         '''
+#
 
 
 # #------------------------------------------------------------------#
