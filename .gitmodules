@@ -16,3 +16,6 @@
 [submodule "code/workflow/submodules/igv.js"]
 	path = code/workflow/submodules/igv.js
 	url = https://github.com/igvteam/igv.js.git
+[submodule "code/workflow/submodules/gtex-v8"]
+	path = code/workflow/submodules/gtex-v8
+	url = https://github.com/broadinstitute/gtex-v8.git

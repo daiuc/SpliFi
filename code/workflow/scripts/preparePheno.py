@@ -86,7 +86,7 @@ def main(
 
     sys.stderr.write("Starting...\n")
     for i in chroms:
-        fout[i] = open(outPrefix + ".phen_" + i, "w")
+        fout[i] = open(outPrefix + ".phen_" + i, "w")  # phenotype out files
         fout_ave = open(outPrefix + ".ave", "w")
     valRows, valRowsnn, geneRows = [], [], []
     header = (
@@ -96,12 +96,6 @@ def main(
         x.split(".")[0] for x in header
     ]  # remove file extension from sample names
 
-    for i in fout:
-        fout[i].write(
-            "\t".join(["#Chr", "start", "end", "pid", "gid", "strand"] + header_clean)
-            + "\n"
-        )
-
     if sample_file:
         try:
             sample_names = [x.strip() for x in open(sample_file, "r").readlines()]
@@ -110,7 +104,7 @@ def main(
             )
             sys.stderr.write(f"Counts file has {len(header)} samples, ")
             old_header = header
-            # split because headers are sample names with file extension like GTEX-RN64.tsv.gz, VCF files only have sample names like GTEX-RN64
+            # remove samples not in vcf sample list
             header = [x for x in header if x.split(".")[0] in sample_names]
             header_clean = [
                 x.split(".")[0] for x in header
@@ -133,7 +127,13 @@ def main(
 
         except:
             sys.stderr.write(f"Can't find {sample_file}..not filtering samples\n")
-            sample_file = ""
+            sample_file = None
+
+    for i in fout:  # write cleaned header to phenotype out files
+        fout[i].write(
+            "\t".join(["#Chr", "start", "end", "pid", "gid", "strand"] + header_clean)
+            + "\n"
+        )
 
     for dic in stream_table(gzip.open(ratio_file, "rt"), " "):
 
@@ -217,7 +217,7 @@ def main(
     for i in range(len(matrix[0, :])):
         matrix[:, i] = qqnorm(matrix[:, i])
 
-    # write the corrected tables
+    # write the qqnorm corrected tables
     fout = {}
     for i in chroms:
         fn = f"{outPrefix}.qqnorm_{i}"
@@ -257,9 +257,7 @@ def main(
 
     # write sample names in to file
     fout_samples = open(f"{outPrefix}_names.txt", "w")
-    sample_names = [
-        x.split(".")[0] for x in header_clean
-    ]  # remove file extension from sample names
+    sample_names = header_clean
     fout_samples.write("\n".join(sample_names))
 
     if pcs > 0:
@@ -319,6 +317,3 @@ if __name__ == "__main__":
     ), get_blacklist_chromosomes(chrom_blacklist)
     chrom_list = chrom_list - set(chrom_blacklist)
     main(ratio_file, sampleFile, chrom_list, chrom_blacklist, npcs, outPrefix)
-
-
-
