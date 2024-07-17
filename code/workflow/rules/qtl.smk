@@ -310,6 +310,53 @@ rule TabixNominal:
         (tabix -s 9 -b 10 -e 11 {output}) &> {log}
         '''
 
+rule sortGTExPhenotype_rawPSI:
+    input: 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.phen_{chrom}.gz',
+    output: 
+        bed = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.phen_{chrom}_sorted.gz',
+        tbi = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.phen_{chrom}_sorted.gz.tbi',
+    shell:
+        '''
+        bedtools sort -header -i {input} | bgzip -c > {output.bed}
+        tabix -p bed {output.bed}
+
+        '''
+
+
+rule GTExRawPsiPca:
+    message: """run PCA on raw PSI"""
+    input: 
+        bed = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.phen_{chrom}_sorted.gz',
+    output:
+        pca = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.phen_{chrom}.pca',
+    params:
+        R_script = 'workflow/scripts/fromBen_PermuteAndPCA.R'
+    shell:
+        '''
+        Rscript {params.R_script} {input} {output}
+        '''
+
+
+rule GTEx_sQTL_Nominal_rawPSI:
+    message: """Run nominal pass sQTL for GTEx, with only sQTLs top variants and raw psi values"""
+    input: 
+        vcf = 'results/qtl/noisy/{datasource}/{group}/separateNoise/cis_100000/nom/{chrom}.TopVariants.vcf.gz',
+        bed = 'results/pheno/noisy/{datasource}/{group}/separateNoise/leafcutter.phen_{chrom}_sorted.gz',
+        cov = 'results/pheno/noisy/{datasource}/{group}/separateNoise/leafcutter.phen_{chrom}.pca',
+    output: 'results/qtl/noisy/{datasource}/{group}/separateNoise/cis_100000/nom-raw-psi/{chrom}.txt'
+    params:
+        window = 1000000, # 1Mb, doesn't matter, since vcf has only top variants
+        chrom = '{chrom}'
+    log: 'logs/GTEx_sQTL_Nominal_rawPSI_{datasource}_{group}_{chrom}.log'
+    shell:
+        '''
+        module unload gsl && module load gsl/2.5
+        QTLtools cis \
+            --seed 123 \
+            --nominal 1 \
+            --vcf {input.vcf} --bed {input.bed} --cov {input.cov}  --out {output} \
+            --window {params.window} &> {log}
+        '''
 
 
 # rule MapQTL_Nom:

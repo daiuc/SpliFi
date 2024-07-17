@@ -164,7 +164,7 @@ rule all:
         # run nominal pass of eQTL on GTEX with all SNPs in VCF
         expand('results/eqtl/GTEx/{TISSUE}/nom-all-snps/{CHR}.txt.gz',
                 TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
-
-
+        # Run nominal pass of sQTL with raw PSI on top sQTL associated SNPs
+        expand('results/qtl/noisy/GTEx/{TISSUE}/separateNoise/cis_100000/nom-raw-psi/{CHR}.txt', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
 
     #output: 'results/eqtl/{datasource}/{group}/nom-all-snps/{chrom}.txt.gz'
