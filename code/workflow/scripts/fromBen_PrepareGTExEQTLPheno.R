@@ -10,26 +10,32 @@ library(data.table)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) != 4) {
-    stop("Usage: Rscript PrepareGTExPhenotypes.R <data.path> <genes.path> <CPM.Bed_Out> <QQnorm.Bed_Out>")
+if (length(args) != 5) {
+    stop("Usage: Rscript PrepareGTExPhenotypes.R <data.path> <genes.path> <samples.path> <CPM.Bed_Out> <QQnorm.Bed_Out>")
 }
 
 data.path <- args[1]
 genes.path <- args[2]
-CPM.Bed_Out <- args[3]
-QQnorm.Bed_Out <- args[4]
+samples.path <- args[3]
+CPM.Bed_Out <- args[4]
+QQnorm.Bed_Out <- args[5]
+
+if (interactive()) {
+    args <- scan(text = "Rscript workflow/scripts/fromBen_PrepareGTExEQTLPheno.R resources/GTEx/expression/Brain-Amygdala_gene_reads.tsv.gz resources/GTEx/ExpressedGeneList.txt results/pheno/noisy/GTEx/Brain-Amygdala/separateNoise/leafcutter_names.txt results/eqtl/GTEx/Brain-Amygdala/cpm.bed.gz results/eqtl/GTEx/Brain-Amygdala/qqnorm.bed.gz", what = character())
+    data.path <- args[3]
+    genes.path <- args[4]
+    samples.path <- args[5]
+}
 
 
-
-# data.path <- 'GTEx/data/gene_reads_2017-06-05_v8_adipose_visceral_omentum.gct.gz'
-
-# dat <- read_tsv(data.path, skip = 2)
 dat <- fread(data.path)
 
 genes <- read_tsv(genes.path,
     col_names = c("Chr", "Start", "End", "Geneid", "score", "strand")
 ) %>%
     mutate(gene = str_extract(Geneid, "^[^.]+"))
+
+samples <- read_lines(samples.path)
 
 dat <- dat %>%
     mutate(gene = str_extract(Name, "^[^.]+")) %>%
@@ -39,6 +45,12 @@ dat <- dat %>%
     filter(rowSums(. != 0) > 0)
 
 colnames(dat) <- str_extract(colnames(dat), "Name|Description|GTEX\\-[\\w\\d]+")
+kept_samples <- intersect(samples, colnames(dat))
+
+dat <- dat %>%
+    select(all_of(kept_samples))
+keepRows <- rowSums(dat) >= 10
+dat <- dat[keepRows, ]
 
 dat.cpm <- dat %>%
     cpm(log = T, prior.count = 0.1)
