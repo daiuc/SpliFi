@@ -162,8 +162,8 @@ def main(
                 tmpvalRow.append("NA")
                 NA_indices.append(i)
             else:
-                # add a 0.5 pseudocount
-                count = (float(num) + 0.5) / ((float(denom)) + 0.5)
+                addon = float(denom) * 0.01 if float(denom) < 100 else 0.01
+                count = (float(num) + addon) / (float(denom) + addon)
                 tmpvalRow.append(count)
                 aveReads.append(count)
 
