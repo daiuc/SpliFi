@@ -55,7 +55,6 @@ rule PreparePhenoBed:
         '''
 
 
-
 def getExtractGenotypeInput(wildcards):
     if wildcards.datasource == 'GTEx':
         vcf = config['VCF']['GTEx']['HG38_v7']
@@ -359,85 +358,92 @@ rule GTEx_sQTL_Nominal_rawPSI:
         '''
 
 
-# rule MapQTL_Nom:
-#     message: 'Map QTL using nominal pass'
-#     input: 
-#         phenoPrep = 'results/pheno/noisy/{datasource}/{group}/{phenType}/done',
-#         vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
-#         cov = 'results/pheno/noisy/{datasource}/{group}/{phenType}/{chrom}_CovMatrix.txt',
-#     output: temp('results/qtl/noisy/{datasource}/{group}/{phenType}/cis_{window}/nom/{chrom}.txt')
-#     log: 'logs/MapQTL_Nom_{datasource}_{group}_{phenType}_{window}_{chrom}.log'
-#     params:
-#         cis_window = '{window}',
-#         pheno = 'results/pheno/noisy/{datasource}/{group}/{phenType}/leafcutter.qqnorm_{chrom}.gz',
-#     resources: cpu = 1, mem = 12000, time = 1000
-#     shell:
-#         '''
-#         module unload gsl && module load gsl/2.5
-#         QTLtools cis \
-#             --seed 123 \
-#             --nominal 1 \
-#             --vcf {input.vcf} --bed {params.pheno} --cov {input.cov}  --out {output} \
-#             --window {params.cis_window} &> {log}
-#         '''
-#
+
+#-----------------------------------------------------------------
+#            Test pseudo count method
+#-----------------------------------------------------------------
 
 
-# #------------------------------------------------------------------#
-# #        Map QTLs using *.counts.noise_by_intron.gz phenotype      #
-# #------------------------------------------------------------------#
+# test qtl tools with different pseudocount method
+use rule PreparePhenoBed as PreparePhenoBed_test with:
+    message: '### Prepare phenotype bed file for qtltools, different pseudocount method'
+    input: 'results/pheno/noisy/{datasource}/{group}/leafcutter_perind.counts.noise_by_intron.gz'
+    output:
+        flag = touch('results/pheno/noisy/{datasource}/{group}/test_pseudocount/done'),
+        samples = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/leafcutter_names.txt'
+    params:
+        pyscript = 'workflow/scripts/preparePheno-test-pseudocount.py',
+        outPrefix = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/leafcutter',
+        vcfSamples = getVcfIndiv ,# individual ids in vcf file
+    log: 'logs/PreparePhenoBed_{datasource}_{group}_test_pseudocount.log'
 
 
-# use rule PrepPhenoBed as prepPhenoBed_by_intron with:
-#     input:
-#         counts = rules.ExtractNoisyCounts.output.counts_by_intron,
-#         anno = config['annotation']['gencode']
-#     output: touch('results/pheno/noisy/{datasource}/{group}/by_intron/PrepPhenoBed.done')
-#     params:
-#         Rscript = 'workflow/scripts/prepPhenoBed.R',
-#         outprefix = 'results/pheno/noisy/{datasource}/{group}/by_intron/pheno',
-#         minclu = 10, # min mean cluster reads
-#         minsam = 10, # min number of samples passing
-#         minread = 2  # min number of reads per sample
-#     threads: 8
-#     resources: cpu = 8, mem_mb = 28000, time = '12:00:00'
+use rule MakeCovarianceMatrix as MakeCovarianceMatrix_test with:
+    message: '### Make covariance matrix with fixed PCs, different pseudocount method'
+    input:
+        samples = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/leafcutter_names.txt', 
+        GenoPCs = 'results/geno/{datasource}/{group}/{chrom}.pca',
+        flag = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/done',
+    output: 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/{chrom}_CovMatrix.txt'
+    params:
+        n_phenoPCs = 11, # index starts from header row
+        n_genoPCs = 5, # index starts from header row
+        PhenoPCs = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/leafcutter.PCs',
+        fake = "fake",
+    log: 'logs/MakeCovarianceMatrix_{datasource}_{group}_test_pseudocount_{chrom}.log'
 
 
-# use rule PhenotypePCA as PhenotypePCA_by_intron with:
-#     input: rules.prepPhenoBed_by_intron.output
-#     output: 'results/pheno/noisy/{datasource}/{group}/by_intron/{chrom}.pca'
-#     params:
-#         rscript = 'workflow/scripts/PermuteAndPCA.R',
-#         inputfile = 'results/pheno/noisy/{datasource}/{group}/by_intron/pheno.{chrom}.bed.gz'
+use rule MapQTL_Perm as MapQTL_Perm_test with:
+    message: 'Map QTL using permutation pass, different pseudocount method'
+    input:
+        phenoPrep = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/done',
+        vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
+        cov = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/{chrom}_CovMatrix.txt',
+    output: temp('results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/perm/{chrom}.txt')
+    log: 'logs/MapQTL_Perm_{datasource}_{group}_test_pseudocount_{window}_{chrom}.log'
+    params:
+        cis_window = '{window}',
+        pheno = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/leafcutter.qqnorm_{chrom}.gz',
+    resources: cpu = 1, mem = 12000, time = 1000
 
 
-# use rule MakeCovarianceMatrix as MakeCovarianceMatrix_by_intron with:
-#     input:
-#         PhenoPCs = rules.PhenotypePCA_by_intron.output,
-#         GenoPCs = rules.GenotypePCA.output # use the same vcf as before
-#     output: 'results/pheno/noisy/{datasource}/{group}/by_intron/{chrom}_CovMatrix.txt'
-#     params:
-#         Geno_PCs = 4,
-#         rscript = 'workflow/scripts/Make_CovMatrix.R'
+use rule AddQvalueToPermutationPass as AddQvalueToPermutationPass_test with:
+    message: '### Add qvalue to the output of QTLtools permutation pass, different pseudocount method'
+    input:  'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/perm/{chrom}.txt'
+    output: 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/perm/{chrom}.addQval.txt.gz'
+    log: 'logs/AddQvalueToPermutationPass_{datasource}_{group}_test_pseudocount_{window}_{chrom}.log'
 
 
-# use rule MapQTL_Perm as MapQTL_Perm_by_intron with:
-#     input:
-#         flag = 'results/pheno/noisy/{datasource}/{group}/by_intron/PrepPhenoBed.done',
-#         vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
-#         cov = 'results/pheno/noisy/{datasource}/{group}/by_intron/{chrom}_CovMatrix.txt'
-#     output: temp('results/qtl/noisy/{datasource}/{group}/by_intron/cis_{window}/perm/{chrom}.txt')
-#     params:
-#         bed = 'results/pheno/noisy/{datasource}/{group}/by_intron/pheno.{chrom}.bed.gz',
-#         cis_window = '{window}'
-#     resources: cpu = 1, mem = 12000, time = 1000
+use rule ExtractSNPsForNominal as ExtractSNPsForNominal_test with:
+    message: '### Extract top SNPs of sQTL for nominal pass, different pseudocount method'
+    input: 
+        perm = 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/perm/{chrom}.addQval.txt.gz',
+        vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz'
+    output:
+        bed = 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/nom/{chrom}.TopVariants.bed',
+        vcf = 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/nom/{chrom}.TopVariants.vcf.gz'
+    log: 'logs/ExtractSNPsForNominal_{datasource}_{group}_test_pseudocount_{window}_{chrom}.log'
 
 
-# use rule AddQvalueToPermutationPass as AddQvalueToPermutationPass_by_intron with:
-#     input: rules.MapQTL_Perm_by_intron.output
-#     output: 'results/qtl/noisy/{datasource}/{group}/by_intron/cis_{window}/perm/{chrom}.addQval.txt.gz'
-#     params:
-#         rscript = 'workflow/scripts/AddQvalueToQTLtoolsOutput.R'
+use rule NominalQTL as NominalQTL_test with:
+    message: '### Map QTL using nominal pass, different pseudocount method'
+    input: 
+        phenoPrep = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/done',
+        vcf = 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/nom/{chrom}.TopVariants.vcf.gz',
+        cov = 'results/pheno/noisy/{datasource}/{group}/separateNoise/{chrom}_CovMatrix.txt',
+    output: temp('results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/nom/{chrom}.txt')
+    log: 'logs/NominalQTL_{datasource}_{group}_test_pseudocount_{window}_{chrom}.log'
+    params:
+        cis_window = lambda w: int(w.window) + 10000, # add 10kb to the window
+        pheno = 'results/pheno/noisy/{datasource}/{group}/test_pseudocount/leafcutter.qqnorm_{chrom}.gz',
+    resources: cpu = 1, mem = 12000, time = 1000
+
+use rule TabixNominal as TabixNominal_test with:
+    message: 'Tabix the nominal pass output, different pseudocount method'
+    input: 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/nom/{chrom}.txt'
+    output: 'results/qtl/noisy/{datasource}/{group}/test_pseudocount/cis_{window}/nom/{chrom}.txt.gz'
+    log: 'logs/TabixNominal_{datasource}_{group}_test_pseudocount_{window}_{chrom}.log'
+
 
 
 
