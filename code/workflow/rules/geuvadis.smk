@@ -28,7 +28,6 @@ rule ClusterIntronGeuvadis:
             -r {params.run_dir} \
             -o {params.out_prefix} \
             -j <(realpath {params.junc_files}) &> {log}
-        
         ls -lah {output.pooled} {output.clusters} {output.lowusage} {output.refined} &>> {log}
 
         '''
@@ -63,6 +62,7 @@ rule Leafcutter2Geuvadis:
             {params.pre_clustered} {params.other_params} &> {log}
         
         ls {output.perind_noise_by_intron} &>> {log}
+
         '''
 
 
