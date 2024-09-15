@@ -25,3 +25,5 @@
 **/*.snakemake*
 workflow/submodules
 workflow/deprecated_scripts
+**/__pycache__/*
+
