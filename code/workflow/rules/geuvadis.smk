@@ -85,6 +85,34 @@ use rule Leafcutter2Geuvadis as Leafcutter2Geuvadis_wConst with:
 
 
 
+rule Leaf2AnnotIntrons:
+    '''
+    Script is modified from leafcutter2_regtools.py to just use the annotation step
+    to annotate all intron junctions in dataset.
+    Used for paper Figure1C
+    '''
+    message: '### Use leafcutter2 to annotate ALL introns (no filtering)'
+    input:
+        perind_counts = 'results/pheno/noisy/Geuvadis/EUR/wConst_perind.constcounts.gz',
+        junc_files = 'results/pheno/noisy/Geuvadis/EUR/wConst_junction_classifications.txt',
+    output:
+        noisydiag = f"results/pheno/noisy/Geuvadis/EUR/wConst_perind.constcounts.annotated.gz",
+        numersdiag = f"results/pheno/noisy/Geuvadis/EUR/wConst_perind.numers.annotated.gz"
+    params:
+        out_prefix = 'results/pheno/noisy/Geuvadis/EUR/wConst_perind',
+        py_script = 'workflow/scripts/lf2_label_introns.py'
+    shell:
+        '''
+        python {params.py_script} \
+            -i {input.perind_counts} \
+            -o {params.out_prefix} \
+            -a {input.junc_files} \
+
+        ls {output}
+
+        '''
+
+
 # rule AnnotateNoisySplicingGeuvadis_const:
 #     input:
 #         junc_files = 'resources/Geuvadis/{population}/juncs'
