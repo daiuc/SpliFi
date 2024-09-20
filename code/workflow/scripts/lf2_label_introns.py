@@ -10,6 +10,12 @@ from datetime import datetime
 
 import pandas as pd
 
+def pick_sjc_label(df):
+    '''Pick one label for each intron based on priroty'''
+    sjc_priority = {'PR': 1, 'UP': 2, 'NE':3} # PR > UP > NE
+    df['priority'] = df['SJClass'].map(sjc_priority)
+    chosen = df.sort_values(by = 'priority', ascending = True).iloc[0]
+    return chosen.drop('priority')
 
 def merge_discordant_logics(sjc_file: str):
     '''some junctions have multiple classifications. Use conservative approach
@@ -37,26 +43,55 @@ def merge_discordant_logics(sjc_file: str):
         '1111': 'PR'  # PRoductive
         }
 
+    classifer_3bits = {
+        # each bit represents:
+        # is_GTFAnnotated?  is_LF2AnnotatedCoding?  is_ClosetoUTR?
+        '000': 'UP', # UnProductive,
+        '001': 'NE', # NEither productive nor unproductive
+        '010': 'PR', # PRoductive
+        '011': 'PR', # PRoductive
+        '100': 'UP', # UnProductive
+        '101': 'NE', # Neither Productive nor UnProductive
+        '110': 'PR', # PRoductive
+        '111': 'PR', # PRodutive
+    }
+
     sjc = pd.read_csv(sjc_file, sep = "\t")
-    sys.stderr.write(f"##{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Read junction annotation file {sjc_file}...\n")
 
     # group dt; NOTE:ForwardSpliceJunctionClassifier has an extra Strand column, backward doesn't
     if 'Strand' in sjc.columns:
         sjc = sjc[['Gene_name', 'Intron_coord', 'Strand', 'GencodePC', 'Annot', 'Coding', 'UTR']]
-        sjc = sjc.groupby(['Intron_coord', 'Strand']).agg('max').reset_index()
-        # convert Annotation, Coding, UTR status to binary strings then to SJ categories
-        # sjc['SJClass'] = sjc.apply(lambda x: boolean_to_bit(x[3:7]), axis=1).map(classifier)
-        sjc['SJClass'] = sjc[['GencodePC', 'Annot', 'Coding', 'UTR']].astype(int).astype(str).agg(''.join, axis=1).map(classifier)
+
+        # convert Annotation, Coding, UTR status to SJ categories
+        sjc['SJClass'] = sjc[['GencodePC', 'Annot', 'Coding', 'UTR'
+                              ]].astype(int).astype(str).agg(''.join, axis=1).map(classifier)
+
+        # if multiple classifications, take the one with highest priority
+        sjc = sjc.groupby(['Intron_coord', 'Strand']).apply(pick_sjc_label).reset_index(drop=True)
+        sjc = sjc[['Intron_coord', 'Strand', 'SJClass', 'Gene_name']]
+
         # convert df to dict
         sjc = sjc.set_index(['Intron_coord', 'Strand']).to_dict(orient='index')
-    
-    sjc = {flatten_tuple(k): v for k, v in sjc.items()}
+    else:
+        sjc = sjc[['Gene_name', 'Intron_coord', 'Annot', 'Coding', 'UTR']]
+        
+        # convert Annotation, Coding, UTR status to SJ categories
+        sjc['SJClass'] = sjc[['Annot', 'Coding', 'UTR'
+                              ]].astype(int).astype(str).agg(''.join, axis=1).map(classifer_3bits)
+        
+        # if multiple classifications, take the one with highest priority
+        sjc = sjc.groupby(['Intron_coord', 'Strand']).apply(pick_sjc_label).reset_index(drop=True)
+        sjc = sjc[['Intron_coord', 'Strand', 'SJClass', 'Gene_name']]
 
-    sys.stderr.write(f"##{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Constructed junction annotation lookup.\n")
+        # convert df to dict
+        sjc = sjc.set_index('Intron_coord').to_dict(orient='index')
+
+    sjc = {flatten_tuple(k): v for k, v in sjc.items()}
+    sys.stderr.write(f"\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Loaded junction annotation lookup.\n")
 
     # sjc is a dcitionary with:
     # - keys: intron coordinates, e.g. ('chr1', 1000, 2000, '+') or ('chr1', 1000, 2000) for backward
-    # - values: a dictionary e.g. {'Gene_name': 'DNMBP', 'Annot': False, 'Coding': False, 'UTR': False, 'SJClass': 'UP'})
+    # - values: a dictionary e.g. {'SJClass': 'UP', 'Gene_name': 'DNMBP'}
     return sjc
 
  
