@@ -86,6 +86,8 @@ include: 'rules/gtex.smk'
 include: 'rules/geuvadis.smk'
 include: 'rules/qtl.smk'
 include: 'rules/eqtl.smk'
+include: 'rules/coloc.smk'
+include: 'rules/ds-dge.smk'
 # include: 'rules/rna.smk'
 # include: 'rules/qtlQC.smk'
 # include: "rules/other.smk"
