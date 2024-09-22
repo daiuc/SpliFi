@@ -134,6 +134,7 @@ rule GTEx_eQTL_Perm:
 use rule AddQvalueToPermutationPass as AddQvalueToGTExEQtlPerm with:
     input:  'results/eqtl/{datasource}/{group}/perm/{chrom}.txt'
     output: 'results/eqtl/{datasource}/{group}/perm/{chrom}.txt.addQval.txt.gz'
+    log: 'logs/AddQvalueToGTExEQtlPerm_{datasource}_{group}_{chrom}.log'
 
 
 # ----------------------------------------------------------------------------------------
@@ -142,10 +143,11 @@ use rule AddQvalueToPermutationPass as AddQvalueToGTExEQtlPerm with:
 # it does not include all snps, and didn't include genotype covariants
 # ----------------------------------------------------------------------------------------
 
+# Run nominal pass eQTL on top sQTL variants, used for plotting sQTL-eQTL beta-beta correlation
 rule GTEx_eQTL_Nominal:
     message: 'Run nominal pass eQTL for GTEx, with only sQTLs top variants'
     input: 
-        vcf = 'results/qtl/noisy/{datasource}/{group}/separateNoise/cis_100000/nom/{chrom}.TopVariants.vcf.gz',
+        vcf = 'results/qtl/noisy/{datasource}/{group}/separateNoise/cis_100000/nom/{chrom}.TopVariants.vcf.gz', # top varaints from sQTL
         cov = 'results/eqtl/{datasource}/{group}/qqnorm.sorted.bed.pca',
         bed = 'results/eqtl/{datasource}/{group}/qqnorm.sorted.bed.gz',
     output: temp('results/eqtl/{datasource}/{group}/nom/{chrom}.txt')
@@ -169,9 +171,12 @@ use rule TabixNominal as TabixGTExEQtlNominal with:
     output: 'results/eqtl/{datasource}/{group}/nom/{chrom}.txt.gz'
     log: 'logs/TabixGTExNominal_{datasource}_{group}_{chrom}.log'
 
+
+# Run nominal pass eQTL for GTEx with all genomewide SNPs (cis), not just top sQTL variants
+# Use it for colocalization analysis
 use rule GTEx_eQTL_Nominal as GTEx_eQTL_Nominal_AllSNPS with:
     message: 'Run nominal pass eQTL for GTEx with all genomewide SNPs (cis)'
-    input: 
+    input:
         vcf = 'results/geno/{datasource}/{group}/{chrom}.vcf.gz',
         cov = 'results/eqtl/{datasource}/{group}/qqnorm.sorted.bed.pca',
         bed = 'results/eqtl/{datasource}/{group}/qqnorm.sorted.bed.gz',
@@ -185,3 +190,7 @@ use rule TabixNominal as TabixGTExNominal_AllSNPS with:
     input: 'results/eqtl/{datasource}/{group}/nom-all-snps/{chrom}.txt'
     output: 'results/eqtl/{datasource}/{group}/nom-all-snps/{chrom}.txt.gz'
     log: 'logs/TabixGTExNominal_AllSNPS_{datasource}_{group}_{chrom}.log'
+
+
+
+

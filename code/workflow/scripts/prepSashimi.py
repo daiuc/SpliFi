@@ -23,6 +23,10 @@ def avgBigwig(bwfiles, grange):
         - values, for pyBigwig to addentries as values
     """
     chrom, start, end = grange
+    # compute much wider region than given range
+    if end - start < 200000:
+        start = max(5000, start - 200000)
+        end = end + 200000
     values = []
     bwo = {}
     for bw in bwfiles:
@@ -48,7 +52,10 @@ def writeBigwig(outFile, bigwig, grange):
     grange  : tuple. Genomic range, BED like 0-based coordinates,
                 eg. ('chr1', 25101, 27101)
     """
-    chrom, start, _ = grange
+    chrom, start, end = grange
+    if end - start < 200000:
+        start = max(5000, start - 200000)
+
     with pw.open(outFile, "w") as b:
         b.addHeader(bigwig["header"])
         b.addEntries(chrom, start, values=bigwig["values"], span=1, step=1)

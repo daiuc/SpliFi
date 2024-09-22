@@ -103,7 +103,7 @@ GtexMultiSubTissues = 'Adipose-Subcutaneous,Adipose-Visceral(Omentum),WholeBlood
 # GtexMultiSubTissues = 'Adipose-Subcutaneous,Adipose-Visceral(Omentum),WholeBlood,Cells-EBV-transformedlymphocytes,Artery-Tibial,Artery-Aorta,Artery-Coronary,Brain-Cortex,Brain-Caudate(basalganglia),Brain-Nucleusaccumbens(basalganglia),Brain-Cerebellum,Brain-CerebellarHemisphere,Brain-FrontalCortex(BA9),Brain-Putamen(basalganglia),Brain-Hypothalamus,Brain-Hippocampus,Brain-Anteriorcingulatecortex(BA24),Brain-Spinalcord(cervicalc-1),Brain-Amygdala,Brain-Substantianigra,Colon-Transverse,Colon-Sigmoid,Esophagus-Mucosa,Esophagus-Muscularis,Esophagus-GastroesophagealJunction,Heart-LeftVentricle,Heart-AtrialAppendage,Skin-SunExposed(Lowerleg),Skin-NotSunExposed(Suprapubic),Cells-Culturedfibroblasts'
 # Tissues with only 1 sub tissue type, names are main tissue type names
 # GtexSingleSubTissues = 'Adipose-Subcutaneous,Adipose-Visceral(Omentum),Artery-Aorta,Artery-Coronary,Artery-Tibial,Brain-Amygdala,Brain-Anteriorcingulatecortex(BA24),Brain-Caudate(basalganglia),Brain-CerebellarHemisphere,Brain-Cerebellum,Brain-Cortex,Brain-FrontalCortex(BA9),Brain-Hippocampus,Brain-Hypothalamus,Brain-Nucleusaccumbens(basalganglia),Brain-Putamen(basalganglia),Brain-Spinalcord(cervicalc-1),Brain-Substantianigra,Cells-Culturedfibroblasts,Cells-EBV-transformedlymphocytes,Colon-Sigmoid,Colon-Transverse,Esophagus-GastroesophagealJunction,Esophagus-Mucosa,Esophagus-Muscularis,Heart-AtrialAppendage,Heart-LeftVentricle,Skin-NotSunExposed(Suprapubic),Skin-SunExposed(Lowerleg),WholeBlood,Bladder'
-GtexSingleSubTissues = 'Muscle-Skeletal,Thyroid,Nerve-Tibial,Lung,Breast-MammaryTissue,Testis,Stomach,Pancreas,Pituitary,AdrenalGland,Prostate,Spleen,Liver,SmallIntestine-TerminalIleum,Ovary,MinorSalivaryGland,Vagina,Uterus,Bladder'
+GtexSingleSubTissues = 'Muscle-Skeletal,Thyroid,Nerve-Tibial,Lung,Breast-MammaryTissue,Testis,Stomach,Pancreas,Pituitary,AdrenalGland,Prostate,Spleen,Liver,SmallIntestine-TerminalIleum,Ovary,MinorSalivaryGland,Vagina,Uterus'
 GtexOutputSubTissues = GtexSingleSubTissues + ',' + GtexMultiSubTissues
 GtexOutputSubTissues = GtexOutputSubTissues.translate(fixChr)
 
@@ -121,31 +121,31 @@ rule all:
     input:
         # Geuvadis EUR
         # run leafcutter 2 without constitutive junctions
-        # expand('results/pheno/noisy/Geuvadis/{POP}/leafcutter_perind.counts.noise_by_intron.gz', POP=['EUR']),
+        expand('results/pheno/noisy/Geuvadis/{POP}/leafcutter_perind.counts.noise_by_intron.gz', POP=['EUR']),
         # run leafcutter 2 with constitutive junctions
-        # expand('results/pheno/noisy/Geuvadis/{POP}/wConst_perind.constcounts.noise_by_intron.gz', POP=['EUR']),
+        expand('results/pheno/noisy/Geuvadis/{POP}/wConst_perind.constcounts.noise_by_intron.gz', POP=['EUR']),
         # add q value to qtltools result
-        # expand('results/qtl/noisy/Geuvadis/{POP}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
-        #         POP=['EUR'], PTYPE=['separateNoise'], WSIZE=[100000], CHR=AUTOSOMES),
-        # 
+        expand('results/qtl/noisy/Geuvadis/{POP}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
+                POP=['EUR'], PTYPE=['separateNoise'], WSIZE=[100000, 200000], CHR=AUTOSOMES),
+
         # 49 GTEx tissues
         # rename junction files to enable differential splicing
         # expand('resources/GTEx/juncs/all49tissues/{tissue}.done', tissue=GtexOutputSubTissues.split(',')),
         # run leafcutter 2 without constitutive junctions
-        # expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise_by_intron.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        expand('results/pheno/noisy/GTEx/{TISSUE}/leafcutter_perind.counts.noise_by_intron.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # run leafcutter 2 with constitutive junctions
-        # expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
-                # TISSUE=GtexOutputSubTissues.split(',')),
+        expand('results/pheno/noisy/GTEx/{TISSUE}/wConst_perind.constcounts.noise_by_intron.gz',
+                TISSUE=GtexOutputSubTissues.split(',')),
         # prepare phenotype on leafcutter output (ready for qtl calling)
-        # expand('results/pheno/noisy/GTEx/{TISSUE}/separateNoise/done',
-        #         TISSUE=GtexOutputSubTissues.split(',')),
+        expand('results/pheno/noisy/GTEx/{TISSUE}/separateNoise/done',
+                TISSUE=GtexOutputSubTissues.split(',')),
         # make covariance matrix for qtltools
-        # expand('results/pheno/noisy/GTEx/{TISSUE}/separateNoise/{CHR}_CovMatrix.txt',
-        #         TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        expand('results/pheno/noisy/GTEx/{TISSUE}/separateNoise/{CHR}_CovMatrix.txt',
+                TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
         # add q value to qtltools result
-        # expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
-        #         TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
-        #         WSIZE=[100000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
+        expand('results/qtl/noisy/GTEx/{TISSUE}/{PTYPE}/cis_{WSIZE}/perm/{CHR}.addQval.txt.gz',
+                TISSUE=GtexOutputSubTissues.split(','), PTYPE=['separateNoise'],
+                WSIZE=[100000, 250000], CHR=AUTOSOMES), # not using PTYPE='combineNoise'
         # extract gene expression from GTEx tpm file
         # expand('resources/GTEx/expression/{TISSUE}_gene_tpm.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
         # expand('resources/GTEx/expression/{TISSUE}_gene_reads.tsv.gz', TISSUE=GtexOutputSubTissues.split(',')),
@@ -154,19 +154,30 @@ rule all:
         # expand('results/dge/GTEx/{dge_tissue2}_v_{dge_tissue1}_dge_genes.tsv', zip,
         #        dge_tissue2=[x.split('_v_')[0] for x in CONTRASTS],
         #        dge_tissue1=[x.split('_v_')[1] for x in CONTRASTS]),
-        # Run differential splicing on selected tissue pairs
-        # expand('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done', zip,
-        #        ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
-        #        ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
+        # RunLeafcutterDiffSplicingGtex
+        expand('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done', zip,
+               ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
+               ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
         # pull GTEX BedGraph files and conver to bigwig
         # expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
+        # Prepare phenotype data for eQTL perm pass
+        # expand('results/eqtl/GTEx/{TISSUE}/qqnorm.sorted.bed.gz', TISSUE=GtexOutputSubTissues.split(',')),
+        # run eqtl perm pass for GTEx
+        # expand('results/eqtl/GTEx/{TISSUE}/perm/{CHR}.txt.addQval.txt.gz', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
         # run nominal pass of eQTL on GTEx with top sQTL associated SNPs
-        expand('results/eqtl/GTEx/{TISSUE}/nom/{CHR}.txt.gz',
-                TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # expand('results/eqtl/GTEx/{TISSUE}/nom/{CHR}.txt.gz',
+        #         TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
         # run nominal pass of eQTL on GTEX with all SNPs in VCF
-        expand('results/eqtl/GTEx/{TISSUE}/nom-all-snps/{CHR}.txt.gz',
-                TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # expand('results/eqtl/GTEx/{TISSUE}/nom-all-snps/{CHR}.txt.gz',
+        #         TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
         # Run nominal pass of sQTL with raw PSI on top sQTL associated SNPs
-        expand('results/qtl/noisy/GTEx/{TISSUE}/separateNoise/cis_100000/nom-raw-psi/{CHR}.txt', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
-
+        # expand('results/qtl/noisy/GTEx/{TISSUE}/separateNoise/cis_100000/nom-raw-psi/{CHR}.txt', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # run coloc prep for sqtl and eqtl
+        # expand('results/coloc/sqtl-eqtl/GTEx/{TISSUE}/{CHR}.sqtl_nominal.txt.gz', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # expand('results/coloc/sqtl-eqtl/GTEx/{TISSUE}/{CHR}.eqtl_nominal.txt.gz', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # # run coloc eQTL and sQTL for GTEx
+        # expand('results/coloc/sqtl-eqtl/GTEx/{TISSUE}/{CHR}.coloc.done', TISSUE=GtexOutputSubTissues.split(','), CHR=AUTOSOMES),
+        # # run coloc gwas, eqtl and sqtl for GTEx
+        # expand('results/coloc/gwas-eqtl-sqtl/GTEx/{GTRAIT}/{TISSUE}/done', TISSUE=GtexOutputSubTissues.split(','), GTRAIT=['AD', 'PD', 'HT', 'T2D']),
+        #
     #output: 'results/eqtl/{datasource}/{group}/nom-all-snps/{chrom}.txt.gz'
