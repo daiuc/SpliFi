@@ -2,7 +2,6 @@
 Differential splicing analysis &
 Differential expression analysis &
 related analysis & data preps & plots
-
 '''
 
 N_DIFFER = 80 # number of samples to choose for differnetial splicing and expression analysis
@@ -123,57 +122,6 @@ rule RunLeafcutterDiffSplicingGtex:
 # first columns can only be like `chr1:827775:829002:clu_1_+` because 
 # the R function only expect to split by ":" into 4 columns.
 
-# ----------------------------------------------------------------------------------------
-# ad hoc
-
-rule adhoc_test_ds_step1: # testing differential splicing with neg control
-    input: 
-        ds_numers_lf1 = 'results/ds/GTEx/Brain-Cerebellum_v_Liver/ds_perind_numers.counts.noise_by_intron.lf1.gz',
-    output:
-        neg_control_numers = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
-        neg_control_groups = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
-    run:
-        import gzip
-        outf1 = gzip.open(output.neg_control_numers, 'wt')
-        outf2 = open(output.neg_control_groups, 'w')
-        with gzip.open(input.ds_numers_lf1, 'rt') as f:
-            i = 0
-            for ln in f:
-                if i == 0:
-                    header = ln.split()
-                    cols = ([x.replace('Brain-Cerebellum', 'BC-group1') for x in header[0:100]] +
-                            [x.replace('Brain-Cerebellum', 'BC-group2') for x in header[100:200]])
-                    groups = ['BC-group1' for x in header[0:100]] + ['BC-group2' for x in header[100:200]]
-                    for c,g in zip(cols, groups):
-                        outf2.write(f'{c} {g}\n')
-                    outf1.write(' '.join(cols) + '\n')
-                if i > 0:
-                    outln = ln.split()[:201]
-                    outf1.write(' '.join(outln) + '\n')
-                i += 1
-
-        outf1.close()
-        outf2.close()
-
-
-use rule RunLeafcutterDiffSplicingGtex as adhoc_test_ds_step2 with:
-    input:
-        ds_numers_lf1 = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
-        ds_sample_group = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
-    output:
-        flag = touch('results/ds/GTEx/ds_test/BC_v_Liver/ds.done')
-        # produces two files:
-        # 1. {outprefix}_effect_sizes.txt
-        # 2. {outprefix}_manual_ds_cluster_significance.txt
-    params:
-        Rscript = 'workflow/submodules/leafcutter/scripts/leafcutter_ds.R', 
-        outprefix = 'results/ds/GTEx/ds_test/BC_v_Liver/ds', # note you need to include path!
-        MIN_SAMPLES_PER_INTRON = 5,
-        MIN_SAMPLES_PER_GROUP = 3,
-        MIN_COVERAGE = 5
-    log: 'results/ds/GTEx/ds_test/BC_v_Liver/log'
-
-
 
 ## -----------------------------------------------------------------------------
 ##   GTEx expression data
@@ -258,10 +206,31 @@ rule DgeGtex:
 
 
 
+# -----------------------------------------------------------------------------
+#   collect ds and dge results
+# -----------------------------------------------------------------------------
 
-## -----------------------------------------------------------------------------
-##   plot sashimi
-## -----------------------------------------------------------------------------
+rule Ds_Dge_Results:
+  output: 'plotdata/ds_v_dge/{a_v_b}_data.rds'
+  params:
+    R_script = 'workflow/scripts/prepDGE_DS_AnalysesData.R',
+    contrast = lambda w: w.a_v_b,
+    # must be v26 because it matches gene names from GTEx V8
+    gtf = config['annotation']['csv']['v26_genes'],
+    dsPrefix = 'results/ds/GTEx/',
+    dgePrefix = 'results/dge/GTEx/',
+    outPrefix = 'plotdata/ds_v_dge/'
+  shell:
+    '''
+    Rscript {params.R_script} {params.contrast} {params.gtf} {params.dsPrefix} {params.dgePrefix} {params.outPrefix}
+    ls {output}
+    '''
+
+
+
+# -----------------------------------------------------------------------------
+#   plot sashimi
+# -----------------------------------------------------------------------------
 
 def get_bedgraph_input(wildcards):
     import glob
@@ -419,10 +388,11 @@ rule PlotSashimiDsGtex:
         #run in login node after: pdfunite *.pdf all_plots.pdf
         '''
 
+
+
 #-----------------------------------------------------------------------------------------
 #   plot sashimi for selected SRSF genes
 #-----------------------------------------------------------------------------------------
-
 
 rule getIntronsForSashimi_SRSF:
     input: 
@@ -475,5 +445,60 @@ use rule PlotSashimiDsGtex as PlotSashimiDsGtex_SRSF with:
     group: 'PrepSashimiDsGtex'
     threads: 4
     log: 'logs/PlotSashimiDsGtex/SRSF/{ds_tissue_2}_v_{ds_tissue_1}.log'
+
+
+
+
+#-----------------------------------------------------------------------------------------
+# ad hoc
+#-----------------------------------------------------------------------------------------
+
+rule adhoc_test_ds_step1: # testing differential splicing with neg control
+    input: 
+        ds_numers_lf1 = 'results/ds/GTEx/Brain-Cerebellum_v_Liver/ds_perind_numers.counts.noise_by_intron.lf1.gz',
+    output:
+        neg_control_numers = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
+        neg_control_groups = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
+    run:
+        import gzip
+        outf1 = gzip.open(output.neg_control_numers, 'wt')
+        outf2 = open(output.neg_control_groups, 'w')
+        with gzip.open(input.ds_numers_lf1, 'rt') as f:
+            i = 0
+            for ln in f:
+                if i == 0:
+                    header = ln.split()
+                    cols = ([x.replace('Brain-Cerebellum', 'BC-group1') for x in header[0:100]] +
+                            [x.replace('Brain-Cerebellum', 'BC-group2') for x in header[100:200]])
+                    groups = ['BC-group1' for x in header[0:100]] + ['BC-group2' for x in header[100:200]]
+                    for c,g in zip(cols, groups):
+                        outf2.write(f'{c} {g}\n')
+                    outf1.write(' '.join(cols) + '\n')
+                if i > 0:
+                    outln = ln.split()[:201]
+                    outf1.write(' '.join(outln) + '\n')
+                i += 1
+
+        outf1.close()
+        outf2.close()
+
+
+use rule RunLeafcutterDiffSplicingGtex as adhoc_test_ds_step2 with:
+    input:
+        ds_numers_lf1 = 'results/ds/GTEx/ds_test/BC_v_Liver/perind.numers.gz',
+        ds_sample_group = 'results/ds/GTEx/ds_test/BC_v_Liver/sample_group.txt'
+    output:
+        flag = touch('results/ds/GTEx/ds_test/BC_v_Liver/ds.done')
+        # produces two files:
+        # 1. {outprefix}_effect_sizes.txt
+        # 2. {outprefix}_manual_ds_cluster_significance.txt
+    params:
+        Rscript = 'workflow/submodules/leafcutter/scripts/leafcutter_ds.R', 
+        outprefix = 'results/ds/GTEx/ds_test/BC_v_Liver/ds', # note you need to include path!
+        MIN_SAMPLES_PER_INTRON = 5,
+        MIN_SAMPLES_PER_GROUP = 3,
+        MIN_COVERAGE = 5
+    log: 'results/ds/GTEx/ds_test/BC_v_Liver/log'
+
 
 

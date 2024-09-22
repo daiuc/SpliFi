@@ -27,6 +27,8 @@ annotation:
   gencode_v38_genes: /project/yangili1/cdai/genome_index/hs38/gencode_gene_v38_anno.bed
   gtf:
     v43: /project/yangili1/cdai/annotations/hg38/gencode.v43.primary_assembly.annotation.gtf.gz
+  csv:
+    v26_genes: /project/yangili1/cdai/annotations/hg38/gencode.v26.GRCh38.genes.csv
   # basic_introns: /project/yangili1/cdai/SpliFi/code/resources/IntronAnnotationsFromYang.tsv.gz # from Ben
 
 genome38: /project/yangili1/cdai/genome_index/hs38/GRCh38.primary_assembly.genome.fa

@@ -16,8 +16,9 @@ Notes:
 __author__ = "Chao Dai"
 __email__ = "chaodai@uchicago.edu"
 
-import pandas as pd
+import os
 import glob
+import pandas as pd
 
 configfile: "config/config.yaml"
 
@@ -158,6 +159,12 @@ rule all:
         expand('results/ds/GTEx/{ds_tissue_2}_v_{ds_tissue_1}/done', zip,
                ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
                ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
+        #
+        # collect DS and DGE results (RDS Files)
+        expand('plotdata/ds_v_dge/{ds_tissue_2}_v_{ds_tissue_1}_data.rds', zip,
+               ds_tissue_2=[x.split('_v_')[0] for x in CONTRASTS],
+               ds_tissue_1=[x.split('_v_')[1] for x in CONTRASTS]),
+        #
         # pull GTEX BedGraph files and conver to bigwig
         # expand('resources/GTEx/BigWig/{TSOG}/done', TSOG=list(GTEX_BEDGRAPH_TISSUES.keys())),
         # Prepare phenotype data for eQTL perm pass
